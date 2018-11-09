@@ -1,0 +1,9 @@
+*~
+README.md~
+node_modules
+.*
+test*
+soul.sl.go
+!.gitignore
+!.gitmodules
+\#*\#
