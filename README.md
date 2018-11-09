@@ -6,7 +6,10 @@ str: "abc" 'abc' `abc`
 char: @'abc'
 dic: {}
 arr: []
-class: % ID {} 
+class:
+ % ID {}
+ % ID ID {}
+ % ID {}   
 obj: & ID
 
 id: 
