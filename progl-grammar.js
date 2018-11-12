@@ -27,7 +27,7 @@ var grammar = {
       ["\\\\[\\r\\n;]+", "return"],//allow \ at end of line
 			["\\b\\_\\b", "return 'NULL'"],
 			["\\b\\__\\b", "return 'UNDF'"],
-			["\\$?[a-zA-Z_][a-zA-Z0-9_$]*\\$?", "return 'ID'"],
+			["\\[a-zA-Z_$][a-zA-Z0-9_$]*", "return 'ID'"],
 //			["\\#[0-9]+", "yytext = yytext.substr(1);return 'LOCAL'"],			
 //TODO bignumber
       ["\\b{int}{frac}?{exp}?u?[slbf]?\\b", "return 'NUM';"],
@@ -44,7 +44,7 @@ var grammar = {
 			["@each", "return 'EACH'"],
 			["@while", "return 'WHILE'"],
 			["@include", "return 'INCLUDE'"],
-			["@throw", "return 'THROW'"],
+			["@error", "return 'ERROR'"],
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
       ["\\[", "return '['"],
@@ -109,14 +109,8 @@ var grammar = {
 	"parseParams": ["m"],
   "bnf": {
 		Start: [
-			["Expr", "console.log(JSON.stringify($1))"],
-			["Expr ,", "console.log(JSON.stringify($1))"],
-		],
-		CallEx: [
-			["Call", "$$ = ['dic', [$1]]"],
-			["Op", "$$ = ['dic', [$1]]"],
-			["Assign", "$$ = ['dic', [$1]]"],
-			"Dic"
+			["Expr", "return $$= $1"],
+			["Expr ,", "return $$ = $1"],
 		],
 		Expr: [
 			"Null",
@@ -134,7 +128,8 @@ var grammar = {
 //
 			"Id",
 			"Call",
-			"Get",
+			"DicGet",
+			"ObjGet",			
 			"Op",
 			"Assign",
 			["( Expr )", "$$ = $2"]			
@@ -152,7 +147,11 @@ var grammar = {
 			["[ ]", "$$ = ['arr', []]"],
 			["[ Exprs ]", "$$ = ['arr', $2]"]
 		],
-    "Dic": [
+    Block: [
+      ["{ }", "$$ = ['block', []]"],
+      ["{ Elems }", "$$ = ['block', $2]"],
+    ],
+    Dic: [
       ["{ }", "$$ = ['dic', []]"],
       ["{ Elems }", "$$ = ['dic', $2]"],
     ],
@@ -174,18 +173,19 @@ var grammar = {
 		],
 		"Ctrl": [
 			["If", "$$ = ['if', $1]"],
-			["WHILE Expr Dic",
+			["WHILE Expr Block",
 			 "$$ = ['while', [$2, $3]]"],
-			["FOR Expr , Expr , Expr Dic",
+			["FOR Expr , Expr , Expr Block",
 			 "$$ = ['for', [$2, $4, $6, $7]]"],
-			["EACH IdOrNull IdOrNull Expr Dic",
+			["EACH IdOrNull IdOrNull Expr Block",
 			 "$$ = ['each', [$2, $3, $4, $5]]"],
 			["RETURN Expr", "$$ = ['return', $2]"],
 			["RETURN", "$$ = ['return']"],			
 			["BREAK", "$$ = ['break']"],
 			["CONTINUE", "$$ = ['continue']"],
-			["GOTO ID", "$$ = ['goto', [$2]]"],
-			["THROW Expr", "$$ = ['throw', [$2]]"],			
+			["GOTO ID", "$$ = ['goto', $2]"],
+			["ERROR Expr", "$$ = ['error', $2]"],
+			["ERROR Expr NUM", "$$ = ['error', $2, $3]"],	
 		],
 		"IdOrNull": [
 			["ID", "$$ = $1"],
@@ -194,13 +194,11 @@ var grammar = {
 		"Include": [
 			["INCLUDE ID", "$$ = ['include', $2]"],
 			["INCLUDE STR", "$$ = ['include', $2]"],
-//			["PACKAGE ID", "$$ = ['package', $2]"],
-//			["PACKAGE STR", "$$ = ['package', $2]"],			
 		],
 		"If": [
-			["IF Expr Dic", "$$ = [$2, $3]"],
-			["If ELIF Expr Dic", "$$ = $1; $1.push($3); $1.push($4)"],
-			["If ELSE Dic", "$$ = $1; $1.push($3)"],
+			["IF Expr Block", "$$ = [$2, $3]"],
+			["If ELIF Expr Block", "$$ = $1; $1.push($3); $1.push($4)"],
+			["If ELSE Block", "$$ = $1; $1.push($3)"],
 		],
 		KeyColon: [
 			["ID :", "$$ = $1"],
@@ -221,69 +219,57 @@ var grammar = {
       ["Exprs , Expr", "$$ = $1; $1.push($3);"],
 			["Exprs ,", "$$ = $1"],			//allow additional ,;
 		],		
-		Get: [
-			["Expr . Getkey", "$$ = ['get', $1, $3, 'obj']"],
-			["Expr [ Expr ]", "$$ = ['get', $1, $3, 'items']"],
+		ObjGet: [
+			["Expr . Getkey", "$$ = ['objget', $1, $3]"],
+		],
+		ItemsGet: [
+			["Expr [ Expr ]", "$$ = ['itemsget', $1, $3]"],
 		],
 		Getkey: [	
 			["ID", "$$ = ['str', $1]"],
 			["( Expr )", "$$ = $2"],
 		],
-		"FUNC": [
-			["& Dic", "$$ = [$2, [[]]]"],
-			["& Dic Dic", "$$ = [$2, [[]], $3]"],			
-			["& Args Dic", "$$ = [$3, $2]"],
-			["& Args Dic Dic", "$$ = [$3, $2, $4]"],			
-			["& Args", "$$ = [, $2]"],			
+		"FUNC": [//CLASS? ARGDEF RETURN BLOCK AFTERBLOCK
+			["@ FuncArgs Block Block", "$$ = $2.concat([$3,$4,])"],
+			["@ FuncArgs Block", "$$ = $2.concat([$3,,])"],	
+			["@ FuncArgs", "$$ = $2.concat([,,])"],
+			["@ Block Block", "$$ = [,,,$2,$3,]"],
+			["@ Block", "$$ = [,,,$2,,]"],
 		],
-		"Args": [
-			["( )", "$$= [[]]"],
-			["( Subdefs )", "$$= [$2]"],
-			["( Subdefs ) Cn", "$$= [$2, $4]"],
-			["( ) Cn", "$$= [[], $3]"],
+		"FuncArgs": [
+			["ID Arg ID", "$$ = [$1, $2, $3,]"],
+			["Arg ID", "$$ = [, $1, $2,]"],
+			["ID ID", "$$ = [$1, , $2,]"],
+			["ID Arg", "$$ = [$1, $2, ,]"],
 		],
-    "Subdefs": [
-      ["Subdef", "$$ = [$1]; "],
-			["Subdefs , Subdef", "$$ = $1; $1.push($3)"]
+		"Arg": [
+			["( )", "$$ = undefined"],
+			["( Argdefs )", "$$ = $2"],
+		],
+    "Argdefs": [
+      ["Argdef", "$$ = [$1]; "],
+			["Argdefs , Argdef", "$$ = $1; $1.push($3)"],
     ],
-		"Subdef": [
+		"Argdef": [
 			["ID", "$$ = [$1]"],
-			["ID Cn", "$$ = [$1, $2]"],
+			["ID ID", "$$ = [$1, $2]"],
+			["ID = Expr", "$$ = [$1, , $3]"],
 		],
 		"Call": [
 			["Id CallArgs", "$$ = ['call', $1, $2];"],
-			["Get CallArgs", "$$ = ['call', $1, $2];"],
+			["ItemsGet CallArgs", "$$ = ['call', $1, $2];"],
 			["Call CallArgs", "$$ = ['call', $1, $2];"],
+			["ObjGet CallArgs", "$$ = ['methodcall', $1[1], $1[2], $2];"],			
 		],
 		"Class":[
-			["Parents Dic", "$2[2] = 'Dic';$$ = ['class', $1, $2]"],
-			["Parents Dic => Dic", "$2[2] = 'Dic';$$ = ['class', $1, $2, $4]"],
-			["< Parents >", "$$ = ['scope', $2]"],			
+			["@@ Ids Dic", "$$ = ['class', $1, $2]"],
 		],
-		"Parents": [
-			["< >", "$$ = []"],
-			["< Cns >", "$$ = $2"],			
-		],
-		"Cns": [
-			["Cn", "$$ = [$1]"],
-			["Cns Cn", "$$ = $1; $1.push($2)"],			
-		],
-		"Cn": [
-			["Curry", "$$ = $1"],
-			["ID", "$$ = ['idlib', $1]"]
-		],
-		"Curry": [
-			["=> ID { Elems }", "$$ = ['curry', ['idlib', $2], ['dic', $4, 'Dic']];"],
-			["=> ID { }", "$$ = ['curry', ['idlib', $2], ['dic', [], 'Dic']];"],			
+		"Ids": [
+			["ID", "$$=[$1]"],
+			["Ids ID", "$$=$1; $1.push($1)"],			
 		],
 		"Obj": [
-			["& ID { }", "$$ = ['objnew', ['idlib', $2], ['dic', []]];"],						
-			["& ID { Elems }", "$$ = ['objnew', ['idlib', $2], ['dic', $4, 'Dic']];"],
-			["@ ID ", "$$ = ['obj', ['idlib', $2], ['dic', []]];"],			
-			["@ ID { }", "$$ = ['obj', ['idlib', $2], ['dic', []]];"],
-			["@ ID { Elems }", "$$ = ['obj', ['idlib', $2], ['dic', $4]];"],						
-			["@ ID Func", "$$ = ['objx', ['idlib', $2], $3];"],
-			["@ ID ( Expr )", "$$ = ['objx', ['idlib', $2], $4];"],			
+			["& ID Dic", "$$ = ['obj', $2, $3];"],	
 		],
 		"CallArgs": [
 			["( )", "$$ = []"],
@@ -292,7 +278,8 @@ var grammar = {
 		"Assign": "$$ = ['assign', $1]",
 		"Assignable": [
 			"Id",
-			"Get"
+			"ItemsGet",
+			"ObjGet",			
 		],
 		"ASSIGN": [
 			["Expr = Expr", "$$ = [$1, $3]"],
@@ -306,12 +293,7 @@ var grammar = {
 		"Op": "$$ = ['op', $1[0], $1[1]]",
 		"OP": [
 			["! Expr", "$$ = ['not', [$2]]"],
-			["? Expr", "$$ = ['defined', [$2]]"],			
-//			["Expr ? Expr : Expr", "$$ = ['if', [$1, $3, $5]]"],
-//			["Expr ? Expr , : Expr", "$$ = ['if', [$1, $3, $6]]",      
-//			["Expr ? Expr : ", "$$ = ['if', [$1, $3]]"],			
-      //			["Expr ?? { Swtich }", "$$ = ['switch', [$1, $4]]"],
-			["Expr ^ Expr", "$$ = ['splus', [$1, $3]]"],      
+			["? Expr", "$$ = ['defined', [$2]]"],
 			["Expr + Expr", "$$ = ['plus', [$1, $3]]"],
 			["Expr - Expr", "$$ = ['minus', [$1, $3]]"],
 			["Expr * Expr", "$$ = ['times', [$1, $3]]"],

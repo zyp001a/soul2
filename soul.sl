@@ -14,13 +14,13 @@ Arrx = => Arr {
 Objx = <>{
  type: T
  mid: Boolean
+ default: Boolean 
  
  name: Str
  id: Str
  scope: Objx
  
  class: Objx
- parent: Objx
  parents: Dicx
  
  dic: Dicx
@@ -55,18 +55,10 @@ parentsMakex = &(parentarr Arrx)Dicx{
  }
  @return x
 }
-classmPresetx = &(parentarr Arrx)Objx{
+classPresetx = &(parentarr Arrx)Objx{
  #x = &Objx{
   type: @T("CLASS")   
   parents: parentsMakex(parentarr)
-  dic: @Dicx{}
- }
- @return x;
-}
-classvPresetx = &(parent Objx)Objx{
- #x = &Objx{
-  type: @T("CLASS") 
-  parent: parent
   dic: @Dicx{}
  }
  @return x;
@@ -95,27 +87,21 @@ nsPresetx = &(name Str)Objx{
 }
 #defns = nsPresetx("def")
 ##defmain = scopePresetx(defns, "main")
-##objc = classmPresetx();
+##objc = classPresetx();
 routex(objc, defmain, "Obj");
-##classc = classmPresetx([objc])
+##classc = classPresetx([objc])
 routex(classc, defmain, "Class")
-##classmc = classvPresetx(classc)
-routex(classmc, defmain, "ClassM")
-##classvc = classvPresetx(classc)
-routex(classvc, defmain, "ClassV")
-##scopec = classmPresetx([classc])
+##scopec = classPresetx([classc])
 routex(scopec, defmain, "Scope")
-##nsc = classmPresetx([objc])
+##nsc = classPresetx([objc])
 routex(nsc, defmain, "Ns")
 
 defns.class = nsc
 defmain.class = scopec
-objc.class = classmc
-classc.class = classmc
-classmc.class = classvc
-classvc.class = classvc
-scopec.class = classmc
-nsc.class = classmc
+objc.class = classc
+classc.class = classc
+scopec.class = classc
+nsc.class = classc
 
 /////3 def scope/MVClasscNew
 dicOrx = &(x Dicx)Dicx{
@@ -131,16 +117,6 @@ isclassx = &(c Objx, t Objx, cache Dic)Boolean{
  }
  @if(!cache){
   cache = {}
- }
- @if(c.parent != _){
-  #k = c.parent.id
-  @if(cache[k] != _){
-   @return 0
-  }
-  cache[k] = 1
-  @if(isclassx(c.parent, t, cache) != 0){
-   @return 1
-  }
  }
  @each k v c.parents{
   @if(cache[k] != _){
@@ -163,12 +139,6 @@ classGetx = &(class Objx, key Str)Objx{
   @if(x != _){
    @return x
   }  
- }
- @if(class.parent != _){
-  #x = classGetx(class.parent, key)
-  @if(x != _){
-   @return x
-  } 
  }
  @return _
 }
@@ -208,56 +178,38 @@ nsDefx = &(name Str)Objx{
  x.class = nsc
  @return x;
 }
-classmInitx = &(parentarr Arrx, schema Dicx)Objx{
- #x = classmPresetx(parentarr)
- x.class = classmc
+classInitx = &(parentarr Arrx, schema Dicx)Objx{
+ #x = classPresetx(parentarr)
+ x.class = classc
  @each k v schema{
   x.dic[k] = objInitx(v)
  }
  @return x;
 }
-classmNewx = &(scope Objx, name Str, parentarr Arrx, schema Dicx)Objx{
- #x = classmInitx(parentarr, schema)
+classNewx = &(scope Objx, name Str, parentarr Arrx, schema Dicx)Objx{
+ #x = classInitx(parentarr, schema)
  routex(x, scope, name)
  @return x
 }
-classvInitx = &(parent Objx, schema Dicx)Objx{
- #x = classvPresetx(parent)
- x.class = classvc
- @each k v schema{
-  x.dic[k] = objInitx(v)
- }
- @return x;
-}
-classvNewx = &(scope Objx, name Str, parent Objx, schema Dicx)Objx{
- #x = classvInitx(parent, schema)
- routex(x, scope, name)
- @return x
-}
-##classcc = classvNewx(defmain, "ClassC", classc)
-classcInitx = &(parent Objx, dic Dicx)Objx{
+curryNewx = &(scope Objx, name Str, class Objx, schema Dicx)Objx{
  #x = &Objx{
-  type: @T("CLASS")
-  class: classcc
-  parent: parent
-  dic: dicOrx(dic)
+  type: @T("CLASS")   
+  parents: parentsMakex([class])
+  class: classc
+  dic: dicOrx(schema)
  }
- @return x;
-}
-classcNewx = &(scope Objx, name Str, parent Objx, dic Dicx)Objx{
- #x = classcInitx(parent, dic)
  routex(x, scope, name)
  @return x
 }
 
 /////4 def val, voidp, null
-##valc = classmNewx(defmain, "Val", [objc], {
+##valc = classNewx(defmain, "Val", [objc], {
  val: objc
 })
 ##nullv =  &Objx{
  type: @T("NULL")
 }
-##nullc = classcNewx(defmain, "Null", valc, {
+##nullc = curryNewx(defmain, "Null", valc, {
  val: nullv
 })
 nullv.class = nullc
@@ -270,24 +222,24 @@ nullv.class = nullc
  type: @T("NUM")
  val: 0.0
 }
-##numc = classmNewx(defmain, "Num", [valc])
-##intc = classmNewx(defmain, "Int", [numc])
-##uintc = classmNewx(defmain, "Uint", [intc])
+##numc = classNewx(defmain, "Num", [valc])
+##intc = classNewx(defmain, "Int", [numc])
+##uintc = classNewx(defmain, "Uint", [intc])
 
 zeronumv.class = numc
 zerointv.class = intc
 inttDefx = &(x Str)Objx{
- @return classcNewx(defmain, x, intc, {
+ @return curryNewx(defmain, x, intc, {
   val: zerointv
  })
 }
 uinttDefx = &(x Str)Objx{
- @return classcNewx(defmain, x, uintc, {
+ @return curryNewx(defmain, x, uintc, {
   val: zerointv
  })
 }
 numtDefx = &(x Str)Objx{
- @return classcNewx(defmain, x, numc, {
+ @return curryNewx(defmain, x, numc, {
   val: zeronumv
  })
 }
@@ -306,17 +258,17 @@ numtDefx("NumBig")
 
 
 /////6 def items 
-##itemsc =  classmNewx(defmain, "Items", [valc], {
+##itemsc =  classNewx(defmain, "Items", [valc], {
  itemsType: classc
 })
-##itemslimitedc =  classvNewx(defmain, "ItemsLimited", itemsc, {
+##itemslimitedc =  classNewx(defmain, "ItemsLimited", [itemsc], {
  itemsLimitedLength: uintc
 })
-##arrc = classcNewx(defmain, "Arr", itemsc)
-##arrcharc = classcNewx(defmain, "ArrChar", arrc, {
+##arrc = curryNewx(defmain, "Arr", itemsc)
+##arrcharc = curryNewx(defmain, "ArrChar", arrc, {
  itemsType: charc
 })
-##dicc = classcNewx(defmain, "Dic", itemsc)
+##dicc = curryNewx(defmain, "Dic", itemsc)
 
 arrDefx = &(class Objx, val Arrx)Objx{
  @if(class == _){
@@ -350,11 +302,11 @@ dicDefx = &(class Objx, val Dicx)Objx{
  type: @T("STR")
  val: ""
 }
-##strc = classcNewx(defmain, "Str", valc)
+##strc = curryNewx(defmain, "Str", valc)
 strc.dic["val"] = zerostrv
 zerostrv.class = strc
 
-##enumc = classmNewx(defmain, "Enum", [valc], {
+##enumc = classNewx(defmain, "Enum", [valc], {
  enum: arrc
 })
 
@@ -394,199 +346,202 @@ DicUintx = => Dic {
 ArrStrx = => Arr {
  itemsType: Str
 }
-##arrstrc = classcNewx(defmain, "ArrStr", arrc, {
+##arrstrc = curryNewx(defmain, "ArrStr", arrc, {
  itemsType: strc
 })
-##dicuintc = classcNewx(defmain, "DicUint", dicc, {
+##dicuintc = curryNewx(defmain, "DicUint", dicc, {
  itemsType: uintc
 })
-##dicclassc = classcNewx(defmain, "DicClass", dicc, {
+##dicclassc = curryNewx(defmain, "DicClass", dicc, {
  itemsType: classc
 })
-##arrclassc = classcNewx(defmain, "ArrClass", arrc, {
+##arrclassc = curryNewx(defmain, "ArrClass", arrc, {
  itemsType: classc
 })
 
 
 
 
-##funcc = classmNewx(defmain, "Func", [objc])
+##funcc = classNewx(defmain, "Func", [objc])
 
-##funcprotoc = classvNewx(defmain, "FuncProto", funcc, {
+##funcprotoc = classNewx(defmain, "FuncProto", [funcc], {
  funcVars: arrstrc
  funcVarTypes: arrc
  funcReturn: classc
 })
 
-##valfuncc = classcNewx(defmain, "ValFunc", valc)
+##valfuncc = curryNewx(defmain, "ValFunc", valc)
 
-##funcnativec = classvNewx(defmain, "FuncNative", funcprotoc, {
+##funcnativec = classNewx(defmain, "FuncNative", [funcprotoc], {
  funcNative: valfuncc
 })
-##statec = classmNewx(defmain, "State", [classc], {
+##statec = classNewx(defmain, "State", [classc], {
  stateVars: arrstrc
 })
-##blockc = classmNewx(defmain, "Block", [objc], {
+##statec = classNewx(defmain, "StateFunc", [statec], {
+ stateFunc: funcc
+})
+##blockc = classNewx(defmain, "Block", [objc], {
  blockVal: arrc,
  blockLabels: dicuintc
 })
-##blockstatec = classvNewx(defmain, "BlockState", blockc, {
+##blockstatec = classNewx(defmain, "BlockState", [blockc], {
  blockState: statec, 
 })
-##funcclassc = classvNewx(defmain, "FuncClass", funcprotoc, {
+##funcclassc = classNewx(defmain, "FuncClass", [funcprotoc], {
  funcClass: classc
 })
-##funcblockc = classvNewx(defmain, "FuncBlock", funcclassc, {
+##funcblockc = classNewx(defmain, "FuncBlock", [funcclassc], {
  funcBlock: blockc
 })
-##functplc = classvNewx(defmain, "FuncTpl", funcblockc, {
+##functplc = classNewx(defmain, "FuncTpl", [funcblockc], {
  funcTpl: strc
  funcTplFileName: strc
 })
 /////9 def mid
-##midc = classmNewx(defmain, "Mid", [objc])
+##midc = classNewx(defmain, "Mid", [objc])
 
-##convc = classmNewx(defmain, "Conv", [midc], {
+##convc = classNewx(defmain, "Conv", [midc], {
  convToType: classc
  convFromVal: objc
 })
-##convimpc = classcNewx(defmain, "ConvImp", convc)
-##convexpc = classcNewx(defmain, "ConvExp", convc)
+##convimpc = curryNewx(defmain, "ConvImp", convc)
+##convexpc = curryNewx(defmain, "ConvExp", convc)
 
-##callc = classmNewx(defmain, "Call", [midc], {
+##callc = classNewx(defmain, "Call", [midc], {
  callFunc: funcc
  callArgs: arrc
 })
 
-##idc = classmNewx(defmain, "Id", [midc])
-##idstrc =  classvNewx(defmain, "IdStr", idc, {
+##idc = classNewx(defmain, "Id", [midc])
+##idstrc =  classNewx(defmain, "IdStr", [idc], {
  idStr: strc,
 })
-##iduintc =  classvNewx(defmain, "IdUint", idc, {
+##iduintc =  classNewx(defmain, "IdUint", [idc], {
  idUint: uintc,
 })
-##idscopec = classvNewx(defmain, "IdScope", idstrc, {
+##idscopec = classNewx(defmain, "IdScope", [idstrc], {
  idScope: scopec
 })
-##idlocalc = classcNewx(defmain, "IdLocal", idscopec)
-##idglobalc = classcNewx(defmain, "IdGlobal", idscopec)
-##idlibc = classvNewx(defmain, "IdLib", idstrc, {
+##idlocalc = curryNewx(defmain, "IdLocal", idscopec)
+##idglobalc = curryNewx(defmain, "IdGlobal", idscopec)
+##idlibc = classNewx(defmain, "IdLib", [idstrc], {
  idVal: objc
 })
-##idobjc = classvNewx(defmain, "IdObj", idstrc, {
+##idobjc = classNewx(defmain, "IdObj", [idstrc], {
  idObj: objc
 })
-##iddicc = classvNewx(defmain, "IdDic", idstrc, {
+##iddicc = classNewx(defmain, "IdDic", [idstrc], {
  idDic: dicc
 })
-##idarrc = classvNewx(defmain, "IdArr", iduintc, {
+##idarrc = classNewx(defmain, "IdArr", [iduintc], {
  idArr: arrc
 })
 
-##assignc = classmNewx(defmain, "Assign", [midc], {
+##assignc = classNewx(defmain, "Assign", [midc], {
  assignL: idc
  assignR: objc
 })
-##assignafterc = classcNewx(defmain, "AssignAfter", assignc)
+##assignafterc = curryNewx(defmain, "AssignAfter", assignc)
 
-##opc = classmNewx(defmain, "Op", [midc], {
+##opc = classNewx(defmain, "Op", [midc], {
  opPrecedence: uintc
 })
-##op1c = classvNewx(defmain, "Op1", opc, {
+##op1c = classNewx(defmain, "Op1", [opc], {
  op: objc
 })
-##op2c = classvNewx(defmain, "Op2", opc, {
+##op2c = classNewx(defmain, "Op2", [opc], {
  opL: objc
  opR: objc
 })
 //https://en.cppreference.com/w/c/language/operator_precedence
 //remove unused
 //get and assign are not operators in Soul PL
-##opnotc = classcNewx(defmain, "OpNot", op1c, {
+##opnotc = curryNewx(defmain, "OpNot", op1c, {
  opPrecedence: intDefx(10)
 })
-##opdefinedc = classcNewx(defmain, "OpDefined", op1c, {
+##opdefinedc = curryNewx(defmain, "OpDefined", op1c, {
  opPrecedence: intDefx(10)
 })
-##optimesc = classcNewx(defmain, "OpTimes", op2c, {
+##optimesc = curryNewx(defmain, "OpTimes", op2c, {
  opPrecedence: intDefx(20)
 })
-##opobelusc = classcNewx(defmain, "OpObelus", op2c, {
+##opobelusc = curryNewx(defmain, "OpObelus", op2c, {
  opPrecedence: intDefx(20)
 })
-##opmodc = classcNewx(defmain, "OpMod", op2c, {
+##opmodc = curryNewx(defmain, "OpMod", op2c, {
  opPrecedence: intDefx(20)
 })
-##opplusc = classcNewx(defmain, "OpPlus", op2c, {
+##opplusc = curryNewx(defmain, "OpPlus", op2c, {
  opPrecedence: intDefx(30)
 })
-##opminusc = classcNewx(defmain, "OpMinus", op2c, {
+##opminusc = curryNewx(defmain, "OpMinus", op2c, {
  opPrecedence: intDefx(30)
 })
-##opgec = classcNewx(defmain, "OpGe", op2c, {
+##opgec = curryNewx(defmain, "OpGe", op2c, {
  opPrecedence: intDefx(40)
 })
-##oplec = classcNewx(defmain, "OpLe", op2c, {
+##oplec = curryNewx(defmain, "OpLe", op2c, {
  opPrecedence: intDefx(40)
 })
-##opgtc = classcNewx(defmain, "OpGt", op2c, {
+##opgtc = curryNewx(defmain, "OpGt", op2c, {
  opPrecedence: intDefx(40)
 })
-##opltc = classcNewx(defmain, "OpLt", op2c, {
+##opltc = curryNewx(defmain, "OpLt", op2c, {
  opPrecedence: intDefx(40)
 })
-##opeqc = classcNewx(defmain, "OpEq", op2c, {
+##opeqc = curryNewx(defmain, "OpEq", op2c, {
  opPrecedence: intDefx(50)
 })
-##opnec = classcNewx(defmain, "OpNe", op2c, {
+##opnec = curryNewx(defmain, "OpNe", op2c, {
  opPrecedence: intDefx(50)
 })
-##opandc = classcNewx(defmain, "OpAnd", op2c, {
+##opandc = curryNewx(defmain, "OpAnd", op2c, {
  opPrecedence: intDefx(60)
 })
-##oporc = classcNewx(defmain, "OpOr", op2c, {
+##oporc = curryNewx(defmain, "OpOr", op2c, {
  opPrecedence: intDefx(70)
 })
 
 /////10 def signal
-##signalc = classmNewx(defmain, "Signal", [objc]);
-##continuec = classcNewx(defmain, "Continue", signalc)
-##breakc = classcNewx(defmain, "Break", signalc)
-##gotoc = classmNewx(defmain, "Goto", [signalc], {
+##signalc = classNewx(defmain, "Signal", [objc]);
+##continuec = curryNewx(defmain, "Continue", signalc)
+##breakc = curryNewx(defmain, "Break", signalc)
+##gotoc = classNewx(defmain, "Goto", [signalc], {
  goto: uintc
 })
-##returnc = classmNewx(defmain, "Return", [signalc], {
+##returnc = classNewx(defmain, "Return", [signalc], {
  return: objc
 })
-##errorc = classmNewx(defmain, "Error", [signalc], {
+##errorc = classNewx(defmain, "Error", [signalc], {
  errorCode: uintc
  errorMsg: strc
 })
 /////11 def ctrl
-##ctrlc = classmNewx(defmain, "Ctrl", [objc])
-##ctrlargsc = classmNewx(defmain, "CtrlArgs", [ctrlc], {
+##ctrlc = classNewx(defmain, "Ctrl", [objc])
+##ctrlargsc = classNewx(defmain, "CtrlArgs", [ctrlc], {
  ctrlArgs: arrc
 })
-##ctrlifc = classcNewx(defmain, "CtrlIf", ctrlargsc)
-##ctrlforc = classcNewx(defmain, "CtrlFor", ctrlargsc)
-##ctrleachc = classcNewx(defmain, "CtrlEach", ctrlargsc)
-##ctrlforeachc = classcNewx(defmain, "CtrlForeach", ctrlargsc)
-##ctrlwhilec = classcNewx(defmain, "CtrlWhile", ctrlargsc)
-##ctrlbreakc = classcNewx(defmain, "CtrlBreak", ctrlc)
-##ctrlcontinuec = classcNewx(defmain, "CtrlContinue", ctrlc)
-##ctrlgotoc = classcNewx(defmain, "CtrlGoto", ctrlargsc)
+##ctrlifc = curryNewx(defmain, "CtrlIf", ctrlargsc)
+##ctrlforc = curryNewx(defmain, "CtrlFor", ctrlargsc)
+##ctrleachc = curryNewx(defmain, "CtrlEach", ctrlargsc)
+##ctrlforeachc = curryNewx(defmain, "CtrlForeach", ctrlargsc)
+##ctrlwhilec = curryNewx(defmain, "CtrlWhile", ctrlargsc)
+##ctrlbreakc = curryNewx(defmain, "CtrlBreak", ctrlc)
+##ctrlcontinuec = curryNewx(defmain, "CtrlContinue", ctrlc)
+##ctrlgotoc = curryNewx(defmain, "CtrlGoto", ctrlargsc)
 
-##ctrlreturnc = classcNewx(defmain, "CtrlReturn", ctrlargsc)
-##ctrlerrorc = classcNewx(defmain, "CtrlError", ctrlargsc)
+##ctrlreturnc = curryNewx(defmain, "CtrlReturn", ctrlargsc)
+##ctrlerrorc = curryNewx(defmain, "CtrlError", ctrlargsc)
 
 /////12 def  env
-##envc = classmNewx(defmain, "Env", [objc], {
+##envc = classNewx(defmain, "Env", [objc], {
  envExec: scopec
  envDef: scopec
  envState: statec 
  envGlobal: statec 
 })
-##execc = classmNewx(defmain, "Exec", [objc], {
+##execc = classNewx(defmain, "Exec", [objc], {
  execObj: objc
  execEnv: envc
 })
@@ -692,22 +647,11 @@ execGetx = &(c Objx, env Objx, cache Dic)Objx{
    @return execot
   }
  }
- @if(c.parent != _){
-  #k = c.parent.id
-  @if(k != ""){
-   @if(cache[k] != _){ @return _; }
-   cache[k] = 1;
-  }
-  Objx#exect = execGetx(c.parent, env, cache);
-  @if(exect != _){
-   execsp.dic[t] = exect
-   @return exect
-  }
- }@elif(c.parents != _){
+ @if(c.parents != _){
   @each k v c.parents{
    @if(cache[k] != _){ @return; }
    cache[k] = 1;
-   exect = execGetx(v, env, cache);
+   Objx#exect = execGetx(v, env, cache);
    @if(exect != _){
     execsp.dic[t] = exect;
     @return exect;
@@ -767,8 +711,8 @@ feNewx("Call", &(x Arrx, env Objx)Objx{
 })
 /////23 main func
 #env = objInitx(envc, {
- envGlobal: objInitx(classvInitx(statec))
- envState: objInitx(classvInitx(statec))
+ envGlobal: objInitx(classInitx([statec]))
+ envState: objInitx(classInitx([statec]))
  envDef: defmain
  envExec: execmain
 })

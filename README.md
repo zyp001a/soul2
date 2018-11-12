@@ -7,9 +7,8 @@ char: @'abc'
 dic: {}
 arr: []
 class:
- % ID {}
- % ID ID {}
- % ID {}   
+ @@ ID {}
+ @@ ID ID {}
 obj: & ID
 
 id: 
