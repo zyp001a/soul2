@@ -30,8 +30,9 @@ var grammar = {
 			["\\[a-zA-Z_$][a-zA-Z0-9_$]*", "return 'ID'"],
 //			["\\#[0-9]+", "yytext = yytext.substr(1);return 'LOCAL'"],			
 //TODO bignumber
-      ["\\b{int}{frac}?{exp}?u?[slbf]?\\b", "return 'NUM';"],
-      ["0[xX][a-zA-Z0-9]+\\b", "return 'NUM';"],
+      ["\\b{int}{frac}?{exp}?f?\\b", "return 'FLOAT';"],
+      ["\\b{int}{frac}?{exp}?u?[slb]?\\b", "return 'INT';"],			
+      ["0[xX][a-zA-Z0-9]+\\b", "return 'INT';"],
 			["@if", "return 'IF'"],
 			["@else", "return 'ELSE'"],
 			["@elif", "return 'ELIF'"],						
@@ -136,7 +137,10 @@ var grammar = {
 		],		
 		Null: "$$ = ['null']",
 		Char: "$$ = ['char', $1]",
-		Num: "$$ = ['num', $1]",
+		Num: [
+			["FLOAT", "$$ = ['float', $1]"],
+			["INT", "$$ = ['int', $1]"],			
+		],
 		Str: "$$ = ['str', $1]",
 		Tpl: [
 			["TPL", "$$ = ['tpl', $1]"],
@@ -269,7 +273,8 @@ var grammar = {
 			["Ids ID", "$$=$1; $1.push($1)"],			
 		],
 		"Obj": [
-			["& ID Dic", "$$ = ['obj', $2, $3];"],	
+			["& ID Dic", "$$ = ['obj', $2, $3];"],
+			["& ID", "$$ = ['obj', $2, []];"],				
 		],
 		"CallArgs": [
 			["( )", "$$ = []"],

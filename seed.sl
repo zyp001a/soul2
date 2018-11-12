@@ -1,7 +1,8 @@
 /////1 set class/structs
 T = =>Enum {
  enum: [
-  "NULL", "INT", "NUM", "STR", "CHAR", "DIC", "ARR", "VALFUNC"
+  "NULL", "INT", "FLOAT", "BIG"
+  "STR", "CHAR", "DIC", "ARR", "VALFUNC"
   "CLASS", "OBJ", "NS", "SCOPE", "STATE"
  ]
 }
@@ -26,6 +27,9 @@ Objx = <>{
  dic: Dicx
  arr: Arrx
  val: Val
+}
+Astx = => Arr {
+ itemsType: Voidp
 }
 /////2 preset root ...
 Uint##uidi = 0;
@@ -113,7 +117,7 @@ dicOrx = &(x Dicx)Dicx{
 }
 isclassx = &(c Objx, t Objx, cache Dic)Boolean{
  @if(c.id != "" && c.id == t.id){
-  @return 1
+  @return @Boolean(1)
  }
  @if(!cache){
   cache = {}
@@ -123,11 +127,11 @@ isclassx = &(c Objx, t Objx, cache Dic)Boolean{
    @continue
   }
   cache[k] = 1
-  @if(isclassx(v, t, cache) != 0){
-   @return 1
+  @if(isclassx(v, t, cache)){
+   @return @Boolean(1)
   }
  }
- @return 0
+ @return @Boolean(0)
 }
 classGetx = &(class Objx, key Str)Objx{
  #x = class.dic[key]
@@ -149,16 +153,19 @@ objInitx = &(class Objx, dic Dicx)Objx{
   dic: dicOrx(dic)
  }
  @if(dic != _){
+  //TODO assign value 
   @each k v dic{
    #t = classGetx(class, k)
    @if(t == _){
     die("objInitx: not in "+ class.name + " "+k)
    }
    Objx#c = t.class
-   @if(isclassx(v.class, c) == 0){
+   @if(!isclassx(v.class, c)){
     die("objInitx: " + v.class.name + " is not " + c.name)
    }
   }
+ }@else{
+  x.default = @Boolean(1)
  }
  @return x; 
 }
@@ -218,15 +225,16 @@ nullv.class = nullc
  type: @T("INT")
  val: 0
 }
-##zeronumv = &Objx{
- type: @T("NUM")
+##zerofloatv = &Objx{
+ type: @T("FLOAT")
  val: 0.0
 }
 ##numc = classNewx(defmain, "Num", [valc])
 ##intc = classNewx(defmain, "Int", [numc])
 ##uintc = classNewx(defmain, "Uint", [intc])
+##floatc = classNewx(defmain, "Float", [numc])
 
-zeronumv.class = numc
+zerofloatv.class = floatc
 zerointv.class = intc
 inttDefx = &(x Str)Objx{
  @return curryNewx(defmain, x, intc, {
@@ -238,9 +246,9 @@ uinttDefx = &(x Str)Objx{
   val: zerointv
  })
 }
-numtDefx = &(x Str)Objx{
- @return curryNewx(defmain, x, numc, {
-  val: zeronumv
+floattDefx = &(x Str)Objx{
+ @return curryNewx(defmain, x, floatc, {
+  val: zerofloatv
  })
 }
 inttDefx("Boolean")//Int1
@@ -252,10 +260,10 @@ uinttDefx("Uint8")
 uinttDefx("Uint16")
 uinttDefx("Uint32")
 uinttDefx("Uint64")
-numtDefx("Float")
-numtDefx("Double")
-numtDefx("NumBig")
+floattDefx("Float32")
+floattDefx("Float64")
 
+curryNewx(defmain, "NumBig", numc)
 
 /////6 def items 
 ##itemsc =  classNewx(defmain, "Items", [valc], {
@@ -309,6 +317,8 @@ zerostrv.class = strc
 ##enumc = classNewx(defmain, "Enum", [valc], {
  enum: arrc
 })
+##bufferc = classNewx(defmain, "Buffer", [valc])
+##pointerc = classNewx(defmain, "Pointer", [valc])
 
 intDefx = &(x Int)Objx{
  @return &Objx{
@@ -317,10 +327,10 @@ intDefx = &(x Int)Objx{
   val: x
  }
 }
-numDefx = &(x Num)Objx{
+floatDefx = &(x Num)Objx{
  @return &Objx{
-  type: @T("NUM")
-  class: numc
+  type: @T("FLOAT")
+  class: floatc
   val: x
  }
 }
@@ -398,6 +408,15 @@ ArrStrx = => Arr {
  funcTpl: strc
  funcTplFileName: strc
 })
+stateDefx = &()Objx{
+ #x = &Objx{
+  type: @T("STATE")
+  class: statec
+  dic: @Dicx{}
+  arr: @Arrx{}
+ }
+ @return x
+}
 /////9 def mid
 ##midc = classNewx(defmain, "Mid", [objc])
 
@@ -420,11 +439,11 @@ ArrStrx = => Arr {
 ##iduintc =  classNewx(defmain, "IdUint", [idc], {
  idUint: uintc,
 })
-##idscopec = classNewx(defmain, "IdScope", [idstrc], {
- idScope: scopec
+##idstatec = classNewx(defmain, "IdState", [idstrc], {
+ idState: statec 
 })
-##idlocalc = curryNewx(defmain, "IdLocal", idscopec)
-##idglobalc = curryNewx(defmain, "IdGlobal", idscopec)
+##idlocalc = curryNewx(defmain, "IdLocal", idstatec)
+##idglobalc = curryNewx(defmain, "IdGlobal", idstatec)
 ##idlibc = classNewx(defmain, "IdLib", [idstrc], {
  idVal: objc
 })
@@ -538,7 +557,7 @@ ArrStrx = => Arr {
 ##envc = classNewx(defmain, "Env", [objc], {
  envExec: scopec
  envDef: scopec
- envState: statec 
+ envLocal: statec 
  envGlobal: statec 
 })
 ##execc = classNewx(defmain, "Exec", [objc], {
@@ -668,9 +687,69 @@ execx = &(o Objx, env Objx)Objx{
  @return callx(ex, [o], env);
 }
 
-
 /////17 func parse
-
+idrecx = &(id Str, def Objx, local Objx, global Objx)int{
+ @if(local.dic[id]){
+  @return 1
+ }
+ @if(global.dic[id]){
+  @return 2
+ }
+ @if(def.dic[id]){
+  @return 2
+ }
+ @return 0
+}
+call2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ #v = Astx(ast[1])
+ @if(Str(v[0]) == "id"){
+  #x = idrecx(Str(v[1]), def, local, global)
+  @if(x == 0){
+   
+  }
+ }
+ #f = ast2objx(Astx(ast[1]), def, local, global)
+}
+ast2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ #t = Str(ast[0])
+ @if(t == "str"){
+  @return strDefx(Str(ast[1]))
+ }@elif(t == "float"){
+  @return floatDefx(float(Str(ast[1])))
+ }@elif(t == "int"){
+  @return intDefx(int(Str(ast[1])))
+ }@elif(t == "null"){
+  @return nullv
+ }@elif(t == "id"){
+  #id = Str(ast[1])
+  #x = idrecx(id, def, local, global)
+  @if(x == 1){
+   @return objInit(idlocalc, {
+    idStr: id,
+    idState: local
+   })
+  }@elif(x == 2){
+   @return objInit(idglobalc, {
+    idStr: id,
+    idState: global
+   })
+  }@elif(x == 3){
+   @return objInit(idlibc, {
+    idStr: id,
+    idLib: def
+   })
+  }@else{
+  }
+ }@elif(t == "call"){
+  @return call2objx(ast, def, local, global)
+ }
+ @return
+}
+progl2objx = &(str Str, def Objx, local Objx, global Objx)Objx{
+ Astx#ast = jsonParse(cmd("./sl-reader", str))
+ #r = ast2objx(ast, def, local, global)
+ @return r
+}
 /////18 func ast
 
 /////19 func io/cmd
@@ -683,8 +762,8 @@ execx = &(o Objx, env Objx)Objx{
  #v = x[0].val
  @if(o == @T("INT")){
   log(Int(v)) 
- }@elif(o == @T("NUM")){
-  log(Num(v))
+ }@elif(o == @T("FLOAT")){
+  log(Float(v))
  }@elif(o == @T("STR")){
   log(Str(v))   
  }@else{
@@ -712,7 +791,7 @@ feNewx("Call", &(x Arrx, env Objx)Objx{
 /////23 main func
 #env = objInitx(envc, {
  envGlobal: objInitx(classInitx([statec]))
- envState: objInitx(classInitx([statec]))
+ envLocal: objInitx(classInitx([statec]))
  envDef: defmain
  envExec: execmain
 })
@@ -721,6 +800,7 @@ feNewx("Call", &(x Arrx, env Objx)Objx{
  callArgs: arrDefx(arrc, [intDefx(1)])
 })
 execx(main, env);
+
 
 
 
