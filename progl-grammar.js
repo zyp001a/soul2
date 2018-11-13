@@ -27,11 +27,11 @@ var grammar = {
       ["\\\\[\\r\\n;]+", "return"],//allow \ at end of line
 			["\\b\\_\\b", "return 'NULL'"],
 			["\\b\\__\\b", "return 'UNDF'"],
-			["\\[a-zA-Z_$][a-zA-Z0-9_$]*", "return 'ID'"],
+			["\\b[a-zA-Z_\\$][a-zA-Z0-9_\\$]*", "return 'ID'"],
 //			["\\#[0-9]+", "yytext = yytext.substr(1);return 'LOCAL'"],			
 //TODO bignumber
-      ["\\b{int}{frac}?{exp}?f?\\b", "return 'FLOAT';"],
-      ["\\b{int}{frac}?{exp}?u?[slb]?\\b", "return 'INT';"],			
+      ["\\b{int}{frac}?{exp}?f?\\b", "return 'INT';"],
+      ["\\b{int}{frac}?{exp}?u?[slb]?\\b", "return 'FLOAT';"],			
       ["0[xX][a-zA-Z0-9]+\\b", "return 'INT';"],
 			["@if", "return 'IF'"],
 			["@else", "return 'ELSE'"],
@@ -107,7 +107,7 @@ var grammar = {
 		["left", "(", ")", "[", "]", "{", "}", "."],
 	],
   "start": "Start",
-	"parseParams": ["m"],
+//	"parseParams": ["m"],
   "bnf": {
 		Start: [
 			["Expr", "return $$= $1"],
@@ -123,7 +123,7 @@ var grammar = {
 			"Func",			
 			"Tpl",
 			"Arr",
-			"Dic",
+			"DicX",
 			"Obj",
 			"Class",
 //
@@ -151,14 +151,27 @@ var grammar = {
 			["[ ]", "$$ = ['arr', []]"],
 			["[ Exprs ]", "$$ = ['arr', $2]"]
 		],
-    Block: [
-      ["{ }", "$$ = ['block', []]"],
-      ["{ Elems }", "$$ = ['block', $2]"],
-    ],
+		ArrX: [
+			["Arr", "$$ = $1"],
+			["Arr ItemsPostfix", "$$ = $1.concat($2)"],
+		],		
     Dic: [
       ["{ }", "$$ = ['dic', []]"],
       ["{ Elems }", "$$ = ['dic', $2]"],
     ],
+		DicX: [
+			["Dic", "$$ = $1"],
+			["Dic ItemsPostfix", "$$ = $1.concat($2)"],
+		],		
+		ItemsPostfix: [
+			["ID INT", "$$ = [$1,$2]"],						
+			["INT", "$$ = [,$1]"],
+			["ID", "$$ = [$1,,]"],
+		],
+    Block: [
+      ["{ }", "$$ = ['block', []]"],
+      ["{ Elems }", "$$ = ['block', $2]"],
+    ],		
 		Id: [
 			["ID", "$$ = ['id', $1]"],			
 			["# ID", "$$ = ['idlocal', $2]"],
@@ -259,16 +272,16 @@ var grammar = {
 			["ID ID", "$$ = [$1, $2]"],
 			["ID = Expr", "$$ = [$1, , $3]"],
 		],
-		"Call": [
+		Call: [
 			["Id CallArgs", "$$ = ['call', $1, $2];"],
 			["ItemsGet CallArgs", "$$ = ['call', $1, $2];"],
 			["Call CallArgs", "$$ = ['call', $1, $2];"],
 			["ObjGet CallArgs", "$$ = ['methodcall', $1[1], $1[2], $2];"],			
 		],
-		"Class":[
+		Class:[
 			["@@ Ids Dic", "$$ = ['class', $1, $2]"],
 		],
-		"Ids": [
+		Ids: [
 			["ID", "$$=[$1]"],
 			["Ids ID", "$$=$1; $1.push($1)"],			
 		],
