@@ -76,6 +76,7 @@ scopePresetx = &(ns Objx, name Str, parentarr Arrx)Objx{
  }
  x.dic["."] = x
  x.dic[".."] = ns
+ ns.dic[name] = x
  @return x;
 }
 ##root = @Dicx{}
@@ -88,7 +89,7 @@ nsPresetx = &(name Str)Objx{
  root[name] = x 
  @return x;
 }
-#defns = nsPresetx("def")
+##defns = nsPresetx("def")
 ##defmain = scopePresetx(defns, "main")
 ##objc = classPresetx();
 routex(objc, defmain, "Obj");
@@ -330,6 +331,13 @@ intDefx = &(x Int)Objx{
   val: x
  }
 }
+uintDefx = &(x Int)Objx{
+ @return &Objx{
+  type: @T("INT")
+  class: uintc
+  val: x
+ }
+}
 floatDefx = &(x Num)Objx{
  @return &Objx{
   type: @T("FLOAT")
@@ -390,16 +398,15 @@ ArrStrx = => Arr {
 })
 ##statec = classNewx(defmain, "State", [objdefc], {
  stateVars: arrstrc
+ stateVal: dicc
+ stateLabels: dicuintc
 })
 ##statefuncc = classNewx(defmain, "StateFunc", [statec], {
  stateFunc: funcc
 })
 ##blockc = classNewx(defmain, "Block", [objc], {
  blockVal: arrc,
- blockLabels: dicuintc
-})
-##blockstatec = classNewx(defmain, "BlockState", [blockc], {
- blockState: statec, 
+ blockClass: classc, 
 })
 ##funcclassc = classNewx(defmain, "FuncClass", [funcprotoc], {
  funcClass: classc
@@ -418,6 +425,7 @@ stateInitx = &()Objx{
   parents: parentsMakex([statec])
   dic: @Dicx{}
   arr: @Arrx{}
+  val: @Dicx{}
  }
  @return x
 }
@@ -444,7 +452,7 @@ stateInitx = &()Objx{
  idUint: uintc,
 })
 ##idstatec = classNewx(defmain, "IdState", [idstrc], {
- idState: statec 
+ idClass: classc 
 })
 ##idlocalc = curryNewx(defmain, "IdLocal", idstatec)
 ##idglobalc = curryNewx(defmain, "IdGlobal", idstatec)
@@ -562,11 +570,12 @@ stateInitx = &()Objx{
  envExec: scopec
  envDef: scopec
  envLocal: statec 
- envGlobal: statec 
+ envGlobal: statec
 })
 ##execc = classNewx(defmain, "Exec", [objc], {
- execObj: objc
- execEnv: envc
+ execBlock: blockc
+ execLocal: classc
+ execScope: scopec
 })
 
 /////13 func newfunc
@@ -650,11 +659,13 @@ scopeGetx = &(scope Objx, key Str, cache Dic)Objx{
 }
 /////16 func exec
 //exec use self as cache
+##execns = nsDefx("exec")
+##execmain = scopeDefx(execns, "main")
+
 callx = &(func Objx, args Arrx, env Objx)Objx{
  @return call(Funcx(func.dic["funcNative"].val), [args, env]);
 }
-execGetx = &(c Objx, env Objx, cache Dic)Objx{
- Objx#execsp = env.dic["envExec"]
+execGetx = &(c Objx, execsp Objx, cache Dic)Objx{
  @if(!cache){
   cache = {}
  }
@@ -674,7 +685,7 @@ execGetx = &(c Objx, env Objx, cache Dic)Objx{
   @each k v c.parents{
    @if(cache[k] != _){ @return; }
    cache[k] = 1;
-   Objx#exect = execGetx(v, env, cache);
+   Objx#exect = execGetx(v, execsp, cache);
    @if(exect != _){
     execsp.dic[t] = exect;
     @return exect;
@@ -683,11 +694,24 @@ execGetx = &(c Objx, env Objx, cache Dic)Objx{
  }
  @return _
 }
-preExecx = &(o Objx, env Objx)Objx{
+blockExecx = &(o Objx, env Objx, stt Uint)Objx{
+ Objx#b = o.dic["blockVal"]
+ @each i v b.arr{
+  @if(stt != 0 && stt < i){
+   @continue
+  }
+  Objx#r = execx(v, env)
+  @if(r != _ && isclassx(r.class, signalc)){
+   @return r;
+  }
+ }
+ @return nullv
+}
+preExecx = &(o Objx)Objx{
  @return o
 }
 execx = &(o Objx, env Objx)Objx{
- #ex = execGetx(o.class, env)
+ #ex = execGetx(o.class, env.dic["envExec"])
  @if(!ex){
   die("exec: unknown type");
  }
@@ -707,6 +731,35 @@ idrecx = &(id Str, def Objx, local Objx, global Objx)Int{
  }
  @return 0
 }
+exec2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ #v = Astx(ast[2])
+ #l = stateInitx()
+ Objx#b = ast2objx(v, def, l, global)
+ @if(b.class.id != blockc.id){
+  b = preExecx(b);
+ }
+ #x = objInitx(execc, {
+  execBlock: b
+  execLocal: l
+ })
+ #execsp = execns.dic[Str(ast[1])];
+ //TODO check exist
+ x.dic["execScope"] = execsp
+ @return x
+}
+blockx2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ #d = defns.dic[Str(ast[2])]
+ #l = stateInitx()
+ #v = Astx(ast[1])
+ Objx#b = ast2blockx(v, d, l, global);
+ @return b
+}
+func2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ @return nullv
+}
+class2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ @return nullv
+}
 call2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #v = Astx(ast[1])
  Objx#f = ast2objx(v, def, local, global)
@@ -724,6 +777,20 @@ call2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
   callFunc: f
   callArgs: arr
  }) 
+}
+ast2blockx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ #arr = @Arrx{}
+ @each i e ast{
+  #ee = Astx(e)
+  push(arr, ast2objx(Astx(ee[0]), def, local, global))
+  @if(len(ee) == 2){
+   Dicx(local.val)[Str(ee[1])] = uintDefx(Int(i))
+  }
+ }
+ @return objInitx(blockc, {
+  blockVal: arrDefx(arrc, arr)
+  blockClass: local
+ })
 }
 ast2arrx = &(asts Astx, def Objx, local Objx, global Objx)Objx{
  #arrx = @Arrx{}
@@ -748,7 +815,11 @@ ast2arrx = &(asts Astx, def Objx, local Objx, global Objx)Objx{
 }
 ast2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #t = Str(ast[0])
- @if(t == "str"){
+ @if(t == "exec"){
+  @return exec2objx(ast, def, local, global)
+ }@elif(t == "blockx"){
+  @return blockx2objx(ast, def, local, global)
+ }@elif(t == "str"){
   @return strDefx(Str(ast[1]))
  }@elif(t == "float"){
   @return floatDefx(float(Str(ast[1])))
@@ -762,12 +833,12 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
   @if(x == 1){
    @return objInitx(idlocalc, {
     idStr: strDefx(id),
-    idState: local
+    idClass: local
    })
   }@elif(x == 2){
    @return objInitx(idglobalc, {
     idStr: strDefx(id),
-    idState: global
+    idClass: global
    })
   }@elif(x == 3){
    @return objInitx(idscopec, {
@@ -778,6 +849,12 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
   }
  }@elif(t == "call"){
   @return call2objx(ast, def, local, global)
+ }@elif(t == "func"){
+  @return func2objx(ast, def, local, global)
+ }@elif(t == "class"){
+  @return class2objx(ast, def, local, global)
+ }@else{
+  die("ast2objx: " + t + "is not defined")
  }
  @return
 }
@@ -810,14 +887,19 @@ fnNewx(defmain, "log", &(x Arrx, env Objx)Objx{
 },["x"],[objc])
 
 /////22 init type exec func
-#exec = nsDefx("exec")
-##execmain = scopeDefx(exec, "main")
 feNewx = &(name Str, f Funcx)Objx{
  @return fnNewx(execmain, name, f, ["x"], [objc], objc)
 }
 feNewx("Exec", &(x Arrx, env Objx)Objx{
- log(x[0])
- @return nullv
+ Objx#c = x[0]
+ #env = objInitx(envc, {
+  envGlobal: env.dic["envGlobal"]
+  envLocal: objInitx(c.dic["execLocal"])
+  envExec: c.dic["execScope"]
+ })
+ #r = blockExecx(c.dic["execBlock"], env);
+ //process signal TODO!!!
+ @return r;
 })
 feNewx("Call", &(x Arrx, env Objx)Objx{
  Objx#c = x[0]
@@ -828,7 +910,8 @@ feNewx("Call", &(x Arrx, env Objx)Objx{
 /////23 main func
 #global = stateInitx()
 #local = stateInitx()
-#main = progl2objx("log(1)", defmain, local, global)
+Str#fc = fileRead(osArgs(1))
+#main = progl2objx("@exec|{"+fc+"}", defmain, local, global)
 /*#main = objInitx(callc, {
  callFunc: logf,
  callArgs: arrDefx(arrc, [intDefx(1)])
@@ -836,7 +919,6 @@ feNewx("Call", &(x Arrx, env Objx)Objx{
 #env = objInitx(envc, {
  envGlobal: objInitx(global)
  envLocal: objInitx(local)
- envDef: defmain
  envExec: execmain
 })
 execx(main, env);

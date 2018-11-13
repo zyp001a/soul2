@@ -2,7 +2,7 @@
 README.md~
 node_modules
 .*
-test*
+test\.*
 soul.sl.go
 !.gitignore
 !.gitmodules

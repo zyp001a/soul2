@@ -25,5 +25,8 @@ tpl: @``
 call: a() a.b()
 keyword: @return @break @if @for @each
 
+scope
+ exec =>ID ID idorblock
+ def: block ID ID
 
 ## 

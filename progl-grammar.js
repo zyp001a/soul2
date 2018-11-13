@@ -44,8 +44,9 @@ var grammar = {
 			["@for", "return 'FOR'"],
 			["@each", "return 'EACH'"],
 			["@while", "return 'WHILE'"],
+			["@error", "return 'ERROR'"],			
 			["@include", "return 'INCLUDE'"],
-			["@error", "return 'ERROR'"],
+			["@exec", "return 'EXEC'"],			
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
       ["\\[", "return '['"],
@@ -53,14 +54,10 @@ var grammar = {
       ["\\{", "return '{'"],
       ["\\}", "return '}'"],
 			["\\+\\+", "return '++'"],
-			["\\-\\-", "return '--'"],			
-			["\\?\\?", "return '??'"],
-			["\\?\\|", "return '?|'"],			
-			["\\:\\:", "return '::'"],      
-			["\\?\\=", "return '?='"],
-			["\\^\\=", "return '^='"],      
+			["\\-\\-", "return '--'"],
 			["\\>\\=", "return '>='"],
 			["\\<\\=", "return '<='"],
+			["\\=\\>", "return '=>'"],			
 			["\\=\\=", "return '=='"],
 			["\\!\\=", "return '!='"],
 			["\\+\\=", "return '+='"],
@@ -88,6 +85,7 @@ var grammar = {
 			["\\:", "return ':'"],
 			["\\?", "return '?'"],
 			["\\.", "return '.'"],
+			["\\|", "return '|'"],			
 			["{br}", "return ','"],
 			[".", "return"]
     ]
@@ -103,7 +101,7 @@ var grammar = {
     ["left", "+", "-", "^"], //3
     ["left", "*", "/", "%"],//2
     ["right", "!", "?"], //1
-    ["right", "&", "#", "##", "@", "@@"],
+    ["right", "&", "#", "##", "@", "@@", "|", "=>"],
 		["left", "(", ")", "[", "]", "{", "}", "."],
 	],
   "start": "Start",
@@ -133,6 +131,8 @@ var grammar = {
 			"ObjGet",			
 			"Op",
 			"Assign",
+			"Exec",
+			"BlockX",
 			["( Expr )", "$$ = $2"]			
 		],		
 		Null: "$$ = ['null']",
@@ -162,16 +162,30 @@ var grammar = {
 		DicX: [
 			["Dic", "$$ = $1"],
 			["Dic ItemsPostfix", "$$ = $1.concat($2)"],
-		],		
+		],	
 		ItemsPostfix: [
-			["ID INT", "$$ = [$1,$2]"],						
+			["ID INT", "$$ = [$1,$2]"],
+			["INT ID", "$$ = [$2,$1]"],			
 			["INT", "$$ = [,$1]"],
 			["ID", "$$ = [$1,,]"],
 		],
     Block: [
-      ["{ }", "$$ = ['block', []]"],
-      ["{ Elems }", "$$ = ['block', $2]"],
-    ],		
+      ["{ }", "$$ = []"],
+      ["{ Elems }", "$$ = $2"],
+    ],
+		BlockX: [
+			["| ID Block", "$$ = ['blockx', $3, $2]"],
+			["| Block", "$$ = ['blockx', $2, 'main']"],
+		],
+		Switch: [
+			["| Ids", "$$ = ['switchdef', $2]"],
+			["EXEC ID", "$$ = ['switchexec', $2]"],			
+		],
+		Exec: [
+			["EXEC ID Id", "$$ = ['exec', $2, $3]"],
+			["EXEC ID BlockX", "$$ = ['exec', $2, $3]"],
+			["EXEC BlockX", "$$ = ['exec', 'main', $2]"],						
+		],
 		Id: [
 			["ID", "$$ = ['id', $1]"],			
 			["# ID", "$$ = ['idlocal', $2]"],
