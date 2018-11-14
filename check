@@ -7,11 +7,27 @@ if [[ $rc != 0 ]]; then
 		exit 1
 fi
 
-for f in `ls test/basic/* `
-do
-	/usr/bin/go run seed.sl.go $f
-  rc=$?
-	if [[ $rc == 0 ]]; then
-			echo ===exec done: $f 
-	fi
-done
+if [ -z "$1" ]; then
+		for f in `ls test/*.sl `
+		do
+				res=$(/usr/bin/go run seed.sl.go $f | diff ${f}.log -)
+				if [[ $res ]]; then
+						echo ===error: $f
+						echo $res
+				fi			 
+				rc=$?
+				if [[ $rc == 0 ]]; then
+						echo ===done: $f 
+				fi
+		done
+else
+		for f in `ls test/$1*.sl `
+		do
+ 				/usr/bin/go run seed.sl.go $f | tee ${f}.log
+				rc=$?
+				if [[ $rc == 0 ]]; then
+						echo ===done: $f 
+				fi
+		done
+fi
+echo ===all done

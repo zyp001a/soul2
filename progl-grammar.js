@@ -46,7 +46,7 @@ var grammar = {
 			["@while", "return 'WHILE'"],
 			["@error", "return 'ERROR'"],			
 			["@include", "return 'INCLUDE'"],
-			["@exec", "return 'EXEC'"],			
+			["@exec", "return 'EXEC'"],
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
       ["\\[", "return '['"],
@@ -133,6 +133,7 @@ var grammar = {
 			"Assign",
 			"Exec",
 			"BlockX",
+			"Misc",
 			["( Expr )", "$$ = $2"]			
 		],		
 		Null: "$$ = ['null']",
@@ -176,6 +177,8 @@ var grammar = {
 		BlockX: [
 			["| ID Block", "$$ = ['blockx', $3, $2]"],
 			["| Block", "$$ = ['blockx', $2, 'main']"],
+			["| ID Block STR", "$$ = ['blockx', $3, $2, $4]"],			
+			["| Block STR", "$$ = ['blockx', $2, 'main', $3]"],			
 		],
 		Switch: [
 			["| Ids", "$$ = ['switchdef', $2]"],
@@ -342,6 +345,9 @@ var grammar = {
 			["Expr && Expr", "$$ = ['and', [$1, $3]]"],
 			["Expr || Expr", "$$ = ['or', [$1, $3]]"],
 		],
+		Misc: [
+			["TEST", "$$ = ['test']"]
+		]
   }
 };
 for(var k in grammar.bnf){

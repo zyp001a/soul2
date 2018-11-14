@@ -394,7 +394,10 @@ ArrStrx = => Arr {
 })
 ##blockc = classNewx(defmain, "Block", [objc], {
  blockVal: arrc,
- blockClass: classc, 
+ blockClass: classc,
+})
+##blockxc = classNewx(defmain, "BlockX", [blockc], {
+ blockFileName: strc 
 })
 ##breakpointc = classNewx(defmain, "Breakpoint", [objc], {
  breakpointIndex: uintc
@@ -558,6 +561,9 @@ stateInitx = &()Objx{
 })
 /////11 def ctrl
 ##ctrlc = classNewx(defmain, "Ctrl", [objc])
+##ctrlargc = classNewx(defmain, "CtrlArg", [ctrlc], {
+ ctrlArg: objc 
+})
 ##ctrlargsc = classNewx(defmain, "CtrlArgs", [ctrlc], {
  ctrlArgs: arrc
 })
@@ -568,9 +574,9 @@ stateInitx = &()Objx{
 ##ctrlwhilec = curryNewx(defmain, "CtrlWhile", ctrlargsc)
 ##ctrlbreakc = curryNewx(defmain, "CtrlBreak", ctrlc)
 ##ctrlcontinuec = curryNewx(defmain, "CtrlContinue", ctrlc)
-##ctrlgotoc = curryNewx(defmain, "CtrlGoto", ctrlargsc)
+##ctrlgotoc = curryNewx(defmain, "CtrlGoto", ctrlargc)
 
-##ctrlreturnc = curryNewx(defmain, "CtrlReturn", ctrlargsc)
+##ctrlreturnc = curryNewx(defmain, "CtrlReturn", ctrlargc)
 ##ctrlerrorc = curryNewx(defmain, "CtrlError", ctrlargsc)
 
 /////12 def  env
@@ -582,7 +588,7 @@ stateInitx = &()Objx{
  envGlobal: statec
 })
 ##execc = classNewx(defmain, "Exec", [objc], {
- execBlock: blockc
+ execBlock: blockxc
  execLocal: classc
  execScope: scopec
 })
@@ -632,14 +638,54 @@ fnNewx = &(scope Objx, name Str, val Funcx, args ArrStrx, argtypes Arrx, return 
  //TODO if  raw
  @return fn
 }
-
+arrCopyx = &(o Arrx)Arrx{
+ @if(o == _){ @return }
+ #n = @Arrx{}
+ @foreach e o{
+  push(n, e)
+ }
+ @return n;
+}
+dicCopyx = &(o Dicx)Dicx{
+ @if(o == _){ @return }
+ #n = @Dicx{}
+ @each k v o{
+  n[k] = v
+ }
+ @return n
+}
+objCopyx = &(o Objx)Objx{
+ #x = &Objx{
+  type: o.type
+  mid: o.mid
+  default: o.default
+  name: o.name
+  id: uidx()
+  scope: o.scope
+  class: o.class
+  parents: dicCopyx(o.parents)
+  dic: dicCopyx(o.dic)
+  arr: arrCopyx(o.arr)
+ }
+ @if(o.type == @T("STATE")){
+  x.val = dicCopyx(Dicx(o.val))
+ }@else{
+  x.val = o.val
+ }
+ @return x
+}
 /////14 func oop
 objGetx = &(o Objx, s Str)Objx{
  #x = o.dic[s]
  @if(x != _){
   @return x
  }
- @return classGetx(o.class, s)
+ #r = classGetx(o.class, s)
+ o.dic[s] = objCopyx(r);
+ @return r
+}
+typepredx = &(o Objx)Objx{
+ @return arrc
 }
 /////15 func scope
 dbGetx = &(scope Objx, key Str)Str{
@@ -676,21 +722,42 @@ scopeGetx = &(scope Objx, key Str, cache Dic)Objx{
 //exec use self as cache
 ##execns = nsDefx("exec")
 ##execmain = scopeDefx(execns, "main")
-
+tplCallx = &(func Objx, args Arrx, env Objx)Objx{
+ #sstr = Str(func.dic["funcTpl"].val)
+ Astx#ast = jsonParse(cmd("./slt-reader", sstr))
+ #localx = stateInitx()
+ localx.dic["$global"] = env.dic["envGlobal"]
+ localx.dic["$local"] = env.dic["envLocal"]
+ //TODO $this
+ #local = objInitx(localx)
+ Objx#globalp = env.dic["envGlobal"]
+ #global = objGetx(globalp, "$tplglobal")
+ Objx#b = ast2objx(ast, defmain, localx, global.class)
+ #nenv = objInitx(envc, {
+  envLocal: local
+  envGlobal: global
+  envStack: arrDefx(arrstatec, @Arrx{})
+  envExec: execmain  
+ })
+ localx.dic["$env"] = nenv 
+ Objx#r = blockExecx(b, nenv)
+ @return r
+}
 callx = &(func Objx, args Arrx, env Objx)Objx{
  @if(func.class.id == funcnativec.id){
   @return call(Funcx(objGetx(func, "funcNative").val), [args, env]);
  }
+ @if(func.class.id == functplc.id){
+  @return tplCallx(func, args, env)
+ }
  @if(func.class.id == funcblockc.id){
-  #newstate = objInitx(func.dic["funcClass"])
+  #nstate = objInitx(func.dic["funcClass"])
   Arrx#stack = env.dic["envStack"].arr;
   push(stack, env.dic["envLocal"])
-  env.dic["envLocal"]  = newstate
-
+  env.dic["envLocal"]  = nstate
   Arrx#vars = func.dic["funcVars"].arr
   @each i arg args{
-   newstate.dic[str(i)] = arg
-   newstate.dic[Str(vars[i].val)] = arg   
+   nstate.dic[Str(vars[i].val)] = arg   
   }
   Objx#r = blockExecx(func.dic["funcBlock"], env)
   //TODO signal
@@ -739,7 +806,10 @@ blockExecx = &(o Objx, env Objx, stt Uint)Objx{
   }
   Objx#r = execx(v, env)
   @if(r != _ && isclassx(r.class, signalc)){
-   @return r;
+   @if(r.class.id == returnc.id){
+    @return r.dic["return"];
+   }
+   @return r
   }
  }
  @return nullv
@@ -783,7 +853,7 @@ exec2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #v = Astx(ast[2])
  #l = stateInitx()
  Objx#b = ast2objx(v, def, l, global)
- @if(b.class.id != blockc.id){
+ @if(!isclassx(b.class, blockc)){
   b = preExecx(b);
  }
  #x = objInitx(execc, {
@@ -800,10 +870,11 @@ blockx2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #l = stateInitx()
  #v = Astx(ast[1])
  Objx#b = ast2blockx(v, d, l, global);
+ b.class = blockxc
+ @if(len(ast) == 4){
+  b.dic["blockFileName"] = strDefx(Str(ast[3]))
+ }
  @return b
-}
-tpl2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
- @return nullv
 }
 func2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
  //CLASS ARGDEF RETURN BLOCK AFTERBLOCK
@@ -871,14 +942,31 @@ assign2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #leftt = Str(left[0])
  @if(leftt == "id"){
   #name = Str(left[1])
-  #ido = id2objx(name, def, local, global)
-  @if(isnull(ido)){
+  #lefto = id2objx(name, def, local, global)
+  @if(isnull(lefto)){
    @return ast2objx(right, def, local, global, name)
   }@else{
    log("TODO id alreadfy defined "+name)
   }
+ }@else{
+  #lefto = ast2objx(left, def, local, global)
  }
- @return nullv
+ Objx#righto = ast2objx(right, def, local, global)
+ //TODO set type
+ #predt = typepredx(righto)
+ @if(predt != _){
+  @if(lefto.class.id == idlocalc.id){
+   #idstr = Str(lefto.dic["idStr"].val)
+   #type = local.dic[idstr]
+   @if(type == _){
+    local.dic[idstr] = predt
+   }
+  }
+ }
+ @return objInitx(assignc, {
+  assignL: lefto
+  assignR: righto
+ })
 }
 call2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #v = Astx(ast[1])
@@ -950,6 +1038,13 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
   @return intDefx(int(Str(ast[1])))
  }@elif(t == "null"){
   @return nullv
+ }@elif(t == "idlocal"){
+  @return objInitx(idlocalc, {
+   idStr: strDefx(Str(ast[1])),
+   idClass: local
+  })  
+ }@elif(t == "idglobal"){
+  
  }@elif(t == "id"){
   #id = Str(ast[1])
   #x = id2objx(id, def, local, global)
@@ -964,11 +1059,32 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
  }@elif(t == "func"){
   @return func2objx(ast, def, local, global, name)
  }@elif(t == "tpl"){
-  @return tpl2objx(ast, def, local, global, name)
+  #x = objInitx(functplc, {
+   funcTpl: strDefx(Str(ast[1]))   
+  })
+  @if(len(ast) == 3){
+   x.dic["funcTplFileName"] = strDefx(Str(ast[2]))
+  }
+  @if(name != ""){
+   routex(x, def, name)
+  }
+  @return x
+ }@elif(t == "arr"){
+ //TODO
+  @return ast2arrx(Astx(ast[1]), def, local, global)
+ }@elif(t == "dic"){
+  @return 
  }@elif(t == "class"){
   @return class2objx(ast, def, local, global, name)
  }@elif(t == "obj"){
   @return obj2objx(ast, def, local, global, name)
+ }@elif(t == "return"){
+  Objx#arg = ast2objx(Astx(ast[1]), def, local, global)
+  @return objInitx(ctrlreturnc, @Dicx{
+   ctrlArg: arg
+  })
+ }@elif(t == "test"){
+  @return 
  }@else{
   die("ast2objx: " + t + " is not defined")
  }
@@ -986,6 +1102,25 @@ progl2objx = &(str Str, def Objx, local Objx, global Objx)Objx{
 /////20 init method
 
 /////21 init internal func
+fnNewx(defmain, "push", &(x Arrx, env Objx)Objx{
+ Objx#o = x[0]
+ Objx#e = x[1] 
+ push(o.arr, e)
+ @return nullv
+},["x", "e"],[arrc, objc])
+fnNewx(defmain, "join", &(x Arrx, env Objx)Objx{
+ Objx#o = x[0]
+ Objx#e = x[1]
+ #r = ""
+ #sep = Str(x[1].val)
+ @each i e o.arr{
+  @if(i != 0){
+   r += sep
+  } 
+  r += Str(e.val)
+ }
+ @return strDefx(r)
+},["x", "e"],[arrc, objc],strc)
 fnNewx(defmain, "log", &(x Arrx, env Objx)Objx{
  T#o = x[0].type
  #v = x[0].val
@@ -996,7 +1131,8 @@ fnNewx(defmain, "log", &(x Arrx, env Objx)Objx{
  }@elif(o == @T("STR")){
   log(Str(v))
  }@else{
-  log("log unknown") 
+  log("log unknown")
+  log(x[0].class.name)
   log(x[0])
  }
  @return nullv
@@ -1008,8 +1144,11 @@ feNewx = &(name Str, f Funcx)Objx{
 }
 feNewx("Exec", &(x Arrx, env Objx)Objx{
  Objx#c = x[0]
+ #global = stateInitx()
+ global.dic["$global"] = env.dic["envGlobal"]
+ global.dic["$tplglobal"] = objInitx(stateInitx())
  #env = objInitx(envc, {
-  envGlobal: env.dic["envGlobal"]
+  envGlobal: objInitx(global)
   envLocal: objInitx(c.dic["execLocal"])
   envStack: arrDefx(arrstatec, @Arrx{})
   envExec: c.dic["execScope"]
@@ -1024,16 +1163,31 @@ feNewx("Call", &(x Arrx, env Objx)Objx{
  #argsx = @Arrx{}
  @foreach arg args{
   #t = execx(arg, env);
-  @if(t == _){
-   log(arg)
-   die("Call: arg exec return nil")
-  }
   push(argsx, t)
  }
  @return callx(c.dic["callFunc"], argsx, env)
 })
 feNewx("Obj", &(x Arrx, env Objx)Objx{
  @return x[0]
+})
+feNewx("CtrlReturn", &(x Arrx, env Objx)Objx{
+ Objx#c = x[0]
+ #f = execx(c.dic["ctrlArg"], env)
+ @return objInitx(returnc, {
+  return: f
+ })
+})
+feNewx("Assign", &(x Arrx, env Objx)Objx{
+ Objx#c = x[0]
+ #v = execx(c.dic["assignR"], env)
+ Objx#left = c.dic["assignL"]
+ #t = left.class.id
+ @if(t == idlocalc.id){
+  Objx#l = env.dic["envLocal"]
+  #str = left.dic["idStr"]
+  l.dic[Str(str.val)] = v
+ }
+ @return v
 })
 feNewx("IdScope", &(x Arrx, env Objx)Objx{
  Objx#c = x[0]
@@ -1049,11 +1203,7 @@ feNewx("IdLocal", &(x Arrx, env Objx)Objx{
 #global = stateInitx()
 #local = stateInitx()
 Str#fc = fileRead(osArgs(1))
-#main = progl2objx("@exec|{"+fc+"}", defmain, local, global)
-/*#main = objInitx(callc, {
- callFunc: logf,
- callArgs: arrDefx(arrc, [intDefx(1)])
-})*/
+#main = progl2objx("@exec|{"+fc+"}'"+osArgs(1)+"'", defmain, local, global)
 #env = objInitx(envc, {
  envGlobal: objInitx(global)
  envLocal: objInitx(local)
