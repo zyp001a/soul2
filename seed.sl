@@ -408,6 +408,10 @@ ArrStrx = => Arr {
  stateVal: dicc
  stateBreakpoints: dicbreakpointc
 })
+//stack
+##arrstatec = curryNewx(defmain, "ArrState", arrc, {
+ itemsType: statec
+})
 //??
 ##statefuncc = classNewx(defmain, "StateFunc", [statec], {
  stateFunc: funcc
@@ -572,7 +576,8 @@ stateInitx = &()Objx{
 /////12 def  env
 ##envc = classNewx(defmain, "Env", [objc], {
  envExec: scopec
- envDef: scopec
+// envDef: scopec
+ envStack: arrstatec
  envLocal: statec 
  envGlobal: statec
 })
@@ -629,7 +634,13 @@ fnNewx = &(scope Objx, name Str, val Funcx, args ArrStrx, argtypes Arrx, return 
 }
 
 /////14 func oop
-
+objGetx = &(o Objx, s Str)Objx{
+ #x = o.dic[s]
+ @if(x != _){
+  @return x
+ }
+ @return classGetx(o.class, s)
+}
 /////15 func scope
 dbGetx = &(scope Objx, key Str)Str{
  @return ""
@@ -668,11 +679,24 @@ scopeGetx = &(scope Objx, key Str, cache Dic)Objx{
 
 callx = &(func Objx, args Arrx, env Objx)Objx{
  @if(func.class.id == funcnativec.id){
-  @return call(Funcx(func.dic["funcNative"].val), [args, env]);
+  @return call(Funcx(objGetx(func, "funcNative").val), [args, env]);
  }
  @if(func.class.id == funcblockc.id){
-  log("TODO")
-  @return nullv;
+  #newstate = objInitx(func.dic["funcClass"])
+  Arrx#stack = env.dic["envStack"].arr;
+  push(stack, env.dic["envLocal"])
+  env.dic["envLocal"]  = newstate
+
+  Arrx#vars = func.dic["funcVars"].arr
+  @each i arg args{
+   newstate.dic[str(i)] = arg
+   newstate.dic[Str(vars[i].val)] = arg   
+  }
+  Objx#r = blockExecx(func.dic["funcBlock"], env)
+  //TODO signal
+  env.dic["envLocal"] = stack[len(stack)-1]
+  pop(stack)
+  @return r;
  }
  log(func.class)
  die("callx: unknown func")
@@ -729,6 +753,7 @@ execx = &(o Objx, env Objx)Objx{
   log(o.class)
   die("exec: unknown type");
  }
+// log("Exec: "+ex.name)
  @return callx(ex, [o], env);
 }
 
@@ -789,15 +814,42 @@ func2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
  #funcVars = @Arrx{}
  #funcVarTypes = @Arrx{}
  #args = Astx(v[1])
+ #newl = stateInitx() 
  @foreach arg args{
   #argdef = Astx(arg)
-  log(argdef)
+  #varid = Str(argdef[0])
+  push(funcVars, strDefx(varid))
+  @if(argdef[2] != _){
+   Objx#varval = ast2objx(Astx(argdef[2]), def, local, global)
+  }@elif(argdef[1] != _){
+   #t = scopeGetx(def, Str(argdef[1]))
+   @if(t == _){
+    die("func2objx: arg type not defined "+Str(argdef[1]))
+   }
+   #varval = objInitx(t)
+  }@else{
+   #varval = objInitx(objc)  
+  }
+  push(funcVarTypes, varval.class)
+  newl.dic[varid] = varval
  }
- 
- #x = objInitx(funcblockc, {
-  funcVars: arrDefx(arrstrc, funcVars)
-  funcVarTypes: arrDefx(arrc, funcVarTypes)
- })
+ @if(v[3] != _){
+  Objx#b = ast2blockx(Astx(v[3]), def, newl, global);
+  #x = objInitx(funcblockc, {
+   funcVars: arrDefx(arrstrc, funcVars)
+   funcVarTypes: arrDefx(arrc, funcVarTypes)
+   funcClass: newl
+   funcBlock: b
+  })  
+  @if(v[4] != _){
+   die("TODO alterblock")
+  }
+ }@else{
+  #x = objInitx(funcprotoc, {
+   funcVars: arrDefx(arrstrc, funcVars)
+   funcVarTypes: arrDefx(arrc, funcVarTypes)
+  }) 
+ }
  @if(v[2] != _){
   x.dic["funcReturn"] = scopeGetx(def, Str(v[2]))
  } 
@@ -822,6 +874,8 @@ assign2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
   #ido = id2objx(name, def, local, global)
   @if(isnull(ido)){
    @return ast2objx(right, def, local, global, name)
+  }@else{
+   log("TODO id alreadfy defined "+name)
   }
  }
  @return nullv
@@ -940,9 +994,9 @@ fnNewx(defmain, "log", &(x Arrx, env Objx)Objx{
  }@elif(o == @T("FLOAT")){
   log(Float(v))
  }@elif(o == @T("STR")){
-  log(Str(v))   
+  log(Str(v))
  }@else{
-  log(o)
+  log("log unknown") 
   log(x[0])
  }
  @return nullv
@@ -957,6 +1011,7 @@ feNewx("Exec", &(x Arrx, env Objx)Objx{
  #env = objInitx(envc, {
   envGlobal: env.dic["envGlobal"]
   envLocal: objInitx(c.dic["execLocal"])
+  envStack: arrDefx(arrstatec, @Arrx{})
   envExec: c.dic["execScope"]
  })
  #r = blockExecx(c.dic["execBlock"], env);
@@ -966,10 +1021,29 @@ feNewx("Exec", &(x Arrx, env Objx)Objx{
 feNewx("Call", &(x Arrx, env Objx)Objx{
  Objx#c = x[0]
  Arrx#args = c.dic["callArgs"].arr
- @return callx(c.dic["callFunc"], args, env)
+ #argsx = @Arrx{}
+ @foreach arg args{
+  #t = execx(arg, env);
+  @if(t == _){
+   log(arg)
+   die("Call: arg exec return nil")
+  }
+  push(argsx, t)
+ }
+ @return callx(c.dic["callFunc"], argsx, env)
 })
 feNewx("Obj", &(x Arrx, env Objx)Objx{
  @return x[0]
+})
+feNewx("IdScope", &(x Arrx, env Objx)Objx{
+ Objx#c = x[0]
+ @return objGetx(c, "idVal")
+})
+feNewx("IdLocal", &(x Arrx, env Objx)Objx{
+ Objx#c = x[0]
+ Objx#l = env.dic["envLocal"]
+ #k = Str(c.dic["idStr"].val)
+ @return l.dic[k]
 })
 /////23 main func
 #global = stateInitx()
@@ -983,6 +1057,7 @@ Str#fc = fileRead(osArgs(1))
 #env = objInitx(envc, {
  envGlobal: objInitx(global)
  envLocal: objInitx(local)
+ envStack: arrDefx(arrstatec, @Arrx{})
  envExec: execmain
 })
 execx(main, env);
