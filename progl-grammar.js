@@ -120,15 +120,15 @@ var grammar = {
 //			
 			"Func",			
 			"Tpl",
-			"Arr",
+			"ArrX",
 			"DicX",
 			"Obj",
 			"Class",
 //
 			"Id",
 			"Call",
-			"DicGet",
-			"ObjGet",			
+			"ObjGet",
+			"ItemsGet",			
 			"Op",
 			"Assign",
 			"Exec",
@@ -149,20 +149,20 @@ var grammar = {
 		],
 		Func: "$$ = ['func', $1]",
 		Arr: [
-			["[ ]", "$$ = ['arr', []]"],
-			["[ Exprs ]", "$$ = ['arr', $2]"]
+			["[ ]", "$$ = []"],
+			["[ Exprs ]", "$$ = $2"]
 		],
 		ArrX: [
-			["Arr", "$$ = $1"],
-			["Arr ItemsPostfix", "$$ = $1.concat($2)"],
+			["Arr", "$$ = ['arr', $1]"],
+			["Arr ItemsPostfix", "$$ = ['arr', $1.concat($2)]"],
 		],		
     Dic: [
-      ["{ }", "$$ = ['dic', []]"],
-      ["{ Elems }", "$$ = ['dic', $2]"],
+      ["{ }", "$$ = []"],
+      ["{ Elems }", "$$ = $2"],
     ],
 		DicX: [
-			["Dic", "$$ = $1"],
-			["Dic ItemsPostfix", "$$ = $1.concat($2)"],
+			["Dic", "$$ = ['dic', $1]"],
+			["Dic ItemsPostfix", "$$ = ['dic', $1.concat($2)]"],
 		],	
 		ItemsPostfix: [
 			["ID INT", "$$ = [$1,$2]"],
@@ -252,12 +252,12 @@ var grammar = {
       [", Expr", "$$ = [$2];"],			
       ["Exprs , Expr", "$$ = $1; $1.push($3);"],
 			["Exprs ,", "$$ = $1"],			//allow additional ,;
-		],		
+		],
 		ObjGet: [
 			["Expr . Getkey", "$$ = ['objget', $1, $3]"],
 		],
 		ItemsGet: [
-			["Expr [ Expr ]", "$$ = ['itemsget', $1, $3]"],
+			["Expr [ Expr ]", "$$ = ['itemsget', $1, $3]"],			
 		],
 		Getkey: [
 			["ID", "$$ = ['str', $1]"],
@@ -299,25 +299,21 @@ var grammar = {
 		],
 		Class:[
 			["@@ Ids Dic", "$$ = ['class', $1, $2]"],
+			["@@ Dic", "$$ = ['class', ['Obj'], $2]"],			
 		],
 		Ids: [
 			["ID", "$$=[$1]"],
 			["Ids ID", "$$=$1; $1.push($1)"],			
 		],
-		"Obj": [
+		Obj: [
 			["& ID Dic", "$$ = ['obj', $2, $3];"],
 			["& ID", "$$ = ['obj', $2, []];"],				
 		],
-		"CallArgs": [
+		CallArgs: [
 			["( )", "$$ = []"],
 			["( Exprs )", "$$ = $2"]
 		],
 		"Assign": "$$ = ['assign', $1]",
-		"Assignable": [
-			"Id",
-			"ItemsGet",
-			"ObjGet",			
-		],
 		"ASSIGN": [
 			["Expr = Expr", "$$ = [$1, $3]"],
 			["Expr += Expr", "$$ = [$1, $3, 'plus']"],
