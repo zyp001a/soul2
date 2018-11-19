@@ -2,8 +2,10 @@
 T = =>Enum {
  enum: [
   "OBJ", "CLASS",
-  "NULL", "INT", "FLOAT", "BIG"
-  "STR", "CHAR", "DIC", "ARR", "VALFUNC"
+  "NULL",
+  "INT", "FLOAT", "BIG"
+  "STR", "BYTE", "BYTES"
+  "DIC", "ARR", "VALFUNC"
   "NS", "SCOPE", "STATE"
  ]
 }
@@ -270,8 +272,8 @@ floattDefx = &(x Str)Objx{
  })
 }
 inttDefx("Boolean")//Int1
-##charc = inttDefx("Char")//Int8
-charc.ctype = @T("CHAR")
+##bytec = inttDefx("Byte")//Int8
+bytec.ctype = @T("BYTE")
 inttDefx("Int16")
 inttDefx("Int32")
 inttDefx("Int64")
@@ -294,9 +296,10 @@ numbigc.ctype = @T("BIG")
 ##arrc = curryNewx(defmain, "Arr", itemsc)
 arrc.ctype = @T("ARR")
 ##arrstaticc = curryNewx(defmain, "ArrStatic", arrc)
-##arrcharc = curryNewx(defmain, "ArrChar", arrc, {
- itemsType: charc
+##bytesc = curryNewx(defmain, "Bytes", arrc, {
+ itemsType: bytec
 })
+bytesc.ctype = @T("BYTES")
 ##dicc = curryNewx(defmain, "Dic", itemsc)
 dicc.ctype = @T("DIC")
 
@@ -375,10 +378,17 @@ strDefx = &(x Str)Objx{
   val: x
  }
 }
-charDefx = &(x Char)Objx{
+bytesDefx = &(x Bytes)Objx{
  @return &Objx{
-  type: @T("CHAR")
-  class: charc
+  type: @T("BYTES")
+  class: bytesc
+  val: x
+ }
+}
+byteDefx = &(x Byte)Objx{
+ @return &Objx{
+  type: @T("BYTE")
+  class: bytec
   val: x
  } 
 }
@@ -499,7 +509,7 @@ stateInitx = &()Objx{
  opPrecedence: uintc
 })
 ##op1c = classNewx(defmain, "Op1", [opc], {
- op: objc
+ opV: objc
 })
 ##op2c = classNewx(defmain, "Op2", [opc], {
  opL: objc
@@ -526,6 +536,10 @@ stateInitx = &()Objx{
 ##opplusc = curryNewx(defmain, "OpPlus", op2c, {
  opPrecedence: intDefx(30)
 })
+##opplusintc = curryNewx(defmain, "OpPlusInt", opplusc)
+##opplusfloatc = curryNewx(defmain, "OpPlusFloat", opplusc)
+##opplusbigc = curryNewx(defmain, "OpPlusBig", opplusc)
+
 ##opminusc = curryNewx(defmain, "OpMinus", op2c, {
  opPrecedence: intDefx(30)
 })
@@ -552,6 +566,9 @@ stateInitx = &()Objx{
 })
 ##oporc = curryNewx(defmain, "OpOr", op2c, {
  opPrecedence: intDefx(70)
+})
+##opassignc = curryNewx(defmain, "OpAssign", op2c, {
+ opPrecedence: intDefx(80)
 })
 
 /////10 def signal
@@ -617,7 +634,7 @@ valfuncDefx = &(f Funcx)Objx{
  } 
 }
 
-fnInitx = &(val Funcx, args ArrStrx, argtypes Arrx, return Objx)Objx{
+fnInitx = &(val Funcx, argtypes Arrx, return Objx)Objx{
  @if(val == _){
   #c = funcprotoc
  }@else{
@@ -627,7 +644,7 @@ fnInitx = &(val Funcx, args ArrStrx, argtypes Arrx, return Objx)Objx{
  #funcVars = arrDefx(arrstrc)
  #funcVarTypes = arrDefx(arrc)
  @each i v argtypes{
-  push(funcVars.arr, strDefx(args[i]))
+  push(funcVars.arr, strDefx("$arg"+str(i)))
   push(funcVarTypes.arr, objInitx(v))
  }
  x.dic["funcVars"] = funcVars
@@ -641,19 +658,24 @@ fnInitx = &(val Funcx, args ArrStrx, argtypes Arrx, return Objx)Objx{
  @return x
 }
 
-fnNewx = &(scope Objx, name Str, val Funcx, args ArrStrx, argtypes Arrx, return Objx)Objx{//FuncNative new
- #fn = fnInitx(val, args, argtypes, return)
+fnNewx = &(scope Objx, name Str, val Funcx, argtypes Arrx, return Objx)Objx{//FuncNative new
+ #fn = fnInitx(val, argtypes, return)
  routex(fn, scope, name);
  //TODO if  raw
  @return fn
 }
-methodNewx = &(class Objx, name Str, val Funcx, args ArrStrx, argtypes Arrx, return Objx)Objx{//FuncNative new
- unshift(args, "this")
+methodNewx = &(class Objx, name Str, val Funcx, argtypes Arrx, return Objx)Objx{//FuncNative new
  unshift(argtypes, class)
- #fn = fnInitx(val, args, argtypes, return)
+ #fn = fnInitx(val, argtypes, return)
  class.dic[name] = fn;
  //TODO if  raw
  @return fn
+}
+op1Newx = &(class Objx, name Str, val Funcx, argtype Objx, return Objx)Objx{
+ @return methodNewx(class, name, val, [argtype], return)
+}
+op2Newx = &(class Objx, name Str, val Funcx, argtype Objx, return Objx)Objx{
+ @return methodNewx(class, name, val, [argtype, argtype], return)
 }
 arrCopyx = &(o Arrx)Arrx{
  @if(o == _){ @return }
@@ -706,7 +728,7 @@ objxInitx = &(class Objx, dic Dicx)Objx{
   Objx#x = nullv
  }@elif(class.ctype == @T("STR")){
   Objx#x = strDefx("")
- }@elif(class.ctype == @T("CHAR")){
+ }@elif(class.ctype == @T("BYTE")){
   Objx#x = nullv
  }@elif(class.ctype == @T("VALFUNC")){
   Objx#x = nullv  
@@ -1033,6 +1055,38 @@ obj2objx =  &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
  }
  @return x 
 }
+op2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ #op = Str(ast[1])
+ Str#cname = "Op"+ucfirst(op)
+ #args = Astx(ast[2])
+ @if(len(args) == 1){
+  Objx#arg0 = ast2objx(Astx(args[0]), def, local, global)
+  #class = defns.dic[cname]  
+  @if(op == "not"){
+   @return objInitx(opnotc, {
+    opV: arg0
+   })
+  }
+  @return objInitx(class, {
+   opV: arg0
+  })
+ }@else{
+  Objx#arg0 = ast2objx(Astx(args[0]), def, local, global)
+  Objx#arg1 = ast2objx(Astx(args[1]), def, local, global)
+  @if(op == "plus"){
+   #t0 = typepredx(arg0)
+   #t1 = typepredx(arg0)
+   @if(t0 != t1){
+   }
+  }
+  @return objInitx(class, {
+   opL: arg0
+   opR: arg1
+  })
+ }
+ @return _
+}
+
 itemsget2objx =  &(ast Astx, def Objx, local Objx, global Objx)Arrx{
  Objx#items = ast2objx(Astx(ast[1]), def, local, global)
  #itemst = typepredx(items)
@@ -1214,6 +1268,8 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
   @return class2objx(ast, def, local, global, name)
  }@elif(t == "obj"){
   @return obj2objx(ast, def, local, global, name)
+ }@elif(t == "op"){
+  @return op2objx(ast, def, local, global)
  }@elif(t == "return"){
   Objx#arg = ast2objx(Astx(ast[1]), def, local, global)
   @return objxInitx(ctrlreturnc, @Dicx{
@@ -1250,30 +1306,30 @@ methodNewx(arrc, "get", &(x Arrx, env Objx)Objx{
  Objx#o = x[0]
  Objx#e = x[1]
  @return o.arr[int(Str(e.val))]
-},["x", "e"],[arrc, strc])
+},[arrc, strc])
 methodNewx(dicc, "get", &(x Arrx, env Objx)Objx{
  Objx#o = x[0]
  Objx#e = x[1]
  @return o.dic[Str(e.val)]
-},["x", "e"],[dicc, strc])
+},[dicc, strc])
 
 /////21 init internal func
 fnNewx(defmain, "new", &(x Arrx, env Objx)Objx{
  Objx#o = x[0]
  Objx#e = x[1] 
  @return objxInitx(o, e.dic)
-},["x", "e"],[classc, dicc])
+},[classc, dicc])
 fnNewx(defmain, "get", &(x Arrx, env Objx)Objx{
  Objx#o = x[0]
  Objx#e = x[1]
  @return objGetx(o, Str(e.val))
-},["x", "e"],[objc, dicc])
+},[objc, dicc])
 fnNewx(defmain, "push", &(x Arrx, env Objx)Objx{
  Objx#o = x[0]
  Objx#e = x[1] 
  push(o.arr, e)
  @return nullv
-},["x", "e"],[arrc, objc])
+},[arrc, objc])
 fnNewx(defmain, "join", &(x Arrx, env Objx)Objx{
  Objx#o = x[0]
  Objx#e = x[1]
@@ -1286,7 +1342,7 @@ fnNewx(defmain, "join", &(x Arrx, env Objx)Objx{
   r += Str(e.val)
  }
  @return strDefx(r)
-},["x", "e"],[arrc, objc],strc)
+},[arrc, objc],strc)
 fnNewx(defmain, "log", &(x Arrx, env Objx)Objx{
  T#o = x[0].type
  #v = x[0].val
@@ -1302,11 +1358,16 @@ fnNewx(defmain, "log", &(x Arrx, env Objx)Objx{
   log(x[0])
  }
  @return nullv
-},["x"],[objc])
-
+},[objc])
+fnNewx(defmain, "uc", &(x Arrx, env Objx)Objx{
+ @return strDefx(uc(Str(x[0].val)))
+},[strc])
+fnNewx(defmain, "ucfirst", &(x Arrx, env Objx)Objx{
+ @return strDefx(ucfirst(Str(x[0].val)))
+},[strc])
 /////22 init type exec func
 feNewx = &(name Str, f Funcx)Objx{
- @return fnNewx(execmain, name, f, ["x"], [objc], objc)
+ @return fnNewx(execmain, name, f, [objc], objc)
 }
 feNewx("Exec", &(x Arrx, env Objx)Objx{
  Objx#c = x[0]
@@ -1335,6 +1396,12 @@ feNewx("Call", &(x Arrx, env Objx)Objx{
 })
 feNewx("Obj", &(x Arrx, env Objx)Objx{
  @return x[0]
+})
+feNewx("OpPlusInt", &(x Arrx, env Objx)Objx{
+ Objx#c = x[0]
+ Objx#l = c.dic["opL"]
+ Objx#r = c.dic["opR"]
+ @return intDefx(Int(l.val) + Int(r.val))
 })
 feNewx("CtrlReturn", &(x Arrx, env Objx)Objx{
  Objx#c = x[0]

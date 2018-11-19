@@ -1,2 +1,2 @@
-change isclassx rec istype objc-> classc->
-ctype all!
+all oop
+change push/join -> bytes add (maybe str add)
