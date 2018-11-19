@@ -1,2 +1,7 @@
 all oop
-change push/join -> bytes add (maybe str add)
+change push/join -> bytes add (maybe str add )
+s := []string{}
+for i := 0; i < 1000; i++ {
+    s = append(s, "a")
+}
+fmt.Println(strings.Join(s, ""))
