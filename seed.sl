@@ -485,13 +485,15 @@ stateInitx = &()Objx{
  callFunc: funcc
  callArgs: arrc
 })
+##callmethodc = curryNewx(defmain, "CallMethod", callc)
+##callreflectc = curryNewx(defmain, "CallReflect", callc)
 
 ##idc = classNewx(defmain, "Id", [midc])
 ##idstrc =  classNewx(defmain, "IdStr", [idc], {
  idStr: strc,
 })
 ##idstatec = classNewx(defmain, "IdState", [idstrc], {
- idClass: classc 
+ idState: classc 
 })
 ##idlocalc = curryNewx(defmain, "IdLocal", idstatec)
 ##idglobalc = curryNewx(defmain, "IdGlobal", idstatec)
@@ -771,7 +773,14 @@ objSetx = &(o Objx, s Str, v Objx)Objx{
  @return nullv
 }
 typepredx = &(o Objx)Objx{
- @return arrc
+ #c = o.class
+ @if(c.id == idlocalc.id){
+  Objx#s = o.dic["idState"]
+  Objx#k = o.dic["idStr"]
+  @return s.dic[Str(k.val)]
+ }@else{
+  @return c
+ }
 }
 /////15 func scope
 dbGetx = &(scope Objx, key Str)Str{
@@ -918,13 +927,13 @@ id2objx = &(id Str, def Objx, local Objx, global Objx)Objx{
  @if(local.dic[id] != _){
   @return objInitx(idlocalc, {
    idStr: strDefx(id),
-   idClass: local
+   idState: local
   })
  }
  @if(global.dic[id] != _){
   @return objInitx(idglobalc, {
    idStr: strDefx(id),
-   idClass: global
+   idState: global
   })
  }
  @if(def.dic[id] != _){
@@ -1096,8 +1105,7 @@ itemsget2objx =  &(ast Astx, def Objx, local Objx, global Objx)Arrx{
 }
 objget2objx =  &(ast Astx, def Objx, local Objx, global Objx)Arrx{
  Objx#obj = ast2objx(Astx(ast[1]), def, local, global)
- Objx#key = ast2objx(Astx(ast[2]), def, local, global)
- @return [defmain.dic["get"], obj, key]
+ @return [defmain.dic["get"], obj, strDefx(Str(ast[2]))] 
 }
 assign2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #v = Astx(ast[1])
@@ -1152,6 +1160,21 @@ call2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
   callArgs: arr
  }) 
 }
+callreflect2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ @return nullv
+}
+callmethod2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
+ Objx#oo = ast2objx(Astx(ast[1]), def, local, global)
+ Objx#to = typepredx(oo) 
+ //TODO CLASS get CALL
+ Objx#arr = ast2arrx(Astx(ast[3]), def, local, global)
+ #f = classGetx(to, Str(ast[2]))
+ unshift(arr.arr, oo)
+ @return objxInitx(callmethodc, {
+  callFunc: f
+  callArgs: arr
+ })
+}
 ast2blockx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #arr = @Arrx{}
  #x = objxInitx(blockc, @Dicx{})
@@ -1169,6 +1192,7 @@ ast2blockx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  x.dic["blockClass"] = local
  @return x
 }
+
 ast2arrx = &(asts Astx, def Objx, local Objx, global Objx)Objx{
  #arrx = @Arrx{}
  #callable = 0;
@@ -1230,7 +1254,7 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
  }@elif(t == "idlocal"){
   @return objxInitx(idlocalc, {
    idStr: strDefx(Str(ast[1])),
-   idClass: local
+   idState: local
   })  
  }@elif(t == "idglobal"){
   
@@ -1243,6 +1267,10 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
   @return x;
  }@elif(t == "call"){
   @return call2objx(ast, def, local, global)
+ }@elif(t == "callmethod"){
+  @return callmethod2objx(ast, def, local, global)  
+ }@elif(t == "callreflect"){
+  @return callreflect2objx(ast, def, local, global)  
  }@elif(t == "assign"){
   @return assign2objx(ast, def, local, global)  
  }@elif(t == "func"){
@@ -1305,8 +1333,14 @@ progl2objx = &(str Str, def Objx, local Objx, global Objx)Objx{
 methodNewx(arrc, "get", &(x Arrx, env Objx)Objx{
  Objx#o = x[0]
  Objx#e = x[1]
- @return o.arr[int(Str(e.val))]
-},[arrc, strc])
+ @return o.arr[Int(e.val)]
+},[strc])
+methodNewx(arrc, "push", &(x Arrx, env Objx)Objx{
+ Objx#o = x[0]
+ Objx#e = x[1] 
+ push(o.arr, e)
+ @return nullv
+},[objc])
 methodNewx(dicc, "get", &(x Arrx, env Objx)Objx{
  Objx#o = x[0]
  Objx#e = x[1]

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 GOPATH=~/go
-node ../soul/bootstrap.sl.js seed.sl 3
+if [ "seed.sl" -nt "seed.sl.go" ]; then
+		node ../soul/bootstrap.sl.js seed.sl 3
+fi
+
 rc=$?
 if [[ $rc != 0 ]]; then
 		echo ===build failed

@@ -128,6 +128,7 @@ var grammar = {
 			"Id",
 			"Call",
 			"ObjGet",
+			"ObjGetX",			
 			"ItemsGet",			
 			"Op",
 			"Assign",
@@ -254,7 +255,10 @@ var grammar = {
 			["Exprs ,", "$$ = $1"],			//allow additional ,;
 		],
 		ObjGet: [
-			["Expr . Getkey", "$$ = ['objget', $1, $3]"],
+			["Expr . ID", "$$ = ['objget', $1, $3]"],
+		],
+		ObjGetX: [
+			["Expr . ( Expr ) # ID", "$$ = ['objgetx', $1, $4, $7]"],
 		],
 		ItemsGet: [
 			["Expr [ Expr ]", "$$ = ['itemsget', $1, $3]"],			
@@ -295,7 +299,8 @@ var grammar = {
 			["Id CallArgs", "$$ = ['call', $1, $2];"],
 			["ItemsGet CallArgs", "$$ = ['call', $1, $2];"],
 			["Call CallArgs", "$$ = ['call', $1, $2];"],
-			["ObjGet CallArgs", "$$ = ['methodcall', $1[1], $1[2], $2];"],			
+			["ObjGet CallArgs", "$$ = ['callmethod', $1[1], $1[2], $2];"],
+			["ObjGetX CallArgs", "$$ = ['callreflect', $1[1], $1[2], $2];"],			
 		],
 		Class:[
 			["@@ Ids Dic", "$$ = ['class', $1, $2]"],
