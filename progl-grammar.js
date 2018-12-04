@@ -47,6 +47,7 @@ var grammar = {
 			["@error", "return 'ERROR'"],			
 			["@include", "return 'INCLUDE'"],
 			["@exec", "return 'EXEC'"],
+			["@addr", "return 'ADDR'"],			
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
       ["\\[", "return '['"],
@@ -135,7 +136,8 @@ var grammar = {
 			"Exec",
 			"BlockX",
 			"Misc",
-			["( Expr )", "$$ = $2"]			
+			["ADDR ( Expr )", "$$ = ['addr', $3]"],
+			["( Expr )", "$$ = $2"],
 		],		
 		Null: "$$ = ['null']",
 		Char: "$$ = ['char', $1]",
@@ -155,7 +157,7 @@ var grammar = {
 		],
 		ArrX: [
 			["Arr", "$$ = ['arr', $1]"],
-			["Arr ItemsPostfix", "$$ = ['arr', $1.concat($2)]"],
+			["Arr ItemsPostfix", "$$ = ['arr', $1].concat($2)"],
 		],		
     Dic: [
       ["{ }", "$$ = []"],
@@ -163,7 +165,7 @@ var grammar = {
     ],
 		DicX: [
 			["Dic", "$$ = ['dic', $1]"],
-			["Dic ItemsPostfix", "$$ = ['dic', $1.concat($2)]"],
+			["Dic ItemsPostfix", "$$ = ['dic', $1].concat($2)"],
 		],	
 		ItemsPostfix: [
 			["ID INT", "$$ = [$1,$2]"],

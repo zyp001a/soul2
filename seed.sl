@@ -1,11 +1,14 @@
 /////1 set class/structs
 T = =>Enum {
  enum: [
-  "OBJ", "CLASS",
+  "OBJ",
+  
   "NULL",
   "INT", "FLOAT", "BIG"
   "STR", "BYTE", "BYTES"
   "DIC", "ARR", "VALFUNC"
+//  "FUNCP", "FUNCN", "FUNCB", "FUNCT"
+//  "CALL"
   "NS", "SCOPE", "STATE"
  ]
 }
@@ -18,17 +21,20 @@ Arrx = => Arr {
 Objx = <>{
  type: T
  ctype: T
+ 
  mid: Boolean
- default: Boolean 
+ 
  name: Str
  id: Str
  scope: Objx
  
  class: Objx
  parents: Dicx
- 
+
+ obj: Objx
  dic: Dicx
  arr: Arrx
+ 
  val: Val
 }
 Astx = => ArrStatic {
@@ -70,7 +76,7 @@ parentsMakex = &(o Objx, parentarr Arrx)Dicx{
 }
 classPresetx = &(parentarr Arrx)Objx{
  #x = &Objx{
-  type: @T("CLASS")   
+  type: @T("OBJ")   
   dic: @Dicx{}
  }
  parentsMakex(x, parentarr) 
@@ -130,24 +136,29 @@ dicOrx = &(x Dicx)Dicx{
   @return x
  }
 }
-isclassx = &(c Objx, t Objx, cache Dic)Boolean{
+isx = &(c Objx, t Objx, cache Dic)Boolean{
  @if(c.id != "" && c.id == t.id){
   @return @Boolean(1)
  }
  @if(!cache){
   cache = {}
  }
+ Boolean#r = isx(c.class, t, cache)
+ @if(r){
+  @return r
+ }
  @each k v c.parents{
   @if(cache[k] != _){
    @continue
   }
   cache[k] = 1
-  @if(isclassx(v, t, cache)){
+  @if(isx(v, t, cache)){
    @return @Boolean(1)
   }
  }
  @return @Boolean(0)
 }
+
 classGetx = &(class Objx, key Str)Objx{
  #x = class.dic[key]
  @if(x != _){
@@ -175,7 +186,7 @@ objInitx = &(class Objx, dic Dicx)Objx{
     die("objInitx: not in "+ class.name + " "+k)
    }
    Objx#c = t.class
-   @if(!isclassx(v.class, c)){
+   @if(!isx(v, c)){
     die("objInitx: " + v.class.name + " is not " + c.name)
    }
   }
@@ -213,9 +224,19 @@ classNewx = &(scope Objx, name Str, parentarr Arrx, schema Dicx)Objx{
  routex(x, scope, name)
  @return x
 }
+//items type init
+itNewx = &(class Objx, it Objx)Objx{
+ Str#n = class.name+"-"+it.name
+ Objx#r = scopeGetx(defmain, n)
+ @if(r != _){
+  @return r
+ }
+ #r = classNewx(defmain, n, [class], {itemsType: it})
+ @return r
+}
 curryNewx = &(scope Objx, name Str, class Objx, schema Dicx)Objx{
  #x = &Objx{
-  type: @T("CLASS")
+  type: @T("OBJ")
   class: classc
   dic: dicOrx(schema)
  }
@@ -397,17 +418,9 @@ byteDefx = &(x Byte)Objx{
 ArrStrx = => Arr {
  itemsType: Str
 }
-##arrstrc = curryNewx(defmain, "ArrStr", arrc, {
- itemsType: strc
-})
-##dicclassc = curryNewx(defmain, "DicClass", dicc, {
- itemsType: classc
-})
-##arrclassc = curryNewx(defmain, "ArrClass", arrc, {
- itemsType: classc
-})
-
-
+##arrstrc = itNewx(arrc, strc)
+##dicclassc = itNewx(dicc, classc)
+##arrclassc = itNewx(arrc, classc)
 
 
 ##funcc = classNewx(defmain, "Func", [objc])
@@ -443,9 +456,7 @@ valfuncc.ctype = @T("VALFUNC")
  stateBreakpoints: dicbreakpointc
 })
 //stack
-##arrstatec = curryNewx(defmain, "ArrState", arrc, {
- itemsType: statec
-})
+##arrstatec = itNewx(arrc, statec)
 //??
 ##statefuncc = classNewx(defmain, "StateFunc", [statec], {
  stateFunc: funcc
@@ -492,13 +503,25 @@ stateInitx = &()Objx{
 ##idstrc =  classNewx(defmain, "IdStr", [idc], {
  idStr: strc,
 })
+##iduintc =  classNewx(defmain, "IdUintc", [idc], {
+ idUint: uintc,
+})
 ##idstatec = classNewx(defmain, "IdState", [idstrc], {
- idState: classc 
+ idState: statec 
 })
 ##idlocalc = curryNewx(defmain, "IdLocal", idstatec)
 ##idglobalc = curryNewx(defmain, "IdGlobal", idstatec)
 ##idscopec = classNewx(defmain, "IdScope", [idstrc], {
  idVal: objc
+})
+##iddicc = classNewx(defmain, "IdDic", [idstrc], {
+ idDic: objc
+})
+##idarrc = classNewx(defmain, "IdArr", [iduintc], {
+ idArr: objc
+})
+##idobjc = classNewx(defmain, "IdObj", [idstrc], {
+ idObj: objc
 })
 
 ##assignc = classNewx(defmain, "Assign", [midc], {
@@ -507,16 +530,11 @@ stateInitx = &()Objx{
 })
 ##assignafterc = curryNewx(defmain, "AssignAfter", assignc)
 
-##opc = classNewx(defmain, "Op", [midc], {
+##opc = classNewx(defmain, "Op", [funcc], {
  opPrecedence: uintc
 })
-##op1c = classNewx(defmain, "Op1", [opc], {
- opV: objc
-})
-##op2c = classNewx(defmain, "Op2", [opc], {
- opL: objc
- opR: objc
-})
+##op1c = classNewx(defmain, "Op1", [opc])
+##op2c = classNewx(defmain, "Op2", [opc])
 //https://en.cppreference.com/w/c/language/operator_precedence
 //remove unused
 //get and assign are not operators in Soul PL
@@ -635,7 +653,7 @@ valfuncDefx = &(f Funcx)Objx{
   val: f
  } 
 }
-
+//TODO func as struct
 fnInitx = &(val Funcx, argtypes Arrx, return Objx)Objx{
  @if(val == _){
   #c = funcprotoc
@@ -754,23 +772,19 @@ objxInitx = &(class Objx, dic Dicx)Objx{
  @return x
 }
 objGetx = &(o Objx, s Str)Objx{
- @if(o.type == @T("OBJ")){
-  #x = o.dic[s]
-  @if(x != _){
-   @return x
-  }
-  #r = classGetx(o.class, s)
-  o.dic[s] = objCopyx(r);
-  @return r
- }@elif(o.type == @T("CLASS")){
-  @return classGetx(o, s)
- }@else{
-  log("TODO other type objGet")
-  @return nullv
- }
+ @return objInitx(idobjc, {
+  idStr: strDefx(id),
+  idObj: o
+ })
 }
-objSetx = &(o Objx, s Str, v Objx)Objx{
- @return nullv
+getx = &(o Objx, n Str)Objx{
+ @if(o.type == @T("OBJ")){
+  @return objGetx(o, n)
+ }@elif(o.type == @T("CLASS")){
+  @return classGetx(o, n)
+ }@else{
+  @return classGetx(o.class, n)
+ }
 }
 typepredx = &(o Objx)Objx{
  #c = o.class
@@ -900,7 +914,7 @@ blockExecx = &(o Objx, env Objx, stt Uint)Objx{
    @continue
   }
   Objx#r = execx(v, env)
-  @if(r != _ && isclassx(r.class, signalc)){
+  @if(r != _ && isx(r.class, signalc)){
    @if(r.class.id == returnc.id){
     @return r.dic["return"];
    }
@@ -948,7 +962,7 @@ exec2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #v = Astx(ast[2])
  #l = stateInitx()
  Objx#b = ast2objx(v, def, l, global)
- @if(!isclassx(b.class, blockc)){
+ @if(!isx(b.class, blockc)){
   b = preExecx(b);
  }
  #x = objxInitx(execc, {
@@ -1147,7 +1161,7 @@ call2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  Objx#f = ast2objx(v, def, local, global)
  @if(f.class.id == idscopec.id){
   #f = f.dic["idVal"]
-  @if(isclassx(f.class, classc)){
+  @if(isx(f.class, classc)){
    @return objxInitx(convc, {//TODO implicit vs explicit
     convertToType: def
     convertFrom: ast2objx(Astx(Astx(ast[2])[0]), def, local, global)
@@ -1193,7 +1207,10 @@ ast2blockx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  @return x
 }
 
-ast2arrx = &(asts Astx, def Objx, local Objx, global Objx)Objx{
+ast2arrx = &(asts Astx, def Objx, local Objx, global Objx, class Objx)Objx{
+ @if(class == _){
+  class = arrc
+ }
  #arrx = @Arrx{}
  #callable = 0;
  @foreach e asts{
@@ -1208,7 +1225,7 @@ ast2arrx = &(asts Astx, def Objx, local Objx, global Objx)Objx{
    arrx[k] = preExecx(v)
   }
  }
- #r = arrDefx(arrc, arrx)
+ #r = arrDefx(class, arrx)
  @if(callable != 0){
   r.mid = @Boolean(1)
  }
@@ -1288,7 +1305,13 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
   @return x
  }@elif(t == "arr"){
  //TODO itemsLimit itemsType
-  @return ast2arrx(Astx(ast[1]), def, local, global)
+  @if(ast[2] != _){
+   #itemstype = scopeGetx(def, Str(ast[2]))
+   #class = itNewx(arrc, itemstype)
+  }@else{
+   #class = arrc  
+  }
+  @return ast2arrx(Astx(ast[1]), def, local, global, class)
  }@elif(t == "dic"){
  //TODO
   @return ast2dicx(Astx(ast[1]), def, local, global);
