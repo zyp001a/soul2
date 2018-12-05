@@ -183,10 +183,10 @@ var grammar = {
 			["| ID Block STR", "$$ = ['blockx', $3, $2, $4]"],			
 			["| Block STR", "$$ = ['blockx', $2, 'main', $3]"],			
 		],
-		Switch: [
-			["| Ids", "$$ = ['switchdef', $2]"],
-			["EXEC ID", "$$ = ['switchexec', $2]"],			
-		],
+//		Switch: [
+//			["| Ids", "$$ = ['switchdef', $2]"],
+//			["EXEC ID", "$$ = ['switchexec', $2]"],			
+//		],
 		Exec: [
 			["EXEC ID Id", "$$ = ['exec', $2, $3]"],
 			["EXEC ID BlockX", "$$ = ['exec', $2, $3]"],
