@@ -9,8 +9,7 @@ T = =>Enum {
   "DIC", "ARR", "VALFUNC"
 //  "FUNCP", "FUNCN", "FUNCB", "FUNCT"
 //  "CALL"
-  "NS", "SCOPE",
-  "STATE"
+  "NS", "SCOPE"
  ]
 }
 Dicx = => Dic {
@@ -368,20 +367,15 @@ valfuncc.ctype = @T("VALFUNC")
 //func -> vars + block/native/tpl
 //block -> val + state
 
-##statec = classDefx(defmain, "State", _, {
- stateVars: arrstrc
- stateVal: dicc
-})
 ##blockc = classDefx(defmain, "Block", _, {
  blockVal: arrc,
- blockState: statec,
+ blockStateDef: classc,
  blockParent: blockc,
  blockScope: scopec, 
  blockLabels: dicuintc,
  blockName: strc 
 })
 //stack
-##arrstatec = itemDefx(arrc, statec)
 ##funcblockc = classDefx(defmain, "FuncBlock", [funcprotoc], {
  funcBlock: blockc
 })
@@ -389,14 +383,7 @@ valfuncc.ctype = @T("VALFUNC")
  funcTpl: strc
  funcTplName: strc
 })
-stateNewx = &()Objx{
- #x = &Objx{
-  type: @T("STATE")
-  dic: @Dicx{}
-  arr: @Arrx{}
- }
- @return x
-}
+
 /////10 def mid
 ##midc = classDefx(defmain, "Mid", [objc])
 
@@ -416,7 +403,7 @@ stateNewx = &()Objx{
  idUint: uintc,
 })
 ##idstatec = classDefx(defmain, "IdState", [idstrc], {
- idState: statec 
+ idState: objc 
 })
 ##idlocalc = curryDefx(defmain, "IdLocal", idstatec)
 ##idglobalc = curryDefx(defmain, "IdGlobal", idstatec)
@@ -534,9 +521,9 @@ stateNewx = &()Objx{
 ##envc = classDefx(defmain, "Env", [objc], {
  envExec: scopec
 // envDef: scopec
- envStack: arrstatec
- envLocal: statec 
- envGlobal: statec
+ envStack: arrc
+ envLocal: objc 
+ envGlobal: objc
 })
 ##execc = classDefx(defmain, "Exec", [objc], {
  execBlock: blockc
@@ -655,6 +642,175 @@ objCopyx = &(o Objx)Objx{
 }
 
 /////17 oop func
-
-
+objInitx = &(class Objx, dic Dicx)Objx{
+ @if(class.ctype == @T("OBJ")){
+  Objx#r = objNewx(class)
+  @return r
+ }@elif(class.ctype == @T("NULL")){
+  @return nullv
+ }@elif(class.ctype == @T("INT")){
+  Objx#x = intNewx(0)
+ }@elif(class.ctype == @T("FLOAT")){
+  Objx#x = floatNewx(0.0)
+ }@elif(class.ctype == @T("BIG")){
+  Objx#x = nullv
+ }@elif(class.ctype == @T("STR")){
+  Objx#x = strNewx("")
+ }@elif(class.ctype == @T("VALFUNC")){
+  Objx#x = nullv  
+ }@elif(class.ctype == @T("DIC")){
+  @return dicNewx(class)
+ }@elif(class.ctype == @T("ARR")){
+  @return arrNewx(class)
+ }@elif(class.ctype == @T("NS")){
+  @return nullv
+ }@elif(class.ctype == @T("SCOPE")){
+  @return nullv
+ }@else{
+  die("unknown class type")
+  @return
+ }
+ @if(dic != _ && dic["val"] != _){
+  x.val = dic["val"].val
+ }
+ @return x
+}
+isx = &(c Objx, t Objx, cache Dic)Boolean{
+ @if(c.id != "" && c.id == t.id){
+  @return @Boolean(1)
+ }
+ @if(!cache){
+  cache = {}
+ }
+ Boolean#r = isx(c.obj, t, cache)
+ @if(r){
+  @return r
+ }
+ @each k v c.parents{
+  @if(cache[k] != _){
+   @continue
+  }
+  cache[k] = 1
+  @if(isx(v, t, cache)){
+   @return @Boolean(1)
+  }
+ }
+ @return @Boolean(0)
+}
+classGetx = &(class Objx, key Str)Objx{
+ #x = class.dic[key]
+ @if(x != _){
+  @return x
+ }
+ @foreach v class.parents{
+  #x = classGetx(v, key)
+  @if(x != _){
+   @return x
+  }  
+ }
+ @return _
+}
+objGetx = &(o Objx, s Str)Objx{
+ @return objInitx(idobjc, {
+  idStr: strNewx(s),
+  idObj: o
+ })
+}
+getx = &(o Objx, n Str)Objx{
+ @if(o.type == @T("OBJ")){
+  @return objGetx(o, n)
+ }@elif(o.type == @T("CLASS")){
+  @return classGetx(o, n)
+ }@else{
+  @return classGetx(o.class, n)
+ }
+}
+typepredx = &(o Objx)Objx{
+ @return
+}
 /////18 func exec
+##execns = nsNewx("exec")
+callx = &(func Objx, args Arrx, env Objx)Objx{
+ @if(func.class.id == funcnativec.id){
+  @return call(Funcx(objGetx(func, "funcNative").val), [args, env]);
+ }
+ @if(func.class.id == functplc.id){
+  @return tplCallx(func, args, env)
+ }
+ @if(func.class.id == funcblockc.id){
+  #nstate = objInitx(func.dic["funcClass"])
+  Arrx#stack = env.dic["envStack"].arr;
+  push(stack, env.dic["envLocal"])
+  env.dic["envLocal"]  = nstate
+  Arrx#vars = func.dic["funcVars"].arr
+  @each i arg args{
+   nstate.dic[Str(vars[i].val)] = arg   
+  }
+  Objx#r = blockExecx(func.dic["funcBlock"], env)
+  //TODO signal
+  env.dic["envLocal"] = stack[len(stack)-1]
+  pop(stack)
+  @return r;
+ }
+ log(func.class)
+ die("callx: unknown func")
+ @return nullv;
+}
+execGetx = &(c Objx, execsp Objx, cache Dic)Objx{
+ @if(!cache){
+  cache = {}
+ }
+ @if(c.id != ""){
+  #t = c.name
+  #x = execsp.dic[t]
+  @if(x != _){
+   @return x
+  }
+  #execot = scopeGetx(execsp, t)
+  @if(execot != _){
+   execsp.dic[t] = execot
+   @return execot
+  }
+ }
+ @if(c.parents != _){
+  @each k v c.parents{
+   @if(cache[k] != _){ @return; }
+   cache[k] = 1;
+   Objx#exect = execGetx(v, execsp, cache);
+   @if(exect != _){
+    execsp.dic[t] = exect;
+    @return exect;
+   }
+  }
+ }
+ @return _
+}
+blockExecx = &(o Objx, env Objx, stt Uint)Objx{
+ Objx#b = o.dic["blockVal"]
+ @each i v b.arr{
+  @if(stt != 0 && stt < i){
+   @continue
+  }
+  Objx#r = execx(v, env)
+  @if(r != _ && isx(r.class, signalc)){
+   @if(r.class.id == returnc.id){
+    @return r.dic["return"];
+   }
+   @return r
+  }
+ }
+ @return nullv
+}
+preExecx = &(o Objx)Objx{
+ @return o
+}
+execx = &(o Objx, env Objx)Objx{
+ #ex = execGetx(o.class, env.dic["envExec"])
+ @if(!ex){
+  log(o.class)
+  die("exec: unknown type");
+ }
+// log("Exec: "+ex.name)
+ @return callx(ex, [o], env);
+}
+
