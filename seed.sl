@@ -419,9 +419,9 @@ blockc.dic["blockParent"] = objDefx(blockc)
 ##idstrc =  classDefx(defmain, "IdStr", [idc], {
  idStr: strc,
 })
-##iduintc =  classDefx(defmain, "IdUintc", [idc], {
- idUint: uintc,
-})
+//##iduintc =  classDefx(defmain, "IdUintc", [idc], {
+// idUint: uintc,
+//})
 ##idstatec = classDefx(defmain, "IdState", [idstrc], {
  idState: classc 
 })
@@ -430,6 +430,7 @@ blockc.dic["blockParent"] = objDefx(blockc)
 ##idscopec = classDefx(defmain, "IdScope", [idstrc], {
  idVal: cptc
 })
+/*
 ##iddicc = classDefx(defmain, "IdDic", [idstrc], {
  idDic: dicc
 })
@@ -439,7 +440,7 @@ blockc.dic["blockParent"] = objDefx(blockc)
 ##idobjc = classDefx(defmain, "IdObj", [idstrc], {
  idObj: objc
 })
-
+*/
 /////11 def op
 //for op
 ##opc = classDefx(defmain, "Op", [funcc], {
@@ -449,7 +450,9 @@ blockc.dic["blockParent"] = objDefx(blockc)
 ##op2c = classDefx(defmain, "Op2", [opc])
 //https://en.cppreference.com/w/c/language/operator_precedence
 //remove unused
-//get and assign are not operators in Soul PL
+##opgetc = curryDefx(defmain, "OpGet", op2c, {
+ opPrecedence: intNewx(0)
+})
 ##opnotc = curryDefx(defmain, "OpNot", op1c, {
  opPrecedence: intNewx(10)
 })
@@ -613,12 +616,12 @@ funcSetOpx = &(func Objx, op Objx)Objx{
  func.obj = r;
  @return r
 }
-opDefx = &(class Objx, name Str, val Funcx, arg Objx, op Objx)Objx{
+opDefx = &(class Objx, name Str, val Funcx, arg Objx, return Objx, op Objx)Objx{
  #argt = @Arrx{}
  @if(arg != _){
   push(argt, arg)
  }
- #func = methodDefx(class, name, val, argt, class)
+ #func = methodDefx(class, name, val, argt, return)
  funcSetOpx(func, op)
  @return func;
 }
@@ -848,22 +851,26 @@ getx = &(o Objx, n Str)Objx{
 }
 typepredx = &(o Objx)Objx{
  #t = o.type
- @if(t == @T("OBJ")){
+ @if(t == @T("OBJ")){ 
   @if(isclassx(o.obj, idstatec)){
    Objx#s = o.dic["idState"]
-   @return s.dic[o.dic["idStr"].str]
+   @return typepredx(s.dic[o.dic["idStr"].str])
+  }
+  @if(isclassx(o.obj, callc)){
+   Objx#f = o.dic["callFunc"]
+   @if(isclassx(f.obj, opgetc)){
+    Objx#args = o.dic["callArgs"]
+    Objx#arg0 = args.arr[0]
+    @return classGetx(arg0.obj, "itemsType")
+   }
+   @return o.dic["funcReturn"]
   }
   @return _
  }@else{
   @return classx(o)
  }
 }
-idObjNew = &(o Objx, s Str)Objx{
- @return objDefx(idobjc, {
-  idStr: strNewx(s),
-  idObj: o
- })
-}
+
 /////18 func exec
 ##execns = nsNewx("exec")
 ##execmain = scopeNewx(execns, "main")
@@ -1090,6 +1097,7 @@ func2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
  @return x;
 }
 class2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
+//'class' parents schema
  #parents = Astx(ast[1])
  #arr = @Arrx{}
  @foreach e parents{
@@ -1117,6 +1125,7 @@ obj2objx =  &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
  }
  Objx#schema = ast2dicx(Astx(ast[2]), def, local, global);
  @if(schema.fmid){
+ //TOTEST
   #x = objDefx(callc, {
    callFunc: defmain.dic["new"]
    callArgs: arrNewx(arrc, [c, schema])
@@ -1131,46 +1140,49 @@ obj2objx =  &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
 }
 op2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #op = Str(ast[1])
- Str#cname = "Op"+ucfirst(op)
+// Str#cname = "Op"+ucfirst(op)
+ 
  #args = Astx(ast[2])
+ Objx#arg0 = ast2objx(Astx(args[0]), def, local, global)
+ #t0 = typepredx(arg0)
+
+ #f = classGetx(t0, op);
  @if(len(args) == 1){
-  Objx#arg0 = ast2objx(Astx(args[0]), def, local, global)
-  #class = defns.dic[cname]  
-  @if(op == "not"){
-   @return objDefx(opnotc, {
-    opV: arg0
-   })
-  }
-  @return objDefx(class, {
-   opV: arg0
+  @return objDefx(callc, {
+   callFunc: f
+   callArgs: arrNewx(arrc, [arg0])
   })
  }@else{
-  Objx#arg0 = ast2objx(Astx(args[0]), def, local, global)
   Objx#arg1 = ast2objx(Astx(args[1]), def, local, global)
-  @if(op == "plus"){
-   #t0 = typepredx(arg0)
-   #t1 = typepredx(arg0)
-   @if(t0 != t1){
-   }
-  }
-  @return objDefx(class, {
-   opL: arg0
-   opR: arg1
-  })
+  //TODO convert arg1
+  @return objDefx(callc, {
+   callFunc: f
+   callArgs: arrNewx(arrc, [arg0, arg1])
+  })  
  }
  @return _
 }
 
-itemsget2objx =  &(ast Astx, def Objx, local Objx, global Objx)Arrx{
+itemsget2objx =  &(ast Astx, def Objx, local Objx, global Objx)Objx{
  Objx#items = ast2objx(Astx(ast[1]), def, local, global)
  #itemst = typepredx(items)
  #getf = classGetx(itemst, "get")
- Objx#key = ast2objx(Astx(ast[2]), def, local, global) 
- @return [getf, items, key]
+ Objx#key = ast2objx(Astx(ast[2]), def, local, global)
+ @return objDefx(callc, {
+  callFunc: getf
+  callArgs: arrNewx(arrc, [items, key])
+ })
 }
-objget2objx =  &(ast Astx, def Objx, local Objx, global Objx)Arrx{
+objget2objx =  &(ast Astx, def Objx, local Objx, global Objx)Objx{
  Objx#obj = ast2objx(Astx(ast[1]), def, local, global)
- @return [defmain.dic["get"], obj, strNewx(Str(ast[2]))] 
+ @if(obj.type == @T("OBJ")){
+  @return objDefx(callc, {
+   callFunc: defmain.dic["get"]
+   callArgs: arrNewx(arrc, [obj, strNewx(Str(ast[2]))])
+  })
+ }@else{
+  @return
+ }
 }
 assign2objx = &(ast Astx, def Objx, local Objx, global Objx)Objx{
  #v = Astx(ast[1])
@@ -1379,11 +1391,11 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
   @return x
  }@elif(t == "arr"){
  //TODO itemsLimit itemsType
-  @if(ast[2] != _){
+  @if(len(ast) > 2){
    #itemstype = scopeGetx(def, Str(ast[2]))
    #class = itemDefx(arrc, itemstype)
   }@else{
-   #class = arrc  
+   #class = arrc
   }
   @return ast2arrx(Astx(ast[1]), def, local, global, class)
  }@elif(t == "dic"){
@@ -1401,17 +1413,9 @@ ast2objx = &(ast Astx, def Objx, local Objx, global Objx, name Str)Objx{
    ctrlArg: arg
   })
  }@elif(t == "itemsget"){
-  Arrx#arr =  itemsget2objx(ast, def, local, global)
-  @return objDefx(callc, {
-   callFunc: arr[0]
-   callArgs: arrNewx(arrc, [arr[1], arr[2]])
-  })
+  @return itemsget2objx(ast, def, local, global)
  }@elif(t == "objget"){
-  Arrx#arr = objget2objx(ast, def, local, global)
-  @return objDefx(callc, {
-   callFunc: arr[0]
-   callArgs: arrNewx(arrc, [arr[1], arr[2]])
-  })
+  @return objget2objx(ast, def, local, global)
  }@else{
   die("ast2objx: " + t + " is not defined")
  }
@@ -1423,6 +1427,11 @@ progl2objx = &(str Str, def Objx, local Objx, global Objx)Objx{
  @return r
 }
 /////20 func def
+funcDefx(defmain, "get", &(x Arrx, env Objx)Objx{
+ Objx#o = x[0]
+ Objx#e = x[1]
+ @return objGetx(o, e.str)
+},[objc, strc], cptc)
 funcDefx(defmain, "exec", &(x Arrx, env Objx)Objx{
  Objx#l = x[0];
  Objx#r = x[1];
@@ -1445,7 +1454,23 @@ funcDefx(defmain, "log", &(x Arrx, env Objx)Objx{
  @return nullv
 }, [cptc])
 /////21 method def
+methodDefx(arrc, "push", &(x Arrx, env Objx)Objx{
+ Objx#o = x[0]
+ Objx#e = x[1] 
+ push(o.arr, e)
+ @return nullv
+},[objc])
 /////22 op def
+opDefx(arrc, "get", &(x Arrx, env Objx)Objx{
+ Objx#o = x[0]
+ Objx#e = x[1]
+ @return o.arr[e.int]
+},strc, cptc, opgetc)
+opDefx(dicc, "get", &(x Arrx, env Objx)Objx{
+ Objx#o = x[0]
+ Objx#e = x[1]
+ @return o.dic[e.str]
+},strc, cptc, opgetc)
 opDefx(idlocalc, "assign", &(x Arrx, env Objx)Objx{
  Objx#l = x[0];
  Objx#r = x[1];  
@@ -1454,18 +1479,23 @@ opDefx(idlocalc, "assign", &(x Arrx, env Objx)Objx{
  #str = l.dic["idStr"]
  local.dic[str.str] = v 
  @return v
-}, cptc, opassignc)
+}, cptc, cptc, opassignc)
 opDefx(strc, "add", &(x Arrx, env Objx)Objx{
  Objx#l = x[0];
  Objx#r = x[1];
  @return strNewx(l.str + r.str)
-}, strc, opaddc)
+}, strc, strc, opaddc)
+opDefx(intc, "add", &(x Arrx, env Objx)Objx{
+ Objx#l = x[0];
+ Objx#r = x[1];
+ @return intNewx(l.int + r.int)
+}, intc, intc, opaddc)
 opDefx(strc, "concat", &(x Arrx, env Objx)Objx{
  Objx#l = x[0];
  Objx#r = x[1];
  l.str += r.str
  @return l
-}, strc, opconcatc)
+}, strc, strc, opconcatc)
 /////23 exec def
 execDefx = &(name Str, f Funcx)Objx{
  #fn = funcNewx(f, [objc], objc)

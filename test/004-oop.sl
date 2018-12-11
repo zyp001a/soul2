@@ -1,4 +1,4 @@
-A = @@{
+A = @class {
  a: &Str
 }
 o = &A{

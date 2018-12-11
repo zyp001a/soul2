@@ -8,7 +8,7 @@ var grammar = {
 			//			["[\\t ]*~[^=](\\\\.|[^\\\\\~])*~[\\n\\r]*",	"yytext = yytext.replace(/^[\\t ]*~/, '').replace(/~[\\n\\r]*$/, '').replace(/\\\\~/g, '~'); return 'INS';"],
 			["~[^=](\\\\.|[^\\\\\~])*~",	"yytext = yytext.replace(/^[\\t ]*~/, '').replace(/~[\\n\\r]*$/, '').replace(/\\\\~/g, '~'); return 'INS';"],			
 			//			["~(\\\\.|[^\\\\\~])*~",	"yytext = yytext.substr(1,yyleng-2).replace(/\\\\~/g, '~'); return 'INS';"],
-			["\\\\&", "yytext=yytext[1];return 'RAW'"],			
+			["\\\\&", "yytext=yytext[1];return 'RAW'"],
 			["\\^[0-9]+", "yytext=yytext.substr(1);return 'EXEC'"],
 			["\\^[A-Za-z_][A-Za-z0-9_]*", "yytext=yytext.substr(1);return 'EXEC2'"],			
 //			["\\&[A-Z]+", "yytext=yytext.substr(1);return 'MACRO'"],			

@@ -48,6 +48,7 @@ var grammar = {
 			["@include", "return 'INCLUDE'"],
 			["@exec", "return 'EXEC'"],
 			["@addr", "return 'ADDR'"],
+			["@class", "return 'CLASS'"],			
 			["@true", "return 'TRUE'"],
 			["@false", "return 'FALSE'"],			
 			["@debug", "return 'DEBUG'"],
@@ -309,8 +310,8 @@ var grammar = {
 			["ObjGetX CallArgs", "$$ = ['callreflect', $1[1], $1[2], $2];"],			
 		],
 		Class:[
-			["@@ Ids Dic", "$$ = ['class', $1, $2]"],
-			["@@ Dic", "$$ = ['class', ['Obj'], $2]"],			
+			["CLASS Ids Dic", "$$ = ['class', $1, $2]"],
+			["CLASS Dic", "$$ = ['class', [], $2]"],			
 		],
 		Ids: [
 			["ID", "$$=[$1]"],
