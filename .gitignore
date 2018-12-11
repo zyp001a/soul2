@@ -3,7 +3,11 @@ README.md~
 node_modules
 .*
 test\.*
-soul.sl.go
 !.gitignore
 !.gitmodules
 \#*\#
+progl-parser.js
+seed.sl.go
+tpl-parser.js
+x
+soul2

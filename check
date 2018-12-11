@@ -2,6 +2,13 @@
 GOPATH=~/go
 if [ "seed.sl" -nt "seed.sl.go" ]; then
 		node ../soul/bootstrap.sl.js seed.sl 3
+		/usr/bin/go build
+fi
+if [ "progl-grammar.js" -nt "progl-parser.js" ]; then
+		node progl-grammar.js
+fi
+if [ "tpl-grammar.js" -nt "tpl-parser.js" ]; then
+		node tpl-grammar.js
 fi
 
 rc=$?
@@ -24,9 +31,12 @@ if [ -z "$1" ]; then
 				fi
 		done
 else
+	  if [ "seed.sl.go" -nt "soul2" ]; then
+				/usr/bin/go build
+		fi		
 		for f in `ls test/$1*.sl `
 		do
- 				/usr/bin/go run seed.sl.go $f | tee ${f}.log
+ 				./soul2 $f | tee ${f}.log
 				rc=$?
 				if [[ $rc == 0 ]]; then
 						echo ===done: $f 

@@ -109,6 +109,7 @@ parentMakex = &(o Objx, parentarr Arrx)Dicx{
 classNewx = &(arr Arrx, dic Dicx)Objx{
  #r = &Objx{
   type: @T("CLASS")
+  ctype: @T("OBJ")
  } 
  r.dic = dicOrx(dic)
  parentMakex(r, arr)
@@ -961,6 +962,11 @@ execGetx = &(c Objx, execsp Objx, cache Dic)Objx{
    }
   }
  }
+ Objx#exect = execGetx(classRawx(c.type), execsp, cache);
+ @if(exect != _){
+  execsp.dic[t] = exect;
+  @return exect;
+ } 
  @return _
 }
 blockExecx = &(o Objx, env Objx, stt Uint)Objx{
@@ -1533,6 +1539,9 @@ execDefx("CallRaw", &(x Arrx, env Objx)Objx{
  @return callx(c.dic["callFunc"], args, env)
 })
 execDefx("Obj", &(x Arrx, env Objx)Objx{
+ @return x[0]
+})
+execDefx("Class", &(x Arrx, env Objx)Objx{
  @return x[0]
 })
 execDefx("Val", &(x Arrx, env Objx)Objx{
