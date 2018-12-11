@@ -19,17 +19,17 @@ var grammar = {
 //	"parseParams": [""],
   "bnf": {
 		"Start": [
-			["ES", "return $$ = '|{#$arr = []Str;$arr.push(`' + $1 + '`);@return $arr.join(``);}'"]
+			["ES", "return $$ = '|{#$str = ``;$str += `' + $1 + '`;@return $str;}'"]
 		],
 		"ES": [
 			["E", "$$ = $1"],
 			["ES E", "$$ = $1 + $2"],			
 		],
 		"E": [
-			["GET", "$$ = '`);$arr.push(' + $1 + ');$arr.push(`'"],
-			["INS", "$$ = '`);' + $1 + ';push(#$arr, `'"],
-			["EXEC", "$$ = '`);$arr.push(exec(#' + $1 + ', #$env));$arr.push(`'"],
-			["EXEC2", "$$ = '`);$arr.push(exec(#0.' + $1 + ', #$env));$arr.push(`'"],			
+			["GET", "$$ = '`;$str += (' + $1 + ');$str += `'"],
+			["INS", "$$ = '`;' + $1 + ';$str += `'"],
+			["EXEC", "$$ = '`;$str += exec(#' + $1 + ', #$env);$str += `'"],
+			["EXEC2", "$$ = '`);$str += exec(#0.' + $1 + ', #$env);$str += `'"],			
 //			["MACRO", "$$ = '`);' + $1 + ';push(#$arr, `'"],
 			["RAW", "$$ = $1"],
 		],

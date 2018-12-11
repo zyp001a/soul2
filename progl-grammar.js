@@ -27,7 +27,7 @@ var grammar = {
       ["\\\\[\\r\\n;]+", "return"],//allow \ at end of line
 			["\\b\\_\\b", "return 'NULL'"],
 			["\\b\\__\\b", "return 'UNDF'"],
-			["\\b[a-zA-Z_\\$][a-zA-Z0-9_\\$]*", "return 'ID'"],
+			["[a-zA-Z_\\$][a-zA-Z0-9_\\$]*", "return 'ID'"],
 //			["\\#[0-9]+", "yytext = yytext.substr(1);return 'LOCAL'"],			
 //TODO bignumber
       ["\\b{int}{frac}?{exp}?f?\\b", "return 'INT';"],
@@ -199,9 +199,9 @@ var grammar = {
 		Id: [
 			["ID", "$$ = ['id', $1]"],			
 			["# ID", "$$ = ['idlocal', $2]"],
-			["# NUM", "$$ = ['idarg', $2]"],					
+			["# INT", "$$ = ['idlocal', $2]"],					
 			["ID # ID ", "$$ = ['idlocal', $3, $1]"],
-			["ID # NUM", "$$ = ['idlocal', $3, $1]"],						
+			["ID # INT", "$$ = ['idlocal', $3, $1]"],						
 			["## ID", "$$ = ['idglobal', $2]"],
 			["ID ## ID ", "$$ = ['idglobal', $3, $1]"],			
 		],
