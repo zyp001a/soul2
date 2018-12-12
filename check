@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 GOPATH=~/go
+echo ===set scope $SOUL
 if [ "seed.sl" -nt "seed.sl.go" ]; then
 		node ../soul/bootstrap.sl.js seed.sl 3
-		/usr/bin/go build
+		echo ===gen done
 fi
 if [ "progl-grammar.js" -nt "progl-parser.js" ]; then
 		node progl-grammar.js
+		echo ===gen progl parser
 fi
 if [ "tpl-grammar.js" -nt "tpl-parser.js" ]; then
 		node tpl-grammar.js
+		echo ===gen tpl parser				
 fi
 
 rc=$?
@@ -20,7 +23,7 @@ fi
 if [ -z "$1" ]; then
 		for f in `ls test/*.sl `
 		do
-				res=$(/usr/bin/go run seed.sl.go $f | diff ${f}.log -)
+				res=$(/usr/bin/go run seed.sl.go $f $SOUL | diff ${f}.log -)
 				if [[ $res ]]; then
 						echo ===error: $f
 						echo $res
@@ -36,7 +39,7 @@ else
 		fi		
 		for f in `ls test/$1*.sl `
 		do
- 				./soul2 $f | tee ${f}.log
+ 				./soul2 $f $SOUL | tee ${f}.log
 				rc=$?
 				if [[ $rc == 0 ]]; then
 						echo ===done: $f 

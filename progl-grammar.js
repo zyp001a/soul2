@@ -139,7 +139,7 @@ var grammar = {
 			"Op",
 			"Assign",
 			"Exec",
-			"BlockX",
+			"BlockMain",
 			"Misc",
 			["ADDR ( Expr )", "$$ = ['addr', $3]"],
 			["( Expr )", "$$ = $2"],
@@ -182,11 +182,11 @@ var grammar = {
       ["{ }", "$$ = []"],
       ["{ Elems }", "$$ = $2"],
     ],
-		BlockX: [
-			["| ID Block", "$$ = ['blockx', $3, $2]"],
-			["| Block", "$$ = ['blockx', $2, 'main']"],
-			["| ID Block STR", "$$ = ['blockx', $3, $2, $4]"],			
-			["| Block STR", "$$ = ['blockx', $2, 'main', $3]"],			
+		BlockMain: [
+			["| ID Block", "$$ = ['blockmain', $3, $2]"],
+			["| Block", "$$ = ['blockmain', $2, 'main']"],
+			["| ID Block STR", "$$ = ['blockmain', $3, $2, $4]"],			
+			["| Block STR", "$$ = ['blockmain', $2, 'main', $3]"],			
 		],
 //		Switch: [
 //			["| Ids", "$$ = ['switchdef', $2]"],
@@ -194,8 +194,8 @@ var grammar = {
 //		],
 		Exec: [
 			["EXEC ID Id", "$$ = ['exec', $2, $3]"],
-			["EXEC ID BlockX", "$$ = ['exec', $2, $3]"],
-			["EXEC BlockX", "$$ = ['exec', 'main', $2]"],						
+			["EXEC ID BlockMain", "$$ = ['exec', $2, $3]"],
+			["EXEC BlockMain", "$$ = ['exec', 'main', $2]"],						
 		],
 		Id: [
 			["ID", "$$ = ['id', $1]"],			
