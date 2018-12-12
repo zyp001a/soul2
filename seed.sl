@@ -1308,7 +1308,7 @@ objget2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
  Cptx#obj = ast2cptx(Astx(ast[1]), def, local, global)
  @if(obj.type == @T("OBJ")){
   @return objDefx(callc, {
-   callFunc: defmain.dic["objget"]
+   callFunc: defmain.dic["objGet"]
    callArgs: arrNewx(arrc, [obj, strNewx(Str(ast[2]))])
   })
  }@else{
@@ -1579,7 +1579,7 @@ funcDefx(defmain, "env", &(x Arrx, env Cptx)Cptx{
  //test function TODO delete
  @return env
 }, _, envc)
-funcDefx(defmain, "scopeget", &(x Arrx, env Cptx)Cptx{
+funcDefx(defmain, "scopeGet", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
  #r = scopeGetx(o, e.str)
@@ -1588,7 +1588,7 @@ funcDefx(defmain, "scopeget", &(x Arrx, env Cptx)Cptx{
  }
  @return nullv
 },[scopec, strc], cptc)
-funcDefx(defmain, "objget", &(x Arrx, env Cptx)Cptx{
+funcDefx(defmain, "objGet", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
  #r = objGetx(o, e.str)

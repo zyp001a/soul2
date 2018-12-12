@@ -27,7 +27,7 @@ var grammar = {
 		],
 		"E": [
 			["GET", "$$ = '`;$str += (' + $1 + ');$str += `'"],
-			["INS", "$$ = '`;' + $1.replace(/\\^\\^([A-Za-z0-9_]+)/g, function(m, n){ return 'scopeget(#$env.envExec, `' + n + '`)'}) + ';$str += `'"],
+			["INS", "$$ = '`;' + $1.replace(/\\^\\^([A-Za-z0-9_]+)/g, function(m, n){ return 'scopeGet(#$env.envExec, `' + n + '`)'}) + ';$str += `'"],
 			["EXEC", "$$ = '`;$str += exec(#' + $1 + ', #$env);$str += `'"],
 			["EXEC2", "$$ = '`);$str += exec(#0.' + $1 + ', #$env);$str += `'"],			
 //			["MACRO", "$$ = '`);' + $1 + ';push(#$arr, `'"],
