@@ -1,1 +1,4 @@
-~log("X")~
+~
+#a=^^BlockMain_postfix
+log(a)
+~

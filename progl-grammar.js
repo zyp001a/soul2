@@ -48,7 +48,9 @@ var grammar = {
 			["@include", "return 'INCLUDE'"],
 			["@exec", "return 'EXEC'"],
 			["@addr", "return 'ADDR'"],
-			["@class", "return 'CLASS'"],			
+			["@class", "return 'CLASS'"],
+			["@scope", "return 'SCOPE'"],
+			["@ns", "return 'NS'"],						
 			["@true", "return 'TRUE'"],
 			["@false", "return 'FALSE'"],			
 			["@debug", "return 'DEBUG'"],
@@ -184,9 +186,9 @@ var grammar = {
     ],
 		BlockMain: [
 			["| ID Block", "$$ = ['blockmain', $3, $2]"],
-			["| Block", "$$ = ['blockmain', $2, 'main']"],
+			["| Block", "$$ = ['blockmain', $2, '']"],
 			["| ID Block STR", "$$ = ['blockmain', $3, $2, $4]"],			
-			["| Block STR", "$$ = ['blockmain', $2, 'main', $3]"],			
+			["| Block STR", "$$ = ['blockmain', $2, '', $3]"],			
 		],
 //		Switch: [
 //			["| Ids", "$$ = ['switchdef', $2]"],
@@ -319,7 +321,9 @@ var grammar = {
 		],
 		Obj: [
 			["& ID Dic", "$$ = ['obj', $2, $3];"],
-			["& ID", "$$ = ['obj', $2, []];"],				
+			["& ID", "$$ = ['obj', $2, []];"],
+			["& Dic", "$$ = ['objx', $2];"],
+			["& Dic Dic", "$$ = ['objx', $2, $3];"],			
 		],
 		CallArgs: [
 			["( )", "$$ = []"],
