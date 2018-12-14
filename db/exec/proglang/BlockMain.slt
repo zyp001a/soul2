@@ -4,6 +4,10 @@ Str#mainpath = $env.envGlobal.$blockmain.blockPath
 #maindir = mainpath + "." + mainflag
 mkdirAll(maindir)
 
-##$filelist = {}
-
+##$filelist = {a:"1"}
+@each k v $filelist{
+ @if(isStr(v)){
+  log(v)
+ }
+}
 ~

@@ -1089,6 +1089,9 @@ tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
  @if(func.val == _){//use val as cache
   Str#sstr = func.dic["funcTpl"].str
   Astx#ast = jsonParse(cmd("./slt-reader", sstr))
+  @if(len(ast) == 0){
+   die("tplCall: grammar error" + objGetx(func, "funcTplPath").str)
+  }
   func.val = ast;
  }@else{
   ast = Astx(func.val)
@@ -1842,6 +1845,9 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, name Str)Cptx{
 }
 progl2cptx = &(str Str, def Cptx, local Cptx, global Cptx)Cptx{
  Astx#ast = jsonParse(cmd("./sl-reader", str))
+ @if(len(ast) == 0){
+  die("progl2cpt: wrong grammar")
+ }
  #r = ast2cptx(ast, def, local, global)
  @return r
 }
@@ -1901,6 +1907,18 @@ funcDefx(defmain, "is", &(x Arrx, env Cptx)Cptx{
  Cptx#r = x[1]; 
  @return boolNewx(isx(l, r))
 }, [cptc, cptc], boolc)
+funcDefx(defmain, "isStr", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return boolNewx(l.type == @T("STR"))
+}, [cptc], boolc)
+funcDefx(defmain, "isArr", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return boolNewx(l.type == @T("ARR"))
+}, [cptc], boolc)
+funcDefx(defmain, "isDic", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return boolNewx(l.type == @T("DIC"))
+}, [cptc], boolc)
 funcDefx(defmain, "log", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
  log(cpt2strx(o))
@@ -2082,7 +2100,7 @@ execDefx("CtrlIf", &(x Arrx, env Cptx)Cptx{
  Int#l = len(args)
  @for Int#i=0;i<l-1;i+=2 {
   #r = execx(args[i], env)
-  @if(r.int == 0){
+  @if(r.int != 0){
    @return blockExecx(args[i+1], env)
   }
  }
