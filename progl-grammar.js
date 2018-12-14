@@ -11,9 +11,9 @@ var grammar = {
     },
     "rules": [
 			["\\/\\*[^\\*]*\\*\\/", "return;"],//COMMENT
-			["\\\/\\\/[^\\n\\r]+", "return;"],//COMMENT
+			["\\\/\\\/[^\\n\\r]*", "return;"],//COMMENT
 			//			["#[^\\n\\r]+[\\n\\r]*", "return;"],
-			["\\/(\\\\.|[^\\\\/\\s])*\\/", 
+			["\\/(\\\\.|[^\\\\/\\s])+\\/", 
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\(\\/)/g, '$1'); return 'REGEX';"],
 			["\\@`(\\\\.|[^\\\\`])*`", 
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\([~\\&])/g, '$1'); return 'TPL';"],

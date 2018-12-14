@@ -5,7 +5,7 @@ var g = require("./get-stdin");
 var fs = require("fs")
 function x(str){
 	var s = t.parse(str);
-	return p.parse(s) 
+	return p.parse(s)
 }
 if(!process.argv[2]){
   g().then(str => {		

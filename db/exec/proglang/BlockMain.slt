@@ -1,13 +1,34 @@
 ~
-Str#mainpath = $env.envGlobal.$blockmain.blockPath
-#mainflag = getName($env.envExec)
-#maindir = mainpath + "." + mainflag
-mkdirAll(maindir)
+Str#mainPath = $env.envGlobal.$blockmain.blockPath
+#mainFlag = getName($env.envExec)
 
-##$filelist = {a:"1"}
-@each k v $filelist{
- @if(isStr(v)){
-  log(v)
- }
+#mainDirStr = mainPath + "." + mainFlag
+#mainDir = Dir(mainDirStr)
+mainDir.makeAll()
+
+##$fileList = {} //files to write
+##$cmdBuild = ""  //build cmd
+##$cmdExec = "" //exec cmd
+##$imports = {}
+##$types = {}
+##$classes = {}
+##$globalVars = {}
+##$funcs = {}
+##$includes = {}
+
+^BlockMain_defUtils^
+
+##$mainContent = ^Block_genContent #0^
+
+^BlockMain_genFileList^
+
+mainDir.write($fileList)
+@if($cmdBuild != ""){
+ mainDir.writeFile("build.log", cmdRun($cmdBuild))
 }
+@if($cmdExec != ""){
+ print(cmdRun($cmdExec + " " + osArgs().join(" ")))
+}
+ 
+
 ~

@@ -1,0 +1,8 @@
+~
+##goImport = @(varname Str){
+ @if($imports[varname] != _){
+  @return
+ }
+ $imports[varname] = "import \""+varname+"\""
+}
+~
