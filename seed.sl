@@ -1,4 +1,5 @@
 /////1 set class/structs
+
 T = =>Enum {
  enum: [
   "CPT",
@@ -388,16 +389,24 @@ arrNewx = &(class Cptx, val Arrx)Cptx{
  }
  @return x
 }
-dicNewx = &(class Cptx, val Dicx)Cptx{
+dicNewx = &(class Cptx, val Dicx, arr Arrx)Cptx{
  @if(class == _){
   class = dicc;
  }
- @return &Cptx{
+ #r = &Cptx{
   type: @T("DIC")
   obj: class
-  id: uidx()    
+  id: uidx()
   dic: dicOrx(val)
+  arr: arrOrx(arr)
  }
+ @if(val != _ && arr == _){
+  @each k v val{
+   push(r.arr, strNewx(k))
+   unused(v)
+  }
+ }
+ @return r
 }
 
 
@@ -760,6 +769,12 @@ classx = &(o Cptx)Cptx{
  @if(o.type == @T("OBJ")){
   @return o.obj
  }
+ @if(o.type == @T("DIC")){
+  @return o.obj
+ }
+ @if(o.type == @T("ARR")){
+  @return o.obj
+ }
  @if(o.type == @T("CLASS")){
   @return o;
  }
@@ -1043,7 +1058,7 @@ typepredx = &(o Cptx)Cptx{
     }
     @if(isclassx(f.obj, opgetc)){
      Cptx#arg0 = args.arr[0]           
-     @return classGetx(arg0.obj, "itemsType")
+     @return classx(classGetx(arg0.obj, "itemsType"))
     }
     @return f.dic["funcReturn"]
    }
@@ -1606,7 +1621,7 @@ each2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
    it = cptc;
   }
   @if(r != _){
-   @if(classx(r).id != it.id){
+   @if(classx(r).id != classx(it).id){
     die("each val id defined "+val)
    }
   }@else{
@@ -1745,6 +1760,7 @@ callmethod2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
  Cptx#arr = ast2arrx(Astx(ast[3]), def, local, global)
  #f = classGetx(to, Str(ast[2]))
  @if(f == _){
+  log(cpt2strx(oo)) 
   log(cpt2strx(to))
   log(Str(ast[2]))  
   die("no method")
@@ -1802,6 +1818,7 @@ ast2arrx = &(asts Astx, def Cptx, local Cptx, global Cptx, class Cptx)Cptx{
 }
 ast2dicx = &(asts Astx, def Cptx, local Cptx, global Cptx, it Cptx, il Int)Cptx{
  #dicx = @Dicx{}
+ #arrx = @Arrx{} 
  #callable = @Boolean(0);
  @foreach eo asts{
   #e = Astx(eo)
@@ -1810,6 +1827,7 @@ ast2dicx = &(asts Astx, def Cptx, local Cptx, global Cptx, it Cptx, il Int)Cptx{
   @if(ee.fmid){
    callable = @Boolean(1);
   }
+  push(arrx, strNewx(k))
   dicx[k] = ee;
  }
  @if(!callable){
@@ -1819,12 +1837,12 @@ ast2dicx = &(asts Astx, def Cptx, local Cptx, global Cptx, it Cptx, il Int)Cptx{
  }
  @if(it != _ || callable){
   #c = itemDefx(dicc, it, callable)
-  #r = dicNewx(c, dicx)
+  #r = dicNewx(c, dicx, arrx)
   @if(callable){
    r.fmid = @Boolean(1)
   }
  }@else{
-  #r = dicNewx(dicc, dicx)  
+  #r = dicNewx(dicc, dicx, arrx)  
  }
  @if(il != 0){
   r.int = il
@@ -1927,10 +1945,12 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, name Str)Cptx{
   @return ast2arrx(Astx(ast[1]), def, local, global, class)
  }@elif(t == "dic"){
   @if(len(ast) > 2){
-   #it = scopeGetx(def, Str(ast[2]))
-  }
-  @if(len(ast) > 3){
-   #il = int(Str(ast[3]))
+   @if(ast[2] != _){
+    #it = scopeGetx(def, Str(ast[2]))
+   }
+   @if(ast[3] != _){   
+    Int#il = int(Str(ast[3]))
+   }
   }
   @return ast2dicx(Astx(ast[1]), def, local, global, it, il);
  }@elif(t == "class"){
@@ -2177,15 +2197,19 @@ methodDefx(arrstrc, "join", &(x Arrx, env Cptx)Cptx{
 methodDefx(dicc, "set", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#i = x[1]
- Cptx#v = x[2] 
+ Cptx#v = x[2]
+ @if(o.dic[i.str] == _){
+  push(o.arr, i)
+ }
  o.dic[i.str] = v
  @return v
 }, [strc, cptc], cptc)
-methodDefx(dicstrc, "joinVal", &(x Arrx, env Cptx)Cptx{
+methodDefx(dicstrc, "valJoin", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#sep = x[1] 
  #s = ""
- @foreach v o.dic{
+ @foreach k o.arr{
+  Cptx#v = o.dic[k.str]
   s += v.str + sep.str
  }
  @return strNewx(s)
@@ -2401,7 +2425,9 @@ execDefx("CtrlEach", &(x Arrx, env Cptx)Cptx{
  Str#val = args[1].str
  Dicx#local =  env.dic["envLocal"].dic
  @if(da.type == @T("DIC")){
-  @each k v da.dic{
+  @foreach kc da.arr{
+   Str#k = kc.str
+   Cptx#v = da.dic[k]
    @if(key != ""){
     local[key] = strNewx(k)
    }
