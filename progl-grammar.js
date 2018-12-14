@@ -26,13 +26,13 @@ var grammar = {
 //       "yytext = yytext.replace(/^\<\\s*/, '').replace(/\\s*\>$/, ''); return 'PARENTS';"],
       ["\\\\[\\r\\n;]+", "return"],//allow \ at end of line
 			["\\b\\_\\b", "return 'NULL'"],
-			["\\b\\__\\b", "return 'UNDF'"],
 			["[a-zA-Z_\\$][a-zA-Z0-9_\\$]*", "return 'ID'"],
 //			["\\#[0-9]+", "yytext = yytext.substr(1);return 'LOCAL'"],			
-//TODO bignumber
+			//TODO bignumber
+      ["0[0-9]+\\b", "return 'OCT';"],
+      ["0[xX][a-fA-F0-9]+\\b", "return 'HEX';"],
       ["\\b{int}{frac}?{exp}?f?\\b", "return 'INT';"],
-      ["\\b{int}{frac}?{exp}?u?[slb]?\\b", "return 'FLOAT';"],			
-      ["0[xX][a-zA-Z0-9]+\\b", "return 'INT';"],
+      ["\\b{int}{frac}?{exp}?u?[slb]?\\b", "return 'FLOAT';"],
 			["@if", "return 'IF'"],
 			["@else", "return 'ELSE'"],
 			["@elif", "return 'ELIF'"],						
@@ -121,7 +121,8 @@ var grammar = {
 		],
 		Expr: [
 			"Null",
-			"Undf",			
+			"True",
+			"False",						
 			"Char",
 			"Num",
 			"Str",
@@ -150,22 +151,24 @@ var grammar = {
 		Char: "$$ = ['char', $1]",
 		Num: [
 			["FLOAT", "$$ = ['float', $1]"],
-			["INT", "$$ = ['int', $1]"],			
+			["INT", "$$ = ['int', $1]"],
+			["OCT", "$$ = ['oct', $1]"],
+			["HEX", "$$ = ['hex', $1]"],
 		],
 		Str: "$$ = ['str', $1]",
 		Tpl: [
 			["TPL", "$$ = ['tpl', $1]"],
-			["TPL STR", "$$ = ['tpl', $1, $2]"],			
+			["TPL STR", "$$ = ['tpl', $1, $2]"],
 		],
 		Func: "$$ = ['func', $1]",
 		Arr: [
 			["[ ]", "$$ = []"],
-			["[ Exprs ]", "$$ = $2"]
+			["[ Exprs ]", "$$ = $2"],
 		],
 		ArrX: [
 			["Arr", "$$ = ['arr', $1]"],
 			["Arr ItemsPostfix", "$$ = ['arr', $1].concat($2)"],
-		],		
+		],
     Dic: [
       ["{ }", "$$ = []"],
       ["{ Elems }", "$$ = $2"],
@@ -173,10 +176,10 @@ var grammar = {
 		DicX: [
 			["Dic", "$$ = ['dic', $1]"],
 			["Dic ItemsPostfix", "$$ = ['dic', $1].concat($2)"],
-		],	
+		],
 		ItemsPostfix: [
 			["ID INT", "$$ = [$1,$2]"],
-			["INT ID", "$$ = [$2,$1]"],			
+			["INT ID", "$$ = [$2,$1]"],
 			["INT", "$$ = [,$1]"],
 			["ID", "$$ = [$1,,]"],
 		],
@@ -187,8 +190,8 @@ var grammar = {
 		BlockMain: [
 			["| ID Block", "$$ = ['blockmain', $3, $2]"],
 			["| Block", "$$ = ['blockmain', $2, '']"],
-			["| ID Block STR", "$$ = ['blockmain', $3, $2, $4]"],			
-			["| Block STR", "$$ = ['blockmain', $2, '', $3]"],			
+			["| ID Block STR", "$$ = ['blockmain', $3, $2, $4]"],
+			["| Block STR", "$$ = ['blockmain', $2, '', $3]"],
 		],
 //		Switch: [
 //			["| Ids", "$$ = ['switchdef', $2]"],
@@ -197,7 +200,7 @@ var grammar = {
 		Exec: [
 			["EXEC ID Id", "$$ = ['exec', $2, $3]"],
 			["EXEC ID BlockMain", "$$ = ['exec', $2, $3]"],
-			["EXEC BlockMain", "$$ = ['exec', 'main', $2]"],						
+			["EXEC BlockMain", "$$ = ['exec', 'main', $2]"],
 		],
 		Id: [
 			["ID", "$$ = ['id', $1]"],			
@@ -218,7 +221,7 @@ var grammar = {
 		"Ctrl": [
 			["If", "$$ = ['if', $1]"],
 			["WHILE Expr Block",
-			 "$$ = ['while', [$2, $3]]"],
+			 "$$ = ['for', [, $2, , $3]]"],
 			["FOR Expr , Expr , Expr Block",
 			 "$$ = ['for', [$2, $4, $6, $7]]"],
 			["EACH IdOrNull IdOrNull Expr Block",
@@ -231,18 +234,24 @@ var grammar = {
 			["ERROR Expr", "$$ = ['error', $2]"],
 			["ERROR Expr NUM", "$$ = ['error', $2, $3]"],	
 		],
-		"IdOrNull": [
+		IdOrNull: [
 			["ID", "$$ = $1"],
-			["_", "$$ = ''"],
+			["NULL", "$$ = ''"],
 		],
-		"Include": [
+		Include: [
 			["INCLUDE ID", "$$ = ['include', $2]"],
 			["INCLUDE STR", "$$ = ['include', $2]"],
 		],
-		"If": [
-			["IF Expr Block", "$$ = [$2, $3]"],
-			["If ELIF Expr Block", "$$ = $1; $1.push($3); $1.push($4)"],
-			["If ELSE Block", "$$ = $1; $1.push($3)"],
+		If: [
+			["IF Expr BlockOrPre", "$$ = [$2, $3]"],
+			["If ELIF Expr BlockOrPre", "$$ = $1; $1.push($3); $1.push($4)"],
+			["If ; ELIF Expr BlockOrPre", "$$ = $1; $1.push($4); $1.push($5)"],			
+			["If ELSE BlockOrPre", "$$ = $1; $1.push($3)"],
+			["If ; ELSE BlockOrPre", "$$ = $1; $1.push($4)"],			
+		],
+		BlockOrPre: [
+			["Block", "$$ = ['block', $1]"],
+			["; Block", "$$ = ['block', $2]"],
 		],
 		KeyColon: [
 			["ID :", "$$ = $1"],
@@ -322,8 +331,6 @@ var grammar = {
 		Obj: [
 			["& ID Dic", "$$ = ['obj', $2, $3];"],
 			["& ID", "$$ = ['obj', $2, []];"],
-			["& Dic", "$$ = ['objx', $2];"],
-			["& Dic Dic", "$$ = ['objx', $2, $3];"],			
 		],
 		CallArgs: [
 			["( )", "$$ = []"],

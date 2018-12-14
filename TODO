@@ -1,2 +1,13 @@
+gen:
+ file system:
+  mkdir {blockName}.go
+  write filelist
+ optional:
+  install deps flag
+	build flag
+ run:
+  append args
+done
+
 
 

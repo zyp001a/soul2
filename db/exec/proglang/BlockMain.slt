@@ -1,4 +1,9 @@
 ~
-#a=^^BlockMain_postfix
-log(a)
+Str#mainpath = $env.envGlobal.$blockmain.blockPath
+#mainflag = getName($env.envExec)
+#maindir = mainpath + "." + mainflag
+mkdirAll(maindir)
+
+##$filelist = {}
+
 ~
