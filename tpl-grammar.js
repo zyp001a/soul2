@@ -4,14 +4,17 @@ var grammar = {
   "lex": {
 		"macros":{},
     "rules": [
-			["~=(\\\\.|[^\\\\\~])*~",	"yytext = yytext.substr(2,yyleng-3).replace(/\\\\~/g, '~'); return 'GET';"],
-			//			["[\\t ]*~[^=](\\\\.|[^\\\\\~])*~[\\n\\r]*",	"yytext = yytext.replace(/^[\\t ]*~/, '').replace(/~[\\n\\r]*$/, '').replace(/\\\\~/g, '~'); return 'INS';"],
-			["~[^=](\\\\.|[^\\\\\~])*~",	"yytext = yytext.replace(/^[\\t ]*~/, '').replace(/~[\\n\\r]*$/, '').replace(/\\\\~/g, '~'); return 'INS';"],			
-			//			["~(\\\\.|[^\\\\\~])*~",	"yytext = yytext.substr(1,yyleng-2).replace(/\\\\~/g, '~'); return 'INS';"],
+//			["~=(\\\\.|[^\\\\\~])+[\\n\\r]~",
+//			 "yytext = yytext.substr(2,yyleng-4).replace(/\\\\~/g, '~'); return 'GET';"],			
+			["~=(\\\\.|[^\\\\\~])+~",
+			 "yytext = yytext.substr(2,yyleng-3).replace(/\\\\~/g, '~'); return 'GET';"],
+			["~:(\\\\.|[^\\\\\~])+~[^\\n\\r]*[\\n\\r]+",
+			 "yytext = yytext.replace(/~([^~]+)$/g, ',\"$1\"').substr(2).replace(/\\\\~/g, '~'); return 'GET2';"],
+			["~(\\\\.|[^\\\\\~])*~",
+			 "yytext = yytext.replace(/^[\\t ]*~/, '').replace(/~[\\n\\r]*$/, '').replace(/\\\\~/g, '~'); return 'INS';"],			
 			["\\\\&", "yytext=yytext[1];return 'RAW'"],
 			["\\^[0-9]+", "yytext=yytext.substr(1);return 'EXEC'"],
-			["\\^[A-Za-z_][A-Za-z0-9_]*", "yytext=yytext.substr(1);return 'EXEC2'"],			
-//			["\\&[A-Z]+", "yytext=yytext.substr(1);return 'MACRO'"],			
+			["\\^[A-Za-z_][A-Za-z0-9_]*", "yytext=yytext.substr(1);return 'EXEC2'"],
 			["(\\\\.|[^\\\\\~])", "return 'RAW';"]
 		]
 	},
@@ -27,6 +30,7 @@ var grammar = {
 		],
 		"E": [
 			["GET", "$$ = '`;$str += (' + $1 + ');$str += `'"],
+			["GET2", "$$ = '`;$str += appendIfExists(' + $1 + ');$str += `'"],			
 			["INS", "$$ = '`;' + $1.replace(/\\^([A-Za-z0-9_]+) *([^\\^]*)\\^/g, function(m, n, o){ return 'call(scopeGet(#$env.envExec, `' + n + '`), [' + o +'], #$env)'}) + ';$str += `'"],
 			["EXEC", "$$ = '`;$str += exec(#' + $1 + ', #$env);$str += `'"],
 			["EXEC2", "$$ = '`);$str += exec(#0.' + $1 + ', #$env);$str += `'"],			

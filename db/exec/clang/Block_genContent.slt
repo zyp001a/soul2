@@ -1,1 +1,6 @@
-123
+~
+@each _ e #0.blockVal {
+~~:exec(e, $env)~
+~
+}
+~

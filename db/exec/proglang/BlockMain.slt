@@ -3,24 +3,25 @@ Str#mainPath = $env.envGlobal.$blockmain.blockPath
 #mainFlag = getName($env.envExec)
 
 #mainDirStr = mainPath + "." + mainFlag
-#mainDir = Dir(mainDirStr)
+##mainDir = Dir(mainDirStr)
 mainDir.makeAll()
 
 ##$fileList = {} //files to write
 ##$cmdBuild = ""  //build cmd
 ##$cmdExec = "" //exec cmd
-##$imports = {}
-##$types = {}
-##$classes = {}
-##$globalVars = {}
-##$funcs = {}
-##$includes = {}
 
-^BlockMain_defUtils^
+##$imports = {}Str
+##$types = {}Str
+##$classes = {}Str
+##$globalVars = {}Str
+##$funcs = {}Str
+##$includes = {}Str
 
-##$mainContent = ^Block_genContent #0^
+^BlockMain_preMain^
 
-^BlockMain_genFileList^
+Str##$mainContent = ^Block_genContent #0^
+
+^BlockMain_postMain^
 
 mainDir.write($fileList)
 @if($cmdBuild != ""){
@@ -29,6 +30,4 @@ mainDir.write($fileList)
 @if($cmdExec != ""){
  print(cmdRun($cmdExec + " " + osArgs().join(" ")))
 }
- 
-
 ~

@@ -1,0 +1,27 @@
+~
+#f = #0.callFunc                                                               
+Arr#a = #0.callArgs
+#c = class(f)
+#printargs = 0
+@if(inClass(c, FuncTpl)){
+}@elif(inClass(c, Func)){
+ #n = getName(f)
+ #r = scopeGet($env.envExec, n)
+ @if(r){
+  ~~=call(r, a, $env)~~
+ }@else{
+  printargs = 1
+  ~~=n~~
+ }
+}@elif(inClass(c, Mid)){
+ 
+}@else{
+}
+#arr = []Str
+@if printargs {
+ @each _ e a{
+  arr.push(exec(e, $env))
+ }
+ ~(~=arr.join(", ")~)~
+}
+~
