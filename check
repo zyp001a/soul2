@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 GOPATH=~/go
-echo ===set scope $SOUL
+echo ===set exec $SOULE
+echo ===set def $SOULD
 if [ "seed.sl" -nt "seed.sl.go" ]; then
 		node ../soul/bootstrap.sl.js seed.sl 3
   	rc=$?
@@ -23,7 +24,7 @@ if [ -z "$1" ]; then
 		echo "===check all"
 		for f in `ls test/0*.sl `
 		do
-				res=$(/usr/bin/go run seed.sl.go $f $SOUL | diff ${f}.log$SOUL -)
+				res=$(/usr/bin/go run seed.sl.go $f $SOULE $SOULD | diff ${f}.log$SOULE$SOULD -)
 				rc=${PIPESTATUS[0]}
 				if [[ $rc -ne 0 ]]; then
 						echo ===error: $f
@@ -40,9 +41,9 @@ else
 	  if [ "seed.sl.go" -nt "soul2" ]; then
 				/usr/bin/go build
 		fi		
-		for f in `ls test/$1*.sl `
+		for f in `ls test/$1.sl `
 		do
- 				./soul2 $f $SOUL | tee ${f}.log$SOUL
+ 				./soul2 $f $SOULE $SOULD | tee ${f}.log$SOULE$SOULD
 				rc=${PIPESTATUS[0]}
 				if [[ $rc -ne 0 ]]; then
 						exit 1

@@ -2425,7 +2425,8 @@ execDefx("Exec", &(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
  #global = classNewx()
  #block = c.dic["execBlock"]
- global.dic["$blockmain"] = block
+ global.dic["$penv"] = env
+ global.dic["$blockmain"] = block 
  global.dic["$tplglobal"] = objNewx(classNewx())
  #nenv = defx(envc, {
   envGlobal: objNewx(global)

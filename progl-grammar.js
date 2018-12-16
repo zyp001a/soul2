@@ -201,6 +201,7 @@ var grammar = {
 			["EXEC ID Id", "$$ = ['exec', $2, $3]"],
 			["EXEC ID BlockMain", "$$ = ['exec', $2, $3]"],
 			["EXEC BlockMain", "$$ = ['exec', 'main', $2]"],
+			["EXEC Block", "$$ = ['exec', 'main', ['blockmain', $2, 'main']]"],			
 		],
 		Id: [
 			["ID", "$$ = ['id', $1]"],			
