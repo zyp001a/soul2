@@ -20,6 +20,7 @@ mainDir.makeAll()
 ^BlockMain_preMain^
 
 Str##$mainContent = ^Block_genContent #0^
+Str##$mainVar = ^Block_genVar #0^
 
 ^BlockMain_postMain^
 

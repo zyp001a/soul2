@@ -1,0 +1,33 @@
+~
+Block#bl = #0.funcBlock
+Arr_Str#vars = #0.funcVars
+Arr#vts = #0.funcVarTypes
+Class#ret = #0.funcReturn
+#typemap = scopeGet($env.envExec, "typemap")
+#blockx = ^Block_genContent bl^
+#varx = ^Block_genVar bl,vars^
+#argvx = ""
+@each i v vts{
+ @if (i != 0) {argvx += ", "}
+ argvx += "_" + vars[i] + " " + typemap(v)
+}
+#returnx = ""
+@if(ret){
+ returnx += " " + typemap(ret)
+}
+#namex = getName(#0)
+@if(namex){ namex = " "+namex}
+#make = @(namex, argvx, returnx, blockx){
+ #$str = ""
+ ~func~=namex~(~=argvx~)~=returnx~{
+~:ind(varx)~
+~:ind(blockx)~
+}~
+ @return $str
+}
+@if(namex){
+ $funcs[getName(#0)] = make(namex, argvx, returnx, blockx)
+}@else{
+ ~~=make(namex, argvx, returnx, blockx)~~
+}
+~

@@ -22,9 +22,12 @@ fi
 
 if [ -z "$1" ]; then
 		echo "===check all"
+	  if [ "seed.sl.go" -nt "soul2" ]; then
+				/usr/bin/go build
+		fi				
 		for f in `ls test/0*.sl `
 		do
-				res=$(/usr/bin/go run seed.sl.go $f $SOULE $SOULD | diff ${f}.log$SOULE$SOULD -)
+				res=$(./soul2 $f $SOULE $SOULD | diff ${f}.$SOULE${SOULD}log -)
 				rc=${PIPESTATUS[0]}
 				if [[ $rc -ne 0 ]]; then
 						echo ===error: $f
@@ -38,12 +41,9 @@ if [ -z "$1" ]; then
 		done
 else
 		echo "===check $1"
-	  if [ "seed.sl.go" -nt "soul2" ]; then
-				/usr/bin/go build
-		fi		
-		for f in `ls test/$1.sl `
+		for f in `ls test/$1*.sl `
 		do
- 				./soul2 $f $SOULE $SOULD | tee ${f}.log$SOULE$SOULD
+ 				/usr/bin/go run seed.sl.go $f $SOULE $SOULD | tee ${f}.$SOULE${SOULD}log
 				rc=${PIPESTATUS[0]}
 				if [[ $rc -ne 0 ]]; then
 						exit 1

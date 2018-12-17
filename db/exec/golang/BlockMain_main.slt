@@ -6,5 +6,6 @@ package main~#sep = "\n"~
 ~:$funcs.values().join(sep)~
 ~:$includes.values().join(sep)~
 func main(){
-~=ind($mainContent)~
+~:ind($mainVar)~
+~:ind($mainContent)~
 }

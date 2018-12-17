@@ -13,3 +13,4 @@ x
 soul2
 test/x*
 test/y*
+test/*golang

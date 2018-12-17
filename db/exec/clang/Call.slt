@@ -6,7 +6,7 @@ Arr#a = #0.callArgs
 @if(inClass(c, FuncTpl)){
 }@elif(inClass(c, Func)){
  #n = getName(f)
- #r = scopeGet($env.envExec, n)
+ #r = methodGet($env.envExec, f)
  @if(r){
   ~~=call(r, a, $env)~~
  }@else{

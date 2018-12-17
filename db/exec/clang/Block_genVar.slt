@@ -1,0 +1,17 @@
+~
+#var = scopeGet($env.envExec, "var")
+#filter = {}
+Arr#x = #1;
+@if(x){
+ @each _ v x{
+  filter[v] = 1
+ }
+}
+
+@each k v Dic(#0.blockStateDef) {
+ @if(!filter.hasKey(k)){
+  ~~:call(var, [k, v], $env)~
+~
+ }
+}
+~

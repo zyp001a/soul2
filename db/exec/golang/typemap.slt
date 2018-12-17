@@ -1,0 +1,23 @@
+~
+Class#c = #0
+@if(!c){
+ ~interface{}~
+}@else{
+ #t = getName(c)
+ @if(t == "Cpt"){
+  ~interface{}~
+ }@elif(inClass(c, Float32)){
+  ~float32~
+ }@elif(inClass(c, Float)){
+  ~float64~
+ }@elif(inClass(c, Uint)){
+  ~uint~
+ }@elif(inClass(c, Int)){
+  ~int~
+ }@elif(inClass(c, Str)){
+  ~string~
+ }@else{
+  ~*~=t~~
+ }
+}
+~
