@@ -1,0 +1,17 @@
+~
+#typemap = scopeGet($env.envExec, "typemap")
+Class#c = #0
+#make = @(c Class){
+ #$str = ""
+~type ~=getName(c)~ struct {
+~@each _ v c.parents(){
+  ~~=ind(getName(v))~
+~
+ }
+ @each k v c.schema(){
+  ~~=ind("_"+k+" "+typemap(class(v)))~
+~
+ }~}~
+ @return $str
+}
+$classes[getName(c)] = make(c)~

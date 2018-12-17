@@ -8,7 +8,7 @@ Arr#x = #1;
  }
 }
 
-@each k v Dic(#0.blockStateDef) {
+@each k v #0.blockStateDef.schema() {
  @if(!filter.hasKey(k)){
   ~~:call(var, [k, v], $env)~
 ~

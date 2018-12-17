@@ -821,12 +821,12 @@ classx = &(o Cptx)Cptx{
 }
 inClassx = &(c Cptx, t Cptx, cache Dic)Boolean{
  @if(c.type != @T("CLASS")){
-  log(c)
-  die("not class")
+  log(cpt2strx(c))
+  die("inClass: left not class")
  }
  @if(t.type != @T("CLASS")){
-  log(t)
-  die("not class")
+  log(cpt2strx(t))
+  die("inClass: right not class")
  }
  @if(t.id == cptc.id){//everything is cpt
   @return @Boolean(1)
@@ -2332,7 +2332,7 @@ methodDefx(dirc, "makeAll", &(x Arrx, env Cptx)Cptx{
  @return nullv
 }, [strc, strc])
 
-methodDefx(classc, "toDic", &(x Arrx, env Cptx)Cptx{
+methodDefx(classc, "schema", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #arrx = @Arrx{}
  @each k v o.dic{//TODO sort
@@ -2341,6 +2341,10 @@ methodDefx(classc, "toDic", &(x Arrx, env Cptx)Cptx{
  }
  @return dicNewx(dicc, o.dic, arrx)
 }, _, dicc)
+methodDefx(classc, "parents", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return arrNewx(arrclassc, arrCopyx(o.arr))
+}, _, arrc)
 
 methodDefx(intc, "toStr", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]

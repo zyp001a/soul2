@@ -1,5 +1,5 @@
 ~
-#f = #0.callFunc                                                               
+Cpt#f = #0.callFunc
 Arr#a = #0.callArgs
 #c = class(f)
 #printargs = 0
