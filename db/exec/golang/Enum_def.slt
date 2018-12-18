@@ -1,0 +1,8 @@
+~
+Arr_Str#a = #0.enum
+~const (
+~@each i v a{
+  ~~=ind(getName(#0)+v)~ = ~=Str(i)~
+~
+ }
+~)

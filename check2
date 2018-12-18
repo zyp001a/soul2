@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+GOPATH=~/go
+SOULE=$2
+SOULD=$3
+echo ===set exec $SOULE
+echo ===set def $SOULD
+if [ "main.sl" -nt "main.sl.golang/main.go" ]; then
+		./soul2 main.sl golang
+  	rc=$?
+		if [[ $rc -ne 0 ]]; then
+    		echo ===gen failed				
+				exit 1
+		fi		
+		echo ===gen done
+fi
+if [ "progl-grammar.js" -nt "progl-parser.js" ]; then
+		node progl-grammar.js
+		echo ===gen progl parser
+fi
+if [ "tpl-grammar.js" -nt "tpl-parser.js" ]; then
+		node tpl-grammar.js
+		echo ===gen tpl parser				
+fi
+exit 1
+if [ -z "$1" ]; then
+		echo "===check all"
+	  if [ "seed.sl.go" -nt "soul2" ]; then
+				cd main.sl.golang && /usr/bin/go build && cd ..
+		fi
+		for f in `ls test/0*.sl `
+		do
+				res=$(./main.sl.golang/main.sl.golang $f $SOULE $SOULD | diff ${f}.$SOULE${SOULD}log -)
+				rc=${PIPESTATUS[0]}
+				if [[ $rc -ne 0 ]]; then
+						echo ===error: $f
+						exit 1
+				fi				
+				if [[ $res ]]; then
+						echo ===error: $f
+						echo $res
+				fi
+				echo ===done: $f 				
+		done
+else
+		echo "===check $1"
+		for f in `ls test/$1*.sl `
+		do
+ 				/usr/bin/go run main.sl.golang/main.go $f $SOULE $SOULD | tee ${f}.$SOULE${SOULD}log
+				rc=${PIPESTATUS[0]}
+				if [[ $rc -ne 0 ]]; then
+						exit 1
+				fi				
+				echo ===done: $f 
+		done
+fi
+echo ===all done

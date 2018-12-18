@@ -1,17 +1,23 @@
 ~
-#typemap = scopeGet($env.envExec, "_typemap")
-Class#c = #0
-#make = @(c Class){
- #$str = ""
-~type ~=getName(c)~ struct {
-~@each _ v c.parents(){
-  ~~=ind(getName(v))~
+@if(inClass(#0, Enum)){
+ $types[getName(#0)] = ^Enum_def #0^
+}@else{
+ #typemap = scopeGet($env.envExec, "_typemap")
+ Class#c = #0
+ #make = @(c Class){
+  #$str = ""
+  ~type ~=getName(c)~ struct {
 ~
+  @each _ v c.parents(){
+   ~~=ind(getName(v))~
+~
+  }
+  @each k v c.schema(){
+   ~~=ind("_"+k+" "+typemap(class(v)))~
+~
+  }~}~
+  @return $str
  }
- @each k v c.schema(){
-  ~~=ind("_"+k+" "+typemap(class(v)))~
-~
- }~}~
- @return $str
+ $classes[getName(c)] = make(c)
 }
-$classes[getName(c)] = make(c)~
+~

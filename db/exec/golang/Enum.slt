@@ -1,0 +1,4 @@
+~
+#c = class(#0)
+Arr_Str#e = c.enum
+~~=getName(c) + e[#0]~

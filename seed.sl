@@ -470,7 +470,6 @@ dicNewx = &(class Cptx, val Dicx, arr Arrx)Cptx{
  @return r
 }
 
-
 /////8 advanced type init: string, enum, unlimited number...
 ##zerostrv = &Cptx{
  type: @T("STR")
@@ -487,12 +486,17 @@ strNewx = &(x Str)Cptx{
   str: x
  }
 }
+##arrstrc = itemDefx(arrc, strc)
+##dicstrc = itemDefx(dicc, strc)
+##dicuintc = itemDefx(dicc, uintc)
+##dicclassc = itemDefx(dicc, classc)
+##arrclassc = itemDefx(arrc, classc)
 
-
-##enumc = classDefx(defmain, "Enum", [valc], {
- enum: arrc
+##enumc = classDefx(defmain, "Enum", [uintc], {
+ enum: arrstrc
+ enumDic: dicuintc
 })
-##bufferc = classDefx(defmain, "Buffer", [valc])
+##bufferc = classDefx(defmain, "Buffer", [strc])
 ##pointerc = classDefx(defmain, "Pointer", [valc])
 
 ##pathc = classDefx(defmain, "Path", [objc], {
@@ -502,11 +506,6 @@ strNewx = &(x Str)Cptx{
 ##dirc = classDefx(defmain, "Dir", [pathc])
 
 /////9 def var/block/func
-##arrstrc = itemDefx(arrc, strc)
-##dicstrc = itemDefx(dicc, strc)
-##dicuintc = itemDefx(dicc, uintc)
-##dicclassc = itemDefx(dicc, classc)
-##arrclassc = itemDefx(arrc, classc)
 
 ##funcc = classDefx(defmain, "Func", [objc])
 ##funcprotoc = classDefx(defmain, "FuncProto", [funcc], {
@@ -1376,16 +1375,23 @@ classExecGetx = &(c Cptx, execsp Cptx, cache Dic)Cptx{
  @return _
 }
 execGetx = &(c Cptx, execsp Cptx)Cptx{
- Cptx#t = classx(c)
- Cptx#exect = classExecGetx(t, execsp, {});
- @if(exect != _){
-  @return exect;
- }
- @if(c.type == @T("OBJ") || c.type == @T("CLASS")){
-  Cptx#t = classRawx(c.type)
+ @if(c.type == @T("CLASS")){
+  Cptx#exect = classExecGetx(classc, execsp, {});
+  @if(exect != _){
+   @return exect;
+  }
+ }@else{
+  Cptx#t = classx(c)
   Cptx#exect = classExecGetx(t, execsp, {});
   @if(exect != _){
    @return exect;
+  }
+  @if(c.type == @T("OBJ")){
+   Cptx#t = classRawx(c.type)
+   Cptx#exect = classExecGetx(t, execsp, {});
+   @if(exect != _){
+    @return exect;
+   }
   }
  }
  //Cpt no need
@@ -1562,6 +1568,26 @@ func2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, name Str)Cptx{
   routex(x, def, name)
  }
  @return x;
+}
+enum2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, name Str)Cptx{
+ @if(name == ""){
+  die("enum no name")
+ }
+ #a = @Arrx{}
+ #d = @Dicx{} 
+ #c = curryDefx(def, name, enumc, {
+  enum: arrNewx(arrstrc, a)
+  enumDic: dicNewx(dicuintc, d)
+ })
+ 
+ #arr = Astx(ast[1])
+ @each i v arr{
+  push(a, strNewx(Str(v)))
+  #ii = intNewx(Int(i))
+  ii.obj = c;
+  d[Str(v)] = ii
+ }
+ @return c
 }
 class2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, name Str)Cptx{
 //'class' parents schema
@@ -2141,6 +2167,22 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, name Str)Cptx{
    }
   }
   @return ast2dicx(Astx(ast[1]), def, local, global, it, il);
+ }@elif(t == "enumget"){
+  #en = scopeGetx(def, Str(ast[1]))
+  @if(en == _){
+   log(ast[1])
+   die("enum type not defined")
+  }
+  Dicx#dic = en.dic["enumDic"].dic
+  #r = dic[Str(ast[2])]
+  @if(r == _){
+   log(ast[1])
+   log(ast[2])   
+   die("enum val not defined")
+  }  
+  @return r
+ }@elif(t == "enum"){
+  @return enum2cptx(ast, def, local, global, name)  
  }@elif(t == "class"){
   @return class2cptx(ast, def, local, global, name)
  }@elif(t == "obj"){

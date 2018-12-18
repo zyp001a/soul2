@@ -53,6 +53,7 @@ var grammar = {
 			["@true", "return 'TRUE'"],
 			["@false", "return 'FALSE'"],			
 			["@debug", "return 'DEBUG'"],
+			["@enum", "return 'ENUM'"],			
 			["@run", "return 'RUN'"],			
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
@@ -64,7 +65,8 @@ var grammar = {
 			["\\-\\-", "return '--'"],
 			["\\>\\=", "return '>='"],
 			["\\<\\=", "return '<='"],
-			["\\=\\>", "return '=>'"],			
+			["\\=\\>", "return '=>'"],
+			["\\-\\>", "return '->'"],						
 			["\\=\\=", "return '=='"],
 			["\\!\\=", "return '!='"],
 			["\\+\\=", "return '+='"],
@@ -100,7 +102,7 @@ var grammar = {
 	"operators": [
 		["right", "=", "+=", "-=", "*=", "/="],
     ["left", "++", "--"],
-    ["left", "??"], //8		
+    ["left", "??"], //8
     ["left", "||"], //7
     ["left", "&&"], //6
 		["left", "==", "!="], //5
@@ -108,7 +110,7 @@ var grammar = {
     ["left", "+", "-", "^"], //3
     ["left", "*", "/", "%"],//2
     ["right", "!", "?"], //1
-    ["right", "&", "#", "##", "@", "@@", "|", "=>"],
+    ["right", "&", "#", "##", "@", "@@", "|"],
 		["left", "(", ")", "[", "]", "{", "}", "."],
 	],
   "start": "Start",
@@ -142,6 +144,8 @@ var grammar = {
 			"Assign",
 			"Exec",
 			"BlockMain",
+			"Enum",
+			"EnumGet",
 			"Misc",
 			["ADDR ( Expr )", "$$ = ['addr', $3]"],
 			["( Expr )", "$$ = $2"],
@@ -326,7 +330,7 @@ var grammar = {
 		],
 		Ids: [
 			["ID", "$$=[$1]"],
-			["Ids ID", "$$=$1; $1.push($1)"],			
+			["Ids ID", "$$=$1; $1.push($2)"],			
 		],
 		Obj: [
 			["& ID Dic", "$$ = ['obj', $2, $3];"],
@@ -363,6 +367,12 @@ var grammar = {
 			["Expr && Expr", "$$ = ['and', [$1, $3]]"],
 			["Expr || Expr", "$$ = ['or', [$1, $3]]"],
 		],
+		Enum:[
+			["ENUM Ids", "$$ = ['enum', $2]"],
+		],
+		EnumGet: [
+			["ID -> ID", "$$ = ['enumget', $1, $3]"],
+		],		
 		Misc: [
 			["TEST", "$$ = ['test']"]
 		]

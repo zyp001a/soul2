@@ -1,7 +1,9 @@
+pre read functions/classes/etc
 setx
 isdef flag
 noreturn
 if idparent change func type
 assign func
 auto gen soul "def" func to go func
-soul method grammar 
+soul method grammar
+pointer, addr
