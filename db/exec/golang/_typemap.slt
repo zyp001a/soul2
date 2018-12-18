@@ -16,6 +16,12 @@ Class#c = #0
   ~int~
  }@elif(inClass(c, Str)){
   ~string~
+ }@elif(inClass(c, ArrStatic)){
+  ~[]~=$this(class(#0.itemsType))~~
+ }@elif(inClass(c, Arr)){
+  ~*[]~=$this(class(#0.itemsType))~~
+ }@elif(inClass(c, Dic)){
+  ~map[string]~=$this(class(#0.itemsType))~~
  }@else{
   ~*~=t~~
  }

@@ -1,5 +1,6 @@
 var jison = require("jison");
 var fs = require("fs");
+var str1 = " + $1.replace(/\\^([A-Za-z0-9_]+) *([^\\^]*)\\^/g, function(m, n, o){ return 'call(scopeGet(#$env.envExec, `' + n + '`), [' + o +'], #$env)'}) + "
 var grammar = {
   "lex": {
 		"macros":{},
@@ -29,9 +30,9 @@ var grammar = {
 			["ES E", "$$ = $1 + $2"],			
 		],
 		"E": [
-			["GET", "$$ = '`;$str += (' + $1 + ');$str += `'"],
-			["GET2", "$$ = '`;$str += appendIfExists(' + $1 + ');$str += `'"],			
-			["INS", "$$ = '`;' + $1.replace(/\\^([A-Za-z0-9_]+) *([^\\^]*)\\^/g, function(m, n, o){ return 'call(scopeGet(#$env.envExec, `' + n + '`), [' + o +'], #$env)'}) + ';$str += `'"],
+			["GET", "$$ = '`;$str += ('" + str1 + "');$str += `'"],
+			["GET2", "$$ = '`;$str += appendIfExists('" + str1 + "');$str += `'"],			
+			["INS", "$$ = '`;'" + str1 + "';$str += `'"],
 			["EXEC", "$$ = '`;$str += exec(#' + $1 + ', #$env);$str += `'"],
 			["EXEC2", "$$ = '`);$str += exec(#0.' + $1 + ', #$env);$str += `'"],			
 //			["MACRO", "$$ = '`);' + $1 + ';push(#$arr, `'"],

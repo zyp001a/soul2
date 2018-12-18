@@ -19,9 +19,6 @@ Arr#a = #0.callArgs
 }
 #arr = []Str
 @if printargs {
- @each _ e a{
-  arr.push(exec(e, $env))
- }
- ~(~=arr.join(", ")~)~
+ ~(~=^_execarr a,", "^~)~
 }
 ~

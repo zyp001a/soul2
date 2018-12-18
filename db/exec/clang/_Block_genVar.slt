@@ -1,5 +1,5 @@
 ~
-#var = scopeGet($env.envExec, "var")
+#var = scopeGet($env.envExec, "_var")
 #filter = {}
 Arr#x = #1;
 @if(x){

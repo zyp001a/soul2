@@ -1,0 +1,7 @@
+~
+#t = typepred(#0)
+@if(inClass(t, ArrStatic)){
+ ~^0~
+}@else{
+ ~(*^0)~
+}~

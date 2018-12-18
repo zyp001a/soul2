@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 GOPATH=~/go
+SOULE=$2
+SOULD=$3
 echo ===set exec $SOULE
 echo ===set def $SOULD
 if [ "seed.sl" -nt "seed.sl.go" ]; then

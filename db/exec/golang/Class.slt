@@ -1,5 +1,5 @@
 ~
-#typemap = scopeGet($env.envExec, "typemap")
+#typemap = scopeGet($env.envExec, "_typemap")
 Class#c = #0
 #make = @(c Class){
  #$str = ""

@@ -1846,6 +1846,13 @@ call2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
    log(a0)
    die("convert from type not defined")
   }
+  @if(inClassx(f, t)){
+   @if(inClassx(classx(a0), valc)){
+    //convert val
+    a0.obj = f
+    @return a0
+   }
+  }
   @if(f.name == ""){
    die("class with no name")
   }
@@ -2176,11 +2183,33 @@ funcDefx(defmain, "scopeGet", &(x Arrx, env Cptx)Cptx{
  Cptx#e = x[1]
  @return nullOrx(scopeGetx(o, e.str))
 },[scopec, strc], cptc)
+funcDefx(defmain, "opp", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#op = x[1]
+ Cptx#e = x[2]
+ Cptx#ret = execx(o, e)
+ @if(ret.type != @T("STR")){
+  die("opp: not used in tplCall")
+ }
+ @if(!inClassx(classx(o), callc)){
+  @return ret
+ }
+ Cptx#f = o.dic["callFunc"]
+ @if(!inClassx(classx(f), opc)){
+  @return ret
+ }
+ Int#sub = getx(f, "opPrecedence").int
+ Int#main = getx(op, "opPrecedence").int
+ @if(sub > main){
+  @return strNewx("(" + ret.str + ")")
+ }
+ @return ret
+},[cptc, opc, envc], strc)
 funcDefx(defmain, "get", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
  @return nullOrx(getx(o, e.str))
-},[objc, strc], cptc)
+},[cptc, strc], cptc)
 funcDefx(defmain, "set", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
@@ -2190,7 +2219,7 @@ funcDefx(defmain, "set", &(x Arrx, env Cptx)Cptx{
   @return r
  }
  @return nullv 
-},[objc, strc, cptc], cptc)
+},[cptc, strc, cptc], cptc)
 funcDefx(defmain, "exec", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
@@ -2214,6 +2243,10 @@ funcDefx(defmain, "class", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return classx(l)
 }, [cptc], cptc)
+funcDefx(defmain, "typepred", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return nullOrx(typepredx(l))
+}, [cptc], classc)
 funcDefx(defmain, "isCpt", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return boolNewx(l.type == @T("CPT"))
@@ -2576,6 +2609,11 @@ opDefx(intc, "add", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
  @return intNewx(l.int + r.int)
+}, intc, intc, opaddc)
+opDefx(intc, "multiply", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return intNewx(l.int * r.int)
 }, intc, intc, opaddc)
 opDefx(intc, "eq", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];

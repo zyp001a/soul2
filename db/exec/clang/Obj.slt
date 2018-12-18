@@ -10,8 +10,8 @@ Obj#o = #0;
 }
 
 @if(n){
- $scopeVars[n] = ^var n,class(o)^
- ~_~=n~ = ~=res~~
+ $scopeVars[n] = ^_var n,class(o)^
+ ~~=^_varname n^~ = ~=res~~
 }@else{
  ~~=res~~
 }~

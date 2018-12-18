@@ -1,0 +1,6 @@
+~
+Arr_Str#arr = []
+@each _ e Arr#0{
+ arr.push(exec(e, $env))
+}
+~~=arr.join(Str#1)~

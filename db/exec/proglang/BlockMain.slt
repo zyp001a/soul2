@@ -18,12 +18,12 @@ mainDir.makeAll()
 ##$funcs = {}Str
 ##$includes = {}Str
 
-^BlockMain_preMain^
+^_BlockMain_preMain^
 
-Str##$mainContent = ^Block_genContent #0^
-Str##$mainVar = ^Block_genVar #0^
+Str##$mainContent = ^_Block_genContent #0^
+Str##$mainVar = ^_Block_genVar #0^
 
-^BlockMain_postMain^
+^_BlockMain_postMain^
 
 mainDir.write($fileList)
 @if($cmdBuild != ""){
