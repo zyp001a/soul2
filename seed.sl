@@ -273,16 +273,33 @@ methodGetx = &(scope Cptx, func Cptx)Cptx{
   @return r  
  }
  Arrx#arr = func.dic["funcVarTypes"].arr;
- @if(len(arr) < 0){
+ @if(len(arr) == 0){
   @return _
  }
- Arrx#p = classx(arr[0]).arr
+ Cptx#o = arr[0];
+ Arrx#p = classx(o).arr
  @foreach v p{
   r = methodGetSubx(scope, v, func.str)
   @if(r != _){
    @return r
   }
  }
+ @if(o.type == @T("OBJ")){
+  r = methodGetSubx(scope, objc, func.str)
+  @if(r != _){
+   @return r
+  }  
+ }
+ @if(o.type == @T("CLASS")){
+  r = methodGetSubx(scope, classc, func.str)
+  @if(r != _){
+   @return r
+  }  
+ }
+ r = methodGetSubx(scope, cptc, func.str)
+ @if(r != _){
+  @return r
+ }   
  @return _
 }
 
@@ -1246,11 +1263,15 @@ cpt2strx = &(o Cptx, i Int)Str{
 tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
  @if(func.val == _){//use val as cache
   Str#sstr = func.dic["funcTpl"].str
-  Astx#ast = jsonParse(cmd("./slt-reader", sstr))
-  @if(len(ast) == 0){
-   die("tplCall: grammar error" + getx(func, "funcTplPath").str)
+  @if(sstr == ""){
+   @return strNewx("")
+  }@else{
+   Astx#ast = jsonParse(cmd("./slt-reader", sstr))
+   @if(len(ast) == 0){
+    die("tplCall: grammar error" + getx(func, "funcTplPath").str)
+   }
+   func.val = ast;
   }
-  func.val = ast;
  }@else{
   ast = Astx(func.val)
  }
@@ -1453,9 +1474,9 @@ exec2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
  #v = Astx(ast[2])
  #l = classNewx()
  Cptx#b = ast2cptx(v, def, l, global)
- @if(!inClassx(b.obj, blockc)){
+/* @if(!inClassx(b.obj, blockc)){
   b = preExecx(b);
- }
+ }*/
  #x = defx(execc, {
   execBlock: b
   execLocal: l
@@ -1682,9 +1703,9 @@ if2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, block Cptx)Cptx{
     callFunc: getx(t, "ne")
     callArgs: arrNewx(arrc, [args[i], defaultx(t)])
    })
-   Cptx#d = args[i+1]
-   d.dic["blockParent"] = block
   }
+  Cptx#d = args[i+1]
+  d.dic["blockParent"] = block
  }
  @if(l%2 == 1){
   Cptx#d = args[l-1]
@@ -1751,7 +1772,35 @@ each2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, block Cptx)Cptx{
 }
 for2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, block Cptx)Cptx{
  #v = Astx(ast[1])
- log(v)
+ @if(v[0] != _){
+  Cptx#start = ast2cptx(Astx(v[0]), def, local, global)
+ }@else{
+  #start = nullv
+ }
+ Cptx#check = ast2cptx(Astx(v[1]), def, local, global)
+ #t = typepredx(check)
+ @if(!inClassx(t, boolc)){
+  check = defx(callc, {
+   callFunc: getx(t, "ne")
+   callArgs: arrNewx(arrc, [check, defaultx(t)])
+  })
+ }
+ 
+ @if(v[2] != _){ 
+  Cptx#inc = ast2cptx(Astx(v[2]), def, local, global)
+ }@else{
+  #inc = nullv 
+ }
+ Cptx#bl = ast2blockx(Astx(v[3]), def, local, global)
+ 
+ @return defx(ctrlforc, {
+  ctrlArgs: arrNewx(arrc, [
+   start
+   check
+   inc
+   bl
+  ])
+ }) 
  @return 
 }
 assign2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
@@ -2011,15 +2060,14 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, name Str)Cptx{
  }@elif(t == "false"){
   @return falsev
  }@elif(t == "idlocal"){
-  //TODO
   #id = Str(ast[1])
   @if(len(ast) > 2){
-   #type = scopeGetx(def, Str(ast[2]))
-   @if(type == _){
-    die("wrong type "+Str(ast[2]))
-   }
    #val = getx(local, id)
    @if(val == _){
+    #type = scopeGetx(def, Str(ast[2]))
+    @if(type == _){
+     die("wrong type "+Str(ast[2]))
+    }
     local.dic[id] = defx(type)
    }   
   }
@@ -2029,13 +2077,13 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, name Str)Cptx{
   })  
  }@elif(t == "idglobal"){ 
   #id = Str(ast[1])
-  @if(len(ast) > 2){   
-   #type = scopeGetx(def, Str(ast[2]))
-   @if(type == _){
-    die("wrong type "+Str(ast[2]))
-   }
-   #val = getx(local, id)
-   @if(val == _){
+  @if(len(ast) > 2){
+   #val = getx(global, id)
+   @if(val == _){  
+    #type = scopeGetx(def, Str(ast[2]))
+    @if(type == _){
+     die("wrong type "+Str(ast[2]))
+    }
     global.dic[id] = defx(type)
    }   
   } 
@@ -2287,11 +2335,19 @@ funcDefx(defmain, "isDic", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return boolNewx(l.type == @T("DIC"))
 }, [cptc], boolc)
+funcDefx(defmain, "uid", &(x Arrx, env Cptx)Cptx{
+ @return strNewx(uidx())
+}, _, strc)
 funcDefx(defmain, "log", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
  log(cpt2strx(o))
  @return nullv
 }, [cptc])
+funcDefx(defmain, "die", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0];
+ die(o.str)
+ @return nullv
+}, [strc])
 funcDefx(defmain, "print", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
  print(o.str)
@@ -2318,9 +2374,17 @@ funcDefx(defmain, "call", &(x Arrx, env Cptx)Cptx{
  @if(e.fdefault){
   e = env
  }
-// Arrx#argsx = prepareArgsx(a.arr, f, env) 
  @return callx(f, a.arr, e)
 }, [funcc, arrc, envc], cptc)
+funcDefx(defmain, "tplCall", &(x Arrx, env Cptx)Cptx{
+ Cptx#f = x[0];
+ Cptx#a = x[1];
+ Cptx#e = x[2];
+ @if(e.fdefault){
+  e = env
+ }
+ @return tplCallx(f, a.arr, e)
+}, [functplc, arrc, envc], cptc)
 ##_mapping = @Dicx{} //TODO remove this line
 ##_mapping = _
 readWordMap = &(key Str, dic Dicx){
@@ -2436,6 +2500,10 @@ methodDefx(arrc, "push", &(x Arrx, env Cptx)Cptx{
  push(o.arr, e)
  @return nullv
 },[objc])
+methodDefx(arrc, "len", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return intNewx(len(o.arr))
+},_, intc)
 methodDefx(arrc, "set", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#i = x[1]
@@ -2462,6 +2530,10 @@ methodDefx(arrstrc, "join", &(x Arrx, env Cptx)Cptx{
  @return strNewx(s)
 },[strc], strc)
 
+methodDefx(dicc, "len", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return intNewx(len(o.arr))
+},_, intc)
 methodDefx(dicc, "set", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#i = x[1]
@@ -2610,25 +2682,83 @@ opDefx(intc, "add", &(x Arrx, env Cptx)Cptx{
  Cptx#r = x[1];
  @return intNewx(l.int + r.int)
 }, intc, intc, opaddc)
+opDefx(intc, "subtract", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return intNewx(l.int - r.int)
+}, intc, intc, opsubtractc)
 opDefx(intc, "multiply", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
  @return intNewx(l.int * r.int)
-}, intc, intc, opaddc)
+}, intc, intc, opmultiplyc)
+opDefx(intc, "divide", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return intNewx(l.int / r.int)
+}, intc, intc, opdividec)
+opDefx(intc, "mod", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return intNewx(l.int % r.int)
+}, intc, intc, opmodc)
 opDefx(intc, "eq", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
  @return boolNewx(l.int == r.int)
 }, intc, boolc, opeqc)
-opDefx(intc, "eq", &(x Arrx, env Cptx)Cptx{
+opDefx(intc, "ne", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
  @return boolNewx(l.int != r.int)
 }, intc, boolc, opnec)
+opDefx(intc, "lt", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return boolNewx(l.int < r.int)
+}, intc, boolc, opltc)
+opDefx(intc, "gt", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return boolNewx(l.int > r.int)
+}, intc, boolc, opgtc)
+opDefx(intc, "le", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return boolNewx(l.int <= r.int)
+}, intc, boolc, oplec)
+opDefx(intc, "ge", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return boolNewx(l.int >= r.int)
+}, intc, boolc, opgec)
 
+opDefx(cptc, "add", &(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @if(l.type != r.type){
+  log(cpt2strx(l)) 
+  die("add: wrong type")
+ }
+ @if(l.type == @T("INT")){ 
+  @return intNewx(l.int + r.int)
+ }
+ @if(l.type == @T("FLOAT")){ 
+  @return floatNewx(Float(l.val) + Float(r.val))
+ }
+ @if(l.type == @T("STR")){ 
+  @return strNewx(l.str + r.str)
+ }
+ log(cpt2strx(l))
+ die("cannot add")
+ @return nullv
+}, cptc, cptc, opaddc)
 opDefx(cptc, "not", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
-// log(cpt2strx(l))
+ @if(l.type != @T("INT")){
+  log(cpt2strx(l)) 
+  die("not wrong type")
+ }
  @return boolNewx(l.int == 0)
 }, _, boolc, opnotc)
 opDefx(cptc, "ne", &(x Arrx, env Cptx)Cptx{
@@ -2759,18 +2889,47 @@ execDefx("CtrlBreak", &(x Arrx, env Cptx)Cptx{
 execDefx("CtrlContinue", &(x Arrx, env Cptx)Cptx{
  @return objNewx(continuec)
 })
+ifcheckx = &(r Cptx)Boolean{
+ @if(r.type == @T("INT")){
+  @return r.int != 0
+ }
+ @return r.type != @T("NULL")
+}
 execDefx("CtrlIf", &(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
  Arrx#args = c.dic["ctrlArgs"].arr
  Int#l = len(args)
  @for Int#i=0;i<l-1;i+=2 {
   #r = execx(args[i], env)
-  @if(r.int != 0){
+  @if(ifcheckx(r)){
    @return blockExecx(args[i+1], env)
   }
  }
  @if(l%2 == 1){
   @return blockExecx(args[l-1], env)
+ }
+ @return nullv
+})
+execDefx("CtrlFor", &(x Arrx, env Cptx)Cptx{
+ Cptx#c = x[0]
+ Arrx#args = c.dic["ctrlArgs"].arr
+ execx(args[0], env)
+ @while(1){
+  Cptx#c = execx(args[1], env)
+  @if(!ifcheckx(c)){
+   @break
+  }
+  #r = blockExecx(args[3], env)
+  @if(inClassx(classx(r), signalc)){
+   @if(r.obj.id == breakc.id){
+    @break;
+   }
+   @if(r.obj.id == continuec.id){
+    @continue;
+   }
+   @return r    
+  }
+  execx(args[2], env)
  }
  @return nullv
 })
@@ -2792,7 +2951,7 @@ execDefx("CtrlEach", &(x Arrx, env Cptx)Cptx{
     local[val] = v   
    }
    #r = blockExecx(args[3], env)
-   @if(r != _ && inClassx(classx(r), signalc)){
+   @if(inClassx(classx(r), signalc)){
     @if(r.obj.id == breakc.id){
      @break;
     }
@@ -2811,7 +2970,7 @@ execDefx("CtrlEach", &(x Arrx, env Cptx)Cptx{
     local[val] = v   
    }
    #r = blockExecx(args[3], env)
-   @if(r != _ && inClassx(classx(r), signalc)){
+   @if(inClassx(classx(r), signalc)){
     @if(r.obj.id == breakc.id){
      @break;
     }

@@ -17,11 +17,11 @@ Class#c = #0
  }@elif(inClass(c, Str)){
   ~string~
  }@elif(inClass(c, ArrStatic)){
-  ~[]~=$this(class(#0.itemsType))~~
+  ~[]~=$this(class(c.itemsType))~~
  }@elif(inClass(c, Arr)){
-  ~*[]~=$this(class(#0.itemsType))~~
+  ~*[]~=$this(class(c.itemsType))~~
  }@elif(inClass(c, Dic)){
-  ~map[string]~=$this(class(#0.itemsType))~~
+  ~map[string]~=$this(class(c.itemsType))~~
  }@else{
   ~*~=t~~
  }

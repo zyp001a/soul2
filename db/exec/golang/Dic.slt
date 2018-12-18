@@ -1,0 +1,7 @@
+~
+Dic#c = #0
+~~=^_typemap class(c)^~{~
+@each k v c{~
+~=ind("\""+k)~": ~=ind(exec(v, $env), 1)~,~
+}~
+}

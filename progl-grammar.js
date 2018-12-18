@@ -43,7 +43,6 @@ var grammar = {
 			["@foreach", "return 'FOREACH'"],		
 			["@for", "return 'FOR'"],
 			["@each", "return 'EACH'"],
-			["@while", "return 'WHILE'"],
 			["@error", "return 'ERROR'"],			
 			["@include", "return 'INCLUDE'"],
 			["@exec", "return 'EXEC'"],
@@ -221,7 +220,7 @@ var grammar = {
 		],
 		"Ctrl": [
 			["If", "$$ = ['if', $1]"],
-			["WHILE Expr Block",
+			["FOR Expr Block",
 			 "$$ = ['for', [, $2, , $3]]"],
 			["FOR Expr , Expr , Expr Block",
 			 "$$ = ['for', [$2, $4, $6, $7]]"],
@@ -341,9 +340,9 @@ var grammar = {
 		"ASSIGN": [
 			["Expr = Expr", "$$ = [$1, $3]"],
 			["Expr += Expr", "$$ = [$1, $3, 'add']"],
-			["Expr ++", "$$ = [$1, ['num', '1'], 'add']"],
+			["Expr ++", "$$ = [$1, ['int', '1'], 'add']"],
 			["Expr -= Expr", "$$ = [$3, $1, 'subtract']"],
-			["Expr --", "$$ = [$1, ['num', '1'], 'subtract']"],
+			["Expr --", "$$ = [$1, ['int', '1'], 'subtract']"],
 			["Expr *= Expr",  "$$ = [$1, $3, 'multiply']"],
 			["Expr /= Expr",  "$$ = [$1, $3, 'divide']"],
 		],

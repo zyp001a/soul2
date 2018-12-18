@@ -25,3 +25,11 @@ log("#3")
  log(v)
  @break;
 }
+@for #i=0; i<2; i++ {
+ log(i)
+}
+#i = 0
+@for i<2 {
+ log(i)
+ @break
+}

@@ -1,0 +1,14 @@
+~#a = #0.ctrlArgs
+@if(a[0]){
+ #start = exec(a[0], $env) + "; "
+}@else{
+ #start = ""
+}
+@if(a[2]){
+ #inc = "; " +exec(a[2], $env)
+}@else{
+ #inc = ""
+}
+~for ~=start + exec(a[1], $env) + inc~ {
+~:ind(^_Block_genContent a[3]^)~
+}

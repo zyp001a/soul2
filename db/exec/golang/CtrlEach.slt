@@ -1,0 +1,27 @@
+~
+Arr#a = #0.ctrlArgs
+#varname = scopeGet($env.envExec, "_varname")
+#pp = typepred(a[2])
+#a0 = varname(a[0])
+#a1 = varname(a[1])
+@if(inClass(pp, Arr)){
+ #tmp = "_tmp"+uid();
+ #colon = ""
+ @if(a[0] == ""){
+  a0 = "_tmp"+uid();
+  #colon = ":"
+ }
+ ~~=tmp~ := ~=exec(a[2], $env)~;
+for ~=a0~ ~=colon~= uint(0); ~=a0~ < uint(len(~=^_idarr tmp^~)); ~=a0~ ++ {~
+ @if(a[1] != ""){~
+~=ind(a1)~ = (~=^_idarr tmp^~)[~=a0~]~
+ }~
+~:ind(^_Block_genContent a[3]^)~
+}~
+
+}@else{
+ ~for ~=a0~, ~=a1~ = range ~=exec(a[2], $env)~ {
+~:ind(^_Block_genContent a[3]^)~
+}~
+
+}~
