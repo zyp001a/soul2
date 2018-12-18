@@ -13,6 +13,7 @@ mainDir.makeAll()
 ##$imports = {}Str
 ##$types = {}Str
 ##$classes = {}Str
+##$scopeVars = {}Str
 ##$globalVars = {}Str
 ##$funcs = {}Str
 ##$includes = {}Str

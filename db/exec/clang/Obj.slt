@@ -1,0 +1,17 @@
+~
+Obj#o = #0;
+#n = getName(o);
+
+#r = scopeGet($env.envExec, getName(class(o)))
+@if(r){
+ #res = call(r, [#0], $env)
+}@else{
+ #res = ^new class(o), Dic(o)^
+}
+
+@if(n){
+ $scopeVars[n] = ^var n,class(o)^
+ ~_~=n~ = ~=res~~
+}@else{
+ ~~=res~~
+}~

@@ -3,7 +3,7 @@ Cpt#f = #0.callFunc
 Arr#a = #0.callArgs
 #c = class(f)
 #printargs = 0
-@if(inClass(c, FuncTpl)){
+@if(inClass(c, FuncTpl)){//TODO func tmp
 }@elif(inClass(c, Func)){
  #n = getName(f)
  #r = methodGet($env.envExec, f)
