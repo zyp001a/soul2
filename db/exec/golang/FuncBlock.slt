@@ -4,12 +4,13 @@ Arr_Str#vars = #0.funcVars
 Arr#vts = #0.funcVarTypes
 Class#ret = #0.funcReturn
 #typemap = scopeGet($env.envExec, "_typemap")
+#varname = scopeGet($env.envExec, "_varname")
 #blockx = ^_Block_genContent bl^
 #varx = ^_Block_genVar bl,vars^
 #argvx = ""
 @each i v vts{
  @if (i != 0) {argvx += ", "}
- argvx += "_" + vars[i] + " " + typemap(class(v))
+ argvx += varname(vars[i]) + " " + typemap(class(v))
 }
 #returnx = ""
 @if(ret){

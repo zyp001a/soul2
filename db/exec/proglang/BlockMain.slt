@@ -30,6 +30,7 @@ mainDir.write($fileList)
  mainDir.writeFile("build.log", cmdRun($cmdBuild))
 }
 @if($cmdExec != ""){
- print(cmdRun($cmdExec + " " + osArgs().join(" ")))
+// print(cmdRun($cmdExec + " " + osArgs().join(" ")))
+ print(cmdRun($cmdExec))
 }
 ~
