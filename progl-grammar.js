@@ -47,7 +47,6 @@ var grammar = {
 			["@include", "return 'INCLUDE'"],
 			["@exec", "return 'EXEC'"],
 			["@addr", "return 'ADDR'"],
-			["@class", "return 'CLASS'"],
 			["@scope", "return 'SCOPE'"],
 			["@ns", "return 'NS'"],						
 			["@true", "return 'TRUE'"],
@@ -100,7 +99,7 @@ var grammar = {
     ]
   },
 	"operators": [
-		["right", "=", "+=", "-=", "*=", "/="],
+		["right", "=", "+=", "-=", "*=", "/=", ":="],
     ["left", "++", "--"],
     ["left", "??"], //8
     ["left", "||"], //7
@@ -110,7 +109,7 @@ var grammar = {
     ["left", "+", "-", "^"], //3
     ["left", "*", "/", "%"],//2
     ["right", "!", "?"], //1
-    ["right", "&", "#", "##", "@", "@@", "|"],
+    ["right", "&", "#", "@", "|", "->", "=>"],
 		["left", "(", ")", "[", "]", "{", "}", "."],
 	],
   "start": "Start",
@@ -133,7 +132,6 @@ var grammar = {
 			"ArrX",
 			"DicX",
 			"Obj",
-			"Class",
 //
 			"Id",
 			"Call",
@@ -142,6 +140,7 @@ var grammar = {
 			"ItemsGet",			
 			"Op",
 			"Assign",
+			"Def",			
 			"Exec",
 			"BlockMain",
 			"Enum",
@@ -212,8 +211,8 @@ var grammar = {
 			["# INT", "$$ = ['idlocal', $2]"],					
 			["ID # ID ", "$$ = ['idlocal', $3, $1]"],
 			["ID # INT", "$$ = ['idlocal', $3, $1]"],						
-			["## ID", "$$ = ['idglobal', $2]"],
-			["ID ## ID ", "$$ = ['idglobal', $3, $1]"],			
+//			["## ID", "$$ = ['idglobal', $2]"],
+//			["ID ## ID ", "$$ = ['idglobal', $3, $1]"],			
 		],
 		Elem: [
 			["Expr", "$$ = [$1]"],
@@ -290,11 +289,11 @@ var grammar = {
 			["( Expr )", "$$ = $2"],
 		],
 		"FUNC": [//CLASS? ARGDEF RETURN BLOCK AFTERBLOCK
-			["@ FuncArgs Block Block", "$$ = $2.concat([$3,$4,])"],
-			["@ FuncArgs Block", "$$ = $2.concat([$3,,])"],	
-			["@ FuncArgs", "$$ = $2.concat([,,])"],
-			["@ Block Block", "$$ = [,,,$2,$3,]"],
-			["@ Block", "$$ = [,,,$2,,]"],
+			["-> FuncArgs Block Block", "$$ = $2.concat([$3,$4,])"],
+			["-> FuncArgs Block", "$$ = $2.concat([$3,,])"],	
+			["-> FuncArgs", "$$ = $2.concat([,,])"],
+			["-> Block Block", "$$ = [,,,$2,$3,]"],
+			["-> Block", "$$ = [,,,$2,,]"],
 		],
 		"FuncArgs": [
 			["ID Arg ID", "$$ = [$1, $2, $3,]"],
@@ -325,8 +324,8 @@ var grammar = {
 			["ObjGetX CallArgs", "$$ = ['callreflect', $1[1], $1[2], $2];"],			
 		],
 		Class:[
-			["CLASS Ids Dic", "$$ = ['class', $1, $2]"],
-			["CLASS Dic", "$$ = ['class', [], $2]"],			
+			["=> Ids Dic", "$$ = ['class', $1, $2]"],
+			["=> Dic", "$$ = ['class', [], $2]"],			
 		],
 		Ids: [
 			["ID", "$$=[$1]"],
@@ -340,8 +339,13 @@ var grammar = {
 			["( )", "$$ = []"],
 			["( Exprs )", "$$ = $2"]
 		],
-		"Assign": "$$ = ['assign', $1]",
-		"ASSIGN": [
+		Def: [
+			["ID := Expr", "$$ = ['def', $2, $3]"],
+			["ID Class", "$$ = ['def', $1, $2]"],
+			["ID Func", "$$ = ['def', $1, $2]"],						
+		],
+		Assign: "$$ = ['assign', $1]",
+		ASSIGN: [
 			["Expr = Expr", "$$ = [$1, $3]"],
 			["Expr += Expr", "$$ = [$1, $3, 'add']"],
 			["Expr ++", "$$ = [$1, ['int', '1'], 'add']"],
@@ -371,7 +375,7 @@ var grammar = {
 			["ENUM Ids", "$$ = ['enum', $2]"],
 		],
 		EnumGet: [
-			["ID -> ID", "$$ = ['enumget', $1, $3]"],
+			["ID ## ID", "$$ = ['enumget', $1, $3]"],
 		],		
 		Misc: [
 			["TEST", "$$ = ['test']"]
