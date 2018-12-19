@@ -45,7 +45,7 @@ var grammar = {
 			["@each", "return 'EACH'"],
 			["@error", "return 'ERROR'"],			
 			["@include", "return 'INCLUDE'"],
-			["@exec", "return 'EXEC'"],
+			["@env", "return 'ENV'"],
 			["@addr", "return 'ADDR'"],
 			["@scope", "return 'SCOPE'"],
 			["@ns", "return 'NS'"],						
@@ -72,6 +72,7 @@ var grammar = {
 			["\\-\\=", "return '-='"],
 			["\\*\\=", "return '*='"],
 			["\\/\\=", "return '/='"],
+			["\\:\\=", "return ':='"],			
 			["\\|\\|", "return '||'"],
 			["\\&\\&", "return '&&'"],
 			["\\#\\#", "return '##'"],
@@ -141,7 +142,7 @@ var grammar = {
 			"Op",
 			"Assign",
 			"Def",			
-			"Exec",
+			"Env",
 			"BlockMain",
 			"Enum",
 			"EnumGet",
@@ -199,11 +200,11 @@ var grammar = {
 //			["| Ids", "$$ = ['switchdef', $2]"],
 //			["EXEC ID", "$$ = ['switchexec', $2]"],			
 //		],
-		Exec: [
-			["EXEC ID Id", "$$ = ['exec', $2, $3]"],
-			["EXEC ID BlockMain", "$$ = ['exec', $2, $3]"],
-			["EXEC BlockMain", "$$ = ['exec', 'main', $2]"],
-			["EXEC Block", "$$ = ['exec', 'main', ['blockmain', $2, 'main']]"],			
+		Env: [
+			["ENV ID ID", "$$ = ['env', $2, ['idlib', $3]]"],
+			["ENV ID BlockMain", "$$ = ['env', $2, $3]"],
+			["ENV BlockMain", "$$ = ['env', 'main', $2]"],
+			["ENV Block", "$$ = ['env', 'main', ['blockmain', $2, 'main']]"],			
 		],
 		Id: [
 			["ID", "$$ = ['id', $1]"],			
@@ -340,7 +341,7 @@ var grammar = {
 			["( Exprs )", "$$ = $2"]
 		],
 		Def: [
-			["ID := Expr", "$$ = ['def', $2, $3]"],
+			["ID := Expr", "$$ = ['def', $1, $3]"],
 			["ID Class", "$$ = ['def', $1, $2]"],
 			["ID Func", "$$ = ['def', $1, $2]"],						
 		],

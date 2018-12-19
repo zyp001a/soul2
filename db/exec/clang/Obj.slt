@@ -10,7 +10,7 @@ Obj#o = #0;
 }
 
 @if(n){
- $scopeVars[n] = ^_var n,class(o)^
+ $globals[n] = ^_var n,class(o)^
  ~~=^_varname n^~ = ~=res~~
 }@else{
  ~~=res~~

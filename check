@@ -22,7 +22,7 @@ if [ "tpl-grammar.js" -nt "tpl-parser.js" ]; then
 		echo ===gen tpl parser				
 fi
 
-if [ -z "$1" ]; then
+if [ "$1" = "all" ]; then
 		echo "===check all"
 	  if [ "seed.sl.go" -nt "soul2" ]; then
 				/usr/bin/go build

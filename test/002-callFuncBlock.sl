@@ -1,4 +1,4 @@
-a = @(x Str){
+a -> (x Str){
  #b = 2
  log(x)
  log(b)

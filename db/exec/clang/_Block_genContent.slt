@@ -1,5 +1,6 @@
 ~
-@each _ e #0.blockVal {
+Block#b = #0
+@each _ e b.blockVal {
 ~~:exec(e, $env)~
 ~
 }

@@ -16,6 +16,6 @@ Class#ret = #0.funcReturn
 @if(ret){
  returnx += " " + getName(ret)
 }
-~@(~=argvx~)~=returnx~{
+~->(~=argvx~)~=returnx~{
 ~:ind(^_Block_genContent bl^)~
 }

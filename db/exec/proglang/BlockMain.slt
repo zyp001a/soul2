@@ -1,29 +1,29 @@
 ~
-Str#mainPath = $env.envGlobal.$blockmain.blockPath
+Str#mainPath = $env.envBlock.blockPath
 #mainFlag = getName($env.envExec)
 
 #mainDirStr = mainPath + "." + mainFlag
-##mainDir = Dir(mainDirStr)
+mainDir := Dir(mainDirStr)
 mainDir.makeAll()
 
-##$fileList = {} //files to write
-##$cmdBuild = ""  //build cmd
-##$cmdExec = "" //exec cmd
+$fileList := {} //files to write
+$cmdBuild := ""  //build cmd
+$cmdExec := "" //exec cmd
 
-##$imports = {}Str
-##$types = {}Str
-##$classes = {}Str
-##$scopeVars = {}Str
-##$globalVars = {}Str
-##$funcs = {}Str
-##$includes = {}Str
+$imports := {}Str
+$types := {}Str
+$classes := {}Str
+$globals := {}Str
+$funcs := {}Str
+$includes := {}Str
 
 ^_BlockMain_preMain^
 
-Str##$mainContent = ^_Block_genContent #0^
-Str##$mainVar = ^_Block_genVar #0^
+$mainContent := ^_Block_genContent #0^
+$mainVar := ^_Block_genVar #0^
 
 ^_BlockMain_postMain^
+
 
 mainDir.write($fileList)
 @if($cmdBuild != ""){
