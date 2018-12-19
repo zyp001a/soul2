@@ -1,23 +1,9 @@
 ~
 @if(inClass(#0, Enum)){
- $types[getName(#0)] = ^Enum_def #0^
+ $types[getName(#0)] = ^_Enum_def #0^
+}@elif(inClass(#0, Items)){
+ $types[getName(#0)] = ^_Items_def #0^
 }@else{
- #typemap = scopeGet($env.envExec, "_typemap")
- Class#c = #0
- #make = @(c Class){
-  #$str = ""
-  ~type ~=getName(c)~ struct {
-~
-  @each _ v c.parents(){
-   ~~=ind(getName(v))~
-~
-  }
-  @each k v c.schema(){
-   ~~=ind("_"+k+" "+typemap(class(v)))~
-~
-  }~}~
-  @return $str
- }
- $classes[getName(c)] = make(c)
+ $classes[getName(#0)] = ^_Class_gen #0^
 }
 ~

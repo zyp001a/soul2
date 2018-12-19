@@ -1,5 +1,6 @@
 ~
 #var = scopeGet($env.envExec, "_var")
+#varname = scopeGet($env.envExec, "_varname")
 #filter = {}
 Arr#x = #1;
 @if(x){
@@ -10,7 +11,7 @@ Arr#x = #1;
 
 @each k v #0.blockStateDef.schema() {
  @if(!filter.hasKey(k)){
-  ~~:call(var, [k, v], $env)~
+  ~~:call(var, [varname(k), v], $env)~
 ~
  }
 }

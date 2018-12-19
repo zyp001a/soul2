@@ -6,6 +6,7 @@ Class#c = #0
  #t = getName(c)
  @if(t == "Cpt"){
   ~interface{}~
+ }@elif(inClass(c, Empty)){
  }@elif(inClass(c, Float32)){
   ~float32~
  }@elif(inClass(c, Float)){
@@ -22,6 +23,8 @@ Class#c = #0
   ~*[]~=$this(class(c.itemsType))~~
  }@elif(inClass(c, Dic)){
   ~map[string]~=$this(class(c.itemsType))~~
+ }@elif(inClass(c, FuncProto)){
+  ~func()~
  }@else{
   ~*~=t~~
  }
