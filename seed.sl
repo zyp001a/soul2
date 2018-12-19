@@ -222,8 +222,8 @@ scopeGetx = &(scope Cptx, key Str, cache Dic)Cptx{
 
  #sstr = dbGetx(scope, key);
  @if(sstr != ""){
-  sstr = key+" = "+sstr;
-  r = progl2cptx(sstr, scope, classNewx(), classNewx())
+  sstr = key+" := "+sstr;
+  r = progl2cptx(sstr, scope, classNewx())
   @return r;
  }
 
@@ -701,6 +701,7 @@ funcSetClosurex = &(func Cptx){
  envStack: arrc
  envLocal: objc 
  envGlobal: objc
+ envTplGlobal: objc 
 })
 ##execc = classDefx(defmain, "Exec", _, {
  execBlock: blockc
@@ -1301,11 +1302,9 @@ tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
   localx.dic[str(i)] = v;
  }
  
- Cptx#globalp = env.dic["envGlobal"]
- #global = getx(globalp, "$tplglobal")
+ Cptx#global = env.dic["envTplGlobal"]
  @if(global == _){
-  log(cpt2strx(globalp))
-  die("run in place with no $tplglobal");
+  die("no tpl global");
  }
  Cptx#b = ast2cptx(ast, defmain, localx, global.obj)
 
@@ -1313,6 +1312,7 @@ tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
  #nenv = defx(envc, {
   envLocal: local
   envGlobal: global
+  envTplGlobal: global  
   envStack: arrNewx(arrc, @Arrx{})
   envExec: execmain
  })
@@ -1447,7 +1447,7 @@ execx = &(o Cptx, env Cptx)Cptx{
 }
 
 /////19 func parse
-checkid = &(id Str, local Cptx, global Cptx, func Cptx)Cptx{
+checkid = &(id Str, local Cptx, func Cptx)Cptx{
  #r = getx(local, id)
  @if(r != _){
   #r2 = local.dic[id]
@@ -1456,13 +1456,9 @@ checkid = &(id Str, local Cptx, global Cptx, func Cptx)Cptx{
   }
   @return r
  }
- #r = getx(global, id)
- @if(r != _){
-  @return r
- }
  @return _
 }
-id2cptx = &(id Str, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
+id2cptx = &(id Str, def Cptx, local Cptx, func Cptx)Cptx{
  #r = getx(local, id)
  @if(r != _){
   #r = local.dic[id]
@@ -1497,9 +1493,9 @@ id2cptx = &(id Str, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
  }
  @return _
 }
-exec2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
+exec2cptx = &(ast Astx, def Cptx, local Cptx)Cptx{
  #v = Astx(ast[2])
- Cptx#b = ast2cptx(v, def, local, global)
+ Cptx#b = ast2cptx(v, def, local)
 /* @if(!inClassx(b.obj, blockc)){
   b = preExecx(b);
  }*/
@@ -1515,7 +1511,7 @@ exec2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
  x.dic["execScope"] = execsp
  @return x
 }
-blockmain2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
+blockmain2cptx = &(ast Astx, def Cptx, local Cptx)Cptx{
  #scopename = Str(ast[2])
  @if(scopename != ""){
   #d = nsGetx(defns, scopename)
@@ -1526,7 +1522,7 @@ blockmain2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
   #l = local
  }
  #v = Astx(ast[1])
- Cptx#b = ast2blockx(v, d, l, global);
+ Cptx#b = ast2blockx(v, d, l);
  b.obj = blockmainc
  blockmainc.obj = b
  @if(len(ast) == 4){
@@ -1534,7 +1530,7 @@ blockmain2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx)Cptx{
  }
  @return b
 }
-func2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cptx{
+func2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  //CLASS ARGDEF RETURN BLOCK AFTERBLOCK
  //TODO func name should not contain $
  #v = Astx(ast[1])
@@ -1554,7 +1550,7 @@ func2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)C
   #varid = Str(argdef[0])
   push(funcVars, strNewx(varid))
   @if(argdef[2] != _){//defined default arg val
-   Cptx#varval = ast2cptx(Astx(argdef[2]), def, local, global, func)
+   Cptx#varval = ast2cptx(Astx(argdef[2]), def, local, func)
   }@elif(argdef[1] != _){
    #t = scopeGetx(def, Str(argdef[1]))
    @if(t == _){
@@ -1577,7 +1573,7 @@ func2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)C
   #cx = classNewx([fp, funcblockc])
   #x = objNewx(cx);
   x.dic["funcVars"] = arrNewx(arrstrc, funcVars)  
-  x.dic["funcBlock"] = ast2blockx(Astx(v[3]), def, nlocal, global, x);
+  x.dic["funcBlock"] = ast2blockx(Astx(v[3]), def, nlocal, x);
   
   @if(v[4] != _){
    die("TODO alterblock")
@@ -1591,7 +1587,7 @@ func2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)C
 
  @return x;
 }
-enum2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cptx{
+enum2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  @if(name == ""){
   die("enum no name")
  }
@@ -1612,7 +1608,7 @@ enum2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)C
  }
  @return c
 }
-class2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cptx{
+class2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
 //'class' parents schema
  #parents = Astx(ast[1])
  #arr = @Arrx{}
@@ -1624,7 +1620,7 @@ class2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)
   }
   push(arr, r)
  }
- Cptx#schema = ast2dicx(Astx(ast[2]), def, local, global, func);
+ Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);
  #x = classNewx(arr)
  @each k v schema.dic{
   x.dic[k] = v
@@ -1634,12 +1630,12 @@ class2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)
  }
  @return x
 }
-obj2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cptx{
+obj2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  #c = scopeGetx(def, Str(ast[1]))
  @if(c == _){
    die("obj2obj: no class "+Str(ast[1])) 
  }
- Cptx#schema = ast2dicx(Astx(ast[2]), def, local, global, func);
+ Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);
  @if(schema.fmid){
  //TOTEST
   #x = defx(callc, {
@@ -1654,12 +1650,12 @@ obj2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)C
  }
  @return x 
 }
-op2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
+op2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #op = Str(ast[1])
 // Str#cname = "Op"+ucfirst(op)
  
  #args = Astx(ast[2])
- Cptx#arg0 = ast2cptx(Astx(args[0]), def, local, global, func)
+ Cptx#arg0 = ast2cptx(Astx(args[0]), def, local, func)
  #t0 = typepredx(arg0)
 
  @if(t0 == _){
@@ -1687,7 +1683,7 @@ op2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
    callArgs: arrNewx(arrc, [arg0])
   })
  }@else{
-  Cptx#arg1 = ast2cptx(Astx(args[1]), def, local, global, func)
+  Cptx#arg1 = ast2cptx(Astx(args[1]), def, local, func)
   //TODO convert arg1
   @return defx(callc, {
    callFunc: f
@@ -1697,10 +1693,10 @@ op2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
  @return _
 }
 
-itemsget2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, v Cptx)Cptx{
- Cptx#items = ast2cptx(Astx(ast[1]), def, local, global, func)
+itemsget2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
+ Cptx#items = ast2cptx(Astx(ast[1]), def, local, func)
  #itemst = typepredx(items)
- Cptx#key = ast2cptx(Astx(ast[2]), def, local, global, func) 
+ Cptx#key = ast2cptx(Astx(ast[2]), def, local, func) 
  @if(v == _){
   #getf = getx(itemst, "get")
   @return defx(callc, {
@@ -1717,8 +1713,8 @@ itemsget2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, v Cpt
  }
 
 }
-objget2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, v Cptx)Cptx{
- Cptx#obj = ast2cptx(Astx(ast[1]), def, local, global, func)
+objget2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
+ Cptx#obj = ast2cptx(Astx(ast[1]), def, local, func)
  @if(obj.type == @T("OBJ")){
   @if(v == _){
    @return defx(callc, {
@@ -1736,9 +1732,9 @@ objget2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, v Cptx)
   @return
  }
 }
-if2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, block Cptx)Cptx{
+if2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  #v = Astx(ast[1])
- Cptx#a = ast2arrx(v, def, local, global, func)
+ Cptx#a = ast2arrx(v, def, local, func)
  Arrx#args = a.arr;
  Int#l = len(args)
  @for Int#i=0;i<l-1;i+=2{
@@ -1763,17 +1759,17 @@ if2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, block Cptx)
  
  @return defx(ctrlifc, {ctrlArgs: a})
 }
-each2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, block Cptx)Cptx{
+each2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  #v = Astx(ast[1])
  #key = Str(v[0])
  #val = Str(v[1])
- Cptx#expr = ast2cptx(Astx(v[2]), def, local, global, func)
+ Cptx#expr = ast2cptx(Astx(v[2]), def, local, func)
  #et = typepredx(expr)
  @if(et == _){
   die("no type for each")
  }
  @if(key != ""){
-  #r = checkid(key, local, global, func)
+  #r = checkid(key, local, func)
   @if(inClassx(et, dicc)){
    @if(r != _){
     @if(classx(r).id != strc.id){
@@ -1808,7 +1804,7 @@ each2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, block Cpt
    local.dic[val] = defx(it)
   }  
  }
- Cptx#bl = ast2blockx(Astx(v[3]), def, local, global, func)
+ Cptx#bl = ast2blockx(Astx(v[3]), def, local, func)
  bl.dic["blockParent"] = block
  @return defx(ctrleachc, {
   ctrlArgs: arrNewx(arrc, [
@@ -1819,14 +1815,14 @@ each2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, block Cpt
   ])
  })
 }
-for2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, block Cptx)Cptx{
+for2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  #v = Astx(ast[1])
  @if(v[0] != _){
-  Cptx#start = ast2cptx(Astx(v[0]), def, local, global, func)
+  Cptx#start = ast2cptx(Astx(v[0]), def, local, func)
  }@else{
   #start = nullv
  }
- Cptx#check = ast2cptx(Astx(v[1]), def, local, global, func)
+ Cptx#check = ast2cptx(Astx(v[1]), def, local, func)
  #t = typepredx(check)
  @if(!inClassx(t, boolc)){
   check = defx(callc, {
@@ -1836,11 +1832,11 @@ for2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, block Cptx
  }
  
  @if(v[2] != _){ 
-  Cptx#inc = ast2cptx(Astx(v[2]), def, local, global, func)
+  Cptx#inc = ast2cptx(Astx(v[2]), def, local, func)
  }@else{
   #inc = nullv 
  }
- Cptx#bl = ast2blockx(Astx(v[3]), def, local, global, func)
+ Cptx#bl = ast2blockx(Astx(v[3]), def, local, func)
  
  @return defx(ctrlforc, {
   ctrlArgs: arrNewx(arrc, [
@@ -1852,33 +1848,33 @@ for2cptx =  &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, block Cptx
  }) 
  @return 
 }
-assign2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
+assign2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #v = Astx(ast[1])
  #left = Astx(v[0])
  #right = Astx(v[1])
  #leftt = Str(left[0])
  @if(leftt == "objget"){
-  Cptx#lefto = ast2cptx(left, def, local, global, func)
-  Cptx#righto = ast2cptx(right, def, local, global, func)    
+  Cptx#lefto = ast2cptx(left, def, local, func)
+  Cptx#righto = ast2cptx(right, def, local, func)    
   @return 
  }
  @if(leftt == "itemsget"){
-  Cptx#righto = ast2cptx(right, def, local, global, func) 
-  Cptx#lefto = itemsget2cptx(left, def, local, global, func, righto)
+  Cptx#righto = ast2cptx(right, def, local, func) 
+  Cptx#lefto = itemsget2cptx(left, def, local, func, righto)
   @return lefto
  }
  @if(leftt == "id" && len(v) == 2){
   #name = Str(left[1])
-  @if(getx(local, name) == _ && getx(global, name) == _){
+  @if(getx(local, name) == _){
    //is define statement
    //TODO scope ns is not allowed
-   @return ast2cptx(right, def, local, global, func, name)
+   @return ast2cptx(right, def, local, func, name)
    //is idparent assign 
   }
   //normal assign
  } 
- Cptx#lefto = ast2cptx(left, def, local, global, func)
- Cptx#righto = ast2cptx(right, def, local, global, func)
+ Cptx#lefto = ast2cptx(left, def, local, func)
+ Cptx#righto = ast2cptx(right, def, local, func)
  //TODO set type
 
  @if(classx(lefto).id == idlocalc.id){
@@ -1918,13 +1914,13 @@ assign2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
   callArgs: arrNewx(arrc, [lefto, righto])
  })
 }
-call2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
+call2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #v = Astx(ast[1])
- Cptx#f = ast2cptx(v, def, local, global, func)
+ Cptx#f = ast2cptx(v, def, local, func)
  @if(classx(f).id == idclassc.id){
   #f = f.dic["idVal"]
  }
- Cptx#arr = ast2arrx(Astx(ast[2]), def, local, global, func) 
+ Cptx#arr = ast2arrx(Astx(ast[2]), def, local, func) 
  @if(f.type == @T("CLASS")){
   Cptx#a0 = arr.arr[0]
   #t = typepredx(a0)
@@ -1959,18 +1955,18 @@ call2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
   callArgs: arr
  }) 
 }
-callreflect2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
+callreflect2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  @return nullv
 }
-callmethod2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
- Cptx#oo = ast2cptx(Astx(ast[1]), def, local, global, func)
+callmethod2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
+ Cptx#oo = ast2cptx(Astx(ast[1]), def, local, func)
  Cptx#to = typepredx(oo)
  @if(to == _){
   log(cpt2strx(oo))
   die("cannot typepred obj")
  }
  //TODO CLASS get CALL
- Cptx#arr = ast2arrx(Astx(ast[3]), def, local, global, func)
+ Cptx#arr = ast2arrx(Astx(ast[3]), def, local, func)
  #f = getx(to, Str(ast[2]))
  @if(f == _){
   log(cpt2strx(oo))
@@ -1984,7 +1980,7 @@ callmethod2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
   callArgs: arr
  })
 }
-ast2blockx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
+ast2blockx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #arr = @Arrx{}
  #x = objNewx(blockc)
  #dicl = dicNewx(dicuintc, @Dicx{})
@@ -1994,13 +1990,13 @@ ast2blockx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
   #ee = Astx(e)
   #idpre = Str(Astx(ee[0])[0])
   @if(idpre == "if"){
-   Cptx#c = if2cptx(Astx(ee[0]), def, local, global, func, x)
+   Cptx#c = if2cptx(Astx(ee[0]), def, local, func, x)
   }@elif(idpre == "each"){
-   Cptx#c = each2cptx(Astx(ee[0]), def, local, global, func, x)
+   Cptx#c = each2cptx(Astx(ee[0]), def, local, func, x)
   }@elif(idpre == "for"){
-   Cptx#c = for2cptx(Astx(ee[0]), def, local, global, func, x) 
+   Cptx#c = for2cptx(Astx(ee[0]), def, local, func, x) 
   }@else{
-   Cptx#c = ast2cptx(Astx(ee[0]), def, local, global, func)  
+   Cptx#c = ast2cptx(Astx(ee[0]), def, local, func)  
   }
   push(arr, c)
   @if(len(ee) == 2){
@@ -2015,11 +2011,11 @@ ast2blockx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx)Cptx{
  @return x
 }
 
-ast2arrx = &(asts Astx, def Cptx, local Cptx, global Cptx, func Cptx, it Cptx, il Int)Cptx{
+ast2arrx = &(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
  #arrx = @Arrx{}
  #callable = @Boolean(0);
  @foreach e asts{
-  Cptx#ee = ast2cptx(Astx(e), def, local, global, func)
+  Cptx#ee = ast2cptx(Astx(e), def, local, func)
   @if(ee.fmid){
    callable = @Boolean(1);
   }
@@ -2039,14 +2035,14 @@ ast2arrx = &(asts Astx, def Cptx, local Cptx, global Cptx, func Cptx, it Cptx, i
  } 
  @return r;
 }
-ast2dicx = &(asts Astx, def Cptx, local Cptx, global Cptx, func Cptx, it Cptx, il Int)Cptx{
+ast2dicx = &(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
  #dicx = @Dicx{}
  #arrx = @Arrx{} 
  #callable = @Boolean(0);
  @foreach eo asts{
   #e = Astx(eo)
   #k = Str(e[1])
-  Cptx#ee = ast2cptx(Astx(e[0]), def, local, global, func)
+  Cptx#ee = ast2cptx(Astx(e[0]), def, local, func)
   @if(ee.fmid){
    callable = @Boolean(1);
   }
@@ -2074,17 +2070,17 @@ ast2dicx = &(asts Astx, def Cptx, local Cptx, global Cptx, func Cptx, it Cptx, i
  }
  @return r;
 }
-ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cptx{
+ast2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  @if(def == _){
   die("no def")
  }
  #t = Str(ast[0])
  @if(t == "exec"){
-  @return exec2cptx(ast, def, local, global)
+  @return exec2cptx(ast, def, local)
  }@elif(t == "blockmain"){
-  @return blockmain2cptx(ast, def, local, global)  
+  @return blockmain2cptx(ast, def, local)  
  }@elif(t == "block"){
-  @return ast2blockx(Astx(ast[1]), def, local, global, func)
+  @return ast2blockx(Astx(ast[1]), def, local, func)
  }@elif(t == "str"){
   @return strNewx(Str(ast[1]))
  }@elif(t == "float"){
@@ -2118,23 +2114,22 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cp
   })  
  }@elif(t == "id"){
   #id = Str(ast[1])
-  #x = id2cptx(id, def, local, global, func)
+  #x = id2cptx(id, def, local, func)
   @if(x == _){
    log(local)
-   log(global)   
    die("id not defined "+ id)
   }
   @return x;
  }@elif(t == "call"){
-  @return call2cptx(ast, def, local, global, func)
+  @return call2cptx(ast, def, local, func)
  }@elif(t == "callmethod"){
-  @return callmethod2cptx(ast, def, local, global, func)  
+  @return callmethod2cptx(ast, def, local, func)  
  }@elif(t == "callreflect"){
-  @return callreflect2cptx(ast, def, local, global, func)  
+  @return callreflect2cptx(ast, def, local, func)  
  }@elif(t == "assign"){
-  @return assign2cptx(ast, def, local, global, func)  
+  @return assign2cptx(ast, def, local, func)  
  }@elif(t == "func"){
-  @return func2cptx(ast, def, local, global, func, name)
+  @return func2cptx(ast, def, local, func, name)
  }@elif(t == "tpl"){
   #x = defx(functplc, {
    funcTpl: strNewx(Str(ast[1]))   
@@ -2155,7 +2150,7 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cp
     Int#il = int(Str(ast[3]))
    }
   } 
-  @return ast2arrx(Astx(ast[1]), def, local, global, func, it, il)
+  @return ast2arrx(Astx(ast[1]), def, local, func, it, il)
  }@elif(t == "dic"){
   @if(len(ast) > 2){
    @if(ast[2] != _){
@@ -2165,7 +2160,7 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cp
     Int#il = int(Str(ast[3]))
    }
   }
-  @return ast2dicx(Astx(ast[1]), def, local, global, func, it, il);
+  @return ast2dicx(Astx(ast[1]), def, local, func, it, il);
  }@elif(t == "enumget"){
   #en = scopeGetx(def, Str(ast[1]))
   @if(en == _){
@@ -2181,17 +2176,17 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cp
   }  
   @return r
  }@elif(t == "enum"){
-  @return enum2cptx(ast, def, local, global, func, name)  
+  @return enum2cptx(ast, def, local, func, name)  
  }@elif(t == "class"){
-  @return class2cptx(ast, def, local, global, func, name)
+  @return class2cptx(ast, def, local, func, name)
  }@elif(t == "obj"){
-  @return obj2cptx(ast, def, local, global, func, name)
+  @return obj2cptx(ast, def, local, func, name)
  }@elif(t == "op"){
-  @return op2cptx(ast, def, local, global, func)
+  @return op2cptx(ast, def, local, func)
  }@elif(t == "itemsget"){
-  @return itemsget2cptx(ast, def, local, global, func)
+  @return itemsget2cptx(ast, def, local, func)
  }@elif(t == "objget"){
-  @return objget2cptx(ast, def, local, global, func)
+  @return objget2cptx(ast, def, local, func)
  }@elif(t == "return"){
   @if(func == _){
    log(ast)
@@ -2199,7 +2194,7 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cp
   }
   #ret = fpReturnx(func)
   @if(len(ast) > 1){
-   Cptx#arg = ast2cptx(Astx(ast[1]), def, local, global, func)
+   Cptx#arg = ast2cptx(Astx(ast[1]), def, local, func)
    @if(ret.id == emptyc.id){
     fpReturnx(func, cptc)
    }
@@ -2222,12 +2217,12 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, global Cptx, func Cptx, name Str)Cp
  }
  @return
 }
-progl2cptx = &(str Str, def Cptx, local Cptx, global Cptx)Cptx{
+progl2cptx = &(str Str, def Cptx, local Cptx)Cptx{
  Astx#ast = jsonParse(cmd("./sl-reader", str))
  @if(len(ast) == 0){
   die("progl2cpt: wrong grammar")
  }
- #r = ast2cptx(ast, def, local, global)
+ #r = ast2cptx(ast, def, local)
  @return r
 }
 /////20 func def
@@ -2818,16 +2813,15 @@ execDefx = &(name Str, f Funcx)Cptx{
 }
 execDefx("Exec", &(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
- #global = classNewx()
  Cptx#block = c.dic["execBlock"]
+ Cptx#pscope = block.dic["blockScope"]
+ #global = classNewx([pscope])
  global.dic["$penv"] = env
  global.dic["$blockmain"] = block
- #tplglobal = classNewx()
- tplglobal.dic["$tplglobal"] = objNewx(tplglobal) 
- global.dic["$tplglobal"] = tplglobal.dic["$tplglobal"]
  
  #nenv = defx(envc, {
   envGlobal: objNewx(global)
+  envTplGlobal: objNewx(defmain)  
   envLocal: objNewx(block.dic["blockStateDef"])
   envStack: arrNewx(arrc, @Arrx{})
   envExec: c.dic["execScope"]
@@ -3052,7 +3046,6 @@ execDefx("IdParent", &(x Arrx, env Cptx)Cptx{
 })
 
 /////24 main func
-#global = classNewx()
 #local = classNewx()
 //log("###"+local.id)
 Str#fc = fileRead(osArgs()[1])
@@ -3064,9 +3057,10 @@ Str#defsp = ""
 @if(len(osArgs()) > 3){
  #defsp = osArgs()[3] 
 }
-#main = progl2cptx("@exec "+execsp+" | " + defsp + " {"+fc+"}'"+osArgs()[1]+"'", defmain, local, global)
+#main = progl2cptx("@exec "+execsp+" | " + defsp + " {"+fc+"}'"+osArgs()[1]+"'", defmain, local)
 #env = defx(envc, {
- envGlobal: objNewx(global)
+ envGlobal: objNewx(defmain)
+ envTplGlobal: objNewx(defmain) 
  envLocal: objNewx(local)
  envStack: arrNewx(arrc, @Arrx{})
  envExec: execmain
