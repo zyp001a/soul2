@@ -1944,12 +1944,19 @@ for2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
 }
 def2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
  #id = Str(ast[1])
+ #v = Astx(ast[2]) 
+ @if(def.dic[id] != _ && pre == 1){
+  die("def twice "+id)
+ }
 
-// @if(def.dic[id] != _){
-//  die("def twice "+id)
-// }
+ #c = Str(v[0])
+ @if(c == "func"){
+  @return func2cptx(v, def, local, func, id, pre)
+ }
+ @if(c == "class"){
+  @return class2cptx(v, def, local, func, id, pre)    
+ }
  
- #v = Astx(ast[2])
  Cptx#r = ast2cptx(v, def, local, func, id)
  @if(r.name == ""){
   #t = typepredx(r)
@@ -2137,15 +2144,9 @@ preAst2blockx = &(ast Astx, def Cptx, local Cptx, func Cptx){
   #eee = Astx(ee[0])
   #idpre = Str(eee[0])
   @if(idpre == "def"){
-   #id = Str(eee[1])  
+//   #id = Str(eee[1])  
    #newast = Astx(eee[2])
-   #c = Str(newast[0])
-   @if(c == "func"){
-    func2cptx(newast, def, local, func, id, 1)
-   }
-   @if(c == "class"){
-    class2cptx(newast, def, local, func, id, 1)    
-   }
+   def2cptx(newast, def, local, func, 1)   
   }
  }
 }
