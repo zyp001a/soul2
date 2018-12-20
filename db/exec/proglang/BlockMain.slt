@@ -1,6 +1,6 @@
 ~
 Str#mainPath = $env.envBlock.blockPath
-#mainFlag = getName($env.envExec)
+#mainFlag = getNote($env.envExec)
 
 #mainDirStr = mainPath + "." + mainFlag
 mainDir := Dir(mainDirStr)

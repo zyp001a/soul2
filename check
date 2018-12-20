@@ -21,8 +21,15 @@ if [ "tpl-grammar.js" -nt "tpl-parser.js" ]; then
 		node tpl-grammar.js
 		echo ===gen tpl parser				
 fi
+OP=$1
+if [ -z "$1" ]; then
+		OP=all
+fi
+if [ "$SOULE$SOULD" = "main" ]; then
+		SOULE=
+fi
 
-if [ "$1" = "all" ]; then
+if [ "$OP" = "all" ]; then
 		echo "===check all"
 	  if [ "seed.sl.go" -nt "soul2" ]; then
 				/usr/bin/go build

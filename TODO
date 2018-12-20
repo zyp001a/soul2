@@ -1,8 +1,10 @@
+predef more
 pre read functions/classes/etc
+assign func complete//
+@type
 interface to type
 setx
 isdef flag
-assign func //
 auto gen soul "def" func to go func
 soul method grammar
 pointer, addr

@@ -292,7 +292,7 @@ var grammar = {
 		"FUNC": [//CLASS? ARGDEF RETURN BLOCK AFTERBLOCK
 			["-> FuncArgs Block Block", "$$ = $2.concat([$3,$4,])"],
 			["-> FuncArgs Block", "$$ = $2.concat([$3,,])"],	
-			["-> FuncArgs", "$$ = $2.concat([,,])"],
+//			["-> FuncArgs", "$$ = $2.concat([,,])"],
 			["-> Block Block", "$$ = [,,,$2,$3,]"],
 			["-> Block", "$$ = [,,,$2,,]"],
 		],

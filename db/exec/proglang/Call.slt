@@ -15,7 +15,8 @@ Arr#a = #0.callArgs
   ~~=n~~
  }
 }@elif(inClass(c, Mid)){
- 
+ printargs = 1
+ ~~=exec(f, $env)~~
 }@else{
 }
 #arr = []Str
