@@ -417,6 +417,7 @@ arrc.ctype = @T("ARR")
 ##midc = classDefx(defmain, "Mid")
 itemDefx = &(class Cptx, type Cptx, mid Boolean)Cptx{
  @if(type != _ && type.id != cptc.id){
+  type = aliasGetx(type)
   Str#n = class.name+"_"+type.name
   Cptx#r = classGetx(defmain, n)
   @if(r == _){
@@ -426,6 +427,8 @@ itemDefx = &(class Cptx, type Cptx, mid Boolean)Cptx{
   r = class
  }
  @if(mid){
+  @return classDefx(defmain, n, [r, midc])
+  /*
   Str#n = r.name+"_Mid"
   Cptx#r2 = classGetx(defmain, n)
   @if(r2 == _){
@@ -433,6 +436,7 @@ itemDefx = &(class Cptx, type Cptx, mid Boolean)Cptx{
   }@else{
    r = r2
   }
+  */
  }
  @return r;
 }
@@ -520,7 +524,7 @@ strNewx = &(x Str)Cptx{
 fpDefx = &(types Arrx, return Cptx)Cptx{
  #n = "FuncProto"
  @foreach v types{
-  #n += "_" + v.name
+  #n += "_" + aliasGetx(classx(v)).name
  }
  #n += "__"+return.name
  #x = classGetx(defmain, n);
@@ -605,12 +609,23 @@ funcSetClosurex = &(func Cptx){
 ##idclassc = classDefx(defmain, "IdClass", [idstrc], {
  idVal: cptc
 })
-##idaliasc = classDefx(defmain, "IdAlias", [idclassc])
+##aliasc = classDefx(defmain, "Alias")
 
 aliasDefx = &(scope Cptx, key Str, class Cptx)Cptx{
- #x= classDefx(scope, key, [idaliasc])
- x.dic["idVal"] = class
+ #x= classDefx(scope, key, [aliasc, class])
  @return x
+}
+aliasGetx = &(c Cptx)Cptx{
+ @if(c.arr == _){
+  log(cpt2strx(c))
+  die("wrong cpt")
+ }
+ @if(len(c.arr) > 1){
+  @if(c.arr[0].id == aliasc.id){  
+   @return aliasGetx(c.arr[1])
+  }
+ }
+ @return c
 }
 
 /////11 def op
@@ -1771,18 +1786,18 @@ itemsget2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
   Cptx#s = items.dic["idState"]
   Str#str = items.dic["idStr"].str
   Cptx#itemst = s.dic[str]
+  Cptx#itemstt = itemst.obj
   #it = getx(itemst, "itemsType")
   @if(predt != _ && predt.id != cptc.id){ 
    @if(it.id == cptv.id){
-    @if(itemst.obj.name != "Dic" && itemst.obj.name != "Arr"){
+    @if(itemstt.name != "Dic" && itemstt.name != "Arr"){
      die("error, itemsType defined but name not changed "+itemst.obj.name)
     }
-    #oobj = itemst.obj
-    itemst.obj = itemDefx(itemst.obj, predt)
+    itemst.obj = itemDefx(itemstt, predt)
     @if(itemst.val != _){
      //cached init right expr a = {}/[]
      #oo = Cptx(itemst.val)
-     convertx(oobj, itemst.obj, oo)
+     convertx(itemstt, itemst.obj, oo)
     }
    }@elif(!inClassx(predt, classx(it))){
     die("TODO convert items assign: "+predt.name + " is not "+classx(it).name);
@@ -1974,7 +1989,11 @@ def2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
  }@elif(c == "blockmain"){
   @return blockmain2cptx(v, def, local, id)  
  }@elif(c == "alias"){
-  #x = classGetx(def, Str(v[1]))
+  Str#n = Str(v[1])
+  @if(n == "Class" || n== "Obj" || n == "Cpt"){
+   die("no alias for this")
+  }
+  #x = classGetx(def, n)
   @if(x == _){
    die("alias error "+Str(v[1]));
   }
@@ -2660,6 +2679,11 @@ dirWritex = &(d Str, dic Dicx){
   }
  } 
 }
+methodDefx(aliasc, "getClass", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return aliasGetx(o)
+}, _, classc)
+
 methodDefx(dirc, "write", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#d = x[1]

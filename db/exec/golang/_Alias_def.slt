@@ -1,0 +1,3 @@
+~
+Alias#a = #0
+~type ~=getName(#0)~ ~=^_typemap a.getClass()^~

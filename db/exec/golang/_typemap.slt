@@ -7,6 +7,8 @@ Class#c = #0
  @if(t == "Cpt"){
   ~interface{}~
  }@elif(inClass(c, Empty)){
+ }@elif(inClass(c, Alias)){
+  ~~=t~~ 
  }@elif(inClass(c, Float32)){
   ~float32~
  }@elif(inClass(c, Float)){
@@ -24,7 +26,7 @@ Class#c = #0
  }@elif(inClass(c, Dic)){
   ~map[string]~=$this(class(c.itemsType))~~
  }@elif(inClass(c, FuncProto)){
-  ~func()~
+  ~~=^_Func_declare c^~~
  }@else{
   ~*~=t~~
  }

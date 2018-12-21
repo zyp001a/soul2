@@ -295,7 +295,7 @@ var grammar = {
 			["-> Block", "$$ = [,,,$2,,]"],
 		],
 		FuncProto: [
-			["-> FuncArgs", "$$ = ['funcproto', $2]"],			
+			["-> FuncArgs", "$2[1].forEach(function(e){e[1]=e[0];e[0]=''}); $$ = ['funcproto', $2]"],			
 		],
 		FuncArgs: [
 			["ID Arg ID", "$$ = [$1, $2, $3,]"],
@@ -353,7 +353,7 @@ var grammar = {
 		Type: [
 			["TYPE ID", "$$= ['alias', $2]"],
 			["TYPE ID ID", "$$= ['itemdef', $2, $3]"],
-			["FuncProto", "$$= $1"]
+			["TYPE FuncProto", "$$= $2"]
 		],
 		Assign: "$$ = ['assign', $1]",
 		ASSIGN: [
