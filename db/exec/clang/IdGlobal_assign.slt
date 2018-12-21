@@ -1,0 +1,5 @@
+~
+#n = #0.idStr
+#nn = ^_varname n^
+$globals[n] = ^_var nn, get(#0.idState, n)^
+~^0 =^1

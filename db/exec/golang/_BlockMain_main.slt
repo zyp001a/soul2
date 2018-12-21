@@ -1,4 +1,4 @@
-package main~#sep = "\n"~
+package main~#sep = "\n"; ~
 ~:$imports.values().join(sep)~
 ~:$types.values().join(sep)~
 ~:$classes.values().join(sep)~

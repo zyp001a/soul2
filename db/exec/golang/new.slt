@@ -3,6 +3,8 @@ Class#c = #0
 Dic#d = #1
 ~&~=getName(c)~{
 ~@each k v d.appendClass(c){
- ~~=ind("_"+k)~: ~=ind(exec(v, $env), 1)~,
+ @if(!getDefaultFlag(v)){
+  ~~=ind("_"+k)~: ~=ind(exec(v, $env), 1)~,  
 ~
+ }
 }~}
