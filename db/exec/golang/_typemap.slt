@@ -20,11 +20,11 @@ Class#c = #0
  }@elif(inClass(c, Str)){
   ~string~
  }@elif(inClass(c, ArrStatic)){
-  ~[]~=$this(class(c.itemsType))~~
+  ~[]~=call($this, [class(c.itemsType)], $env)~~
  }@elif(inClass(c, Arr)){
-  ~*[]~=$this(class(c.itemsType))~~
+  ~*[]~=call($this, [class(c.itemsType)], $env)~~
  }@elif(inClass(c, Dic)){
-  ~map[string]~=$this(class(c.itemsType))~~
+  ~map[string]~=call($this, [class(c.itemsType)], $env)~~
  }@elif(inClass(c, FuncProto)){
   ~~=^_Func_declare c^~~
  }@else{

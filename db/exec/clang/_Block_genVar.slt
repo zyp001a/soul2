@@ -1,6 +1,6 @@
 ~
-#var = scopeGet($env.envExec, "_var")
-#varname = scopeGet($env.envExec, "_varname")
+#var = $env.envExec._var
+#varname = $env.envExec._varname
 #filter = {}
 Arr#x = #1;
 @if(x){

@@ -1,6 +1,6 @@
 ~
 Arr#a = #0.ctrlArgs
-#varname = scopeGet($env.envExec, "_varname")
+#varname = $env.envExec._varname
 #pp = typepred(a[2])
 #a0 = varname(a[0])
 #a1 = varname(a[1])

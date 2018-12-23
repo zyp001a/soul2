@@ -2,7 +2,7 @@
 Obj#o = #0;
 #n = getName(o);
 
-#r = scopeGet($env.envExec, getName(class(o)))
+#r = get($env.envExec, getName(class(o)))
 @if(r){
  #res = call(r, [#0], $env)
 }@else{

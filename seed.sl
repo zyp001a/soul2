@@ -1296,7 +1296,6 @@ cpt2strx = &(o Cptx, i Int)Str{
 ##execmain = scopeNewx(execns, "main")
 ##tplmain = classNewx([defmain])
 tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
-// log(getx(func, "funcTplPath").str)
  @if(func.val == _){//use val as cache
   Str#sstr = func.dic["funcTpl"].str
   @if(sstr == ""){
@@ -1335,6 +1334,7 @@ tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
 callx = &(func Cptx, args Arrx, env Cptx)Cptx{
  @if(func == _ || func.obj == _){
   log(arr2strx(args))
+  log(cpt2strx(func))  
   die("func not defined")
  }
  @if(inClassx(func.obj, funcnativec)){
@@ -1534,7 +1534,7 @@ subFunc2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, isproto Int)Cptx{
  #funcVars = @Arrx{}
  #funcVarTypes = @Arrx{}
  #nlocal = classNewx([local])
- @if(v[0] != _){
+ @if(v[0] != _){ //method
   #class = classGetx(def, Str(v[0]))
   push(funcVars, strNewx("$self"))
   Cptx#x = defx(class)  
@@ -1731,7 +1731,7 @@ op2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   t0 = cptc
  }
  #f = getx(t0, op);
- @if(f == _){
+ @if(f == _ || f.id == nullv.id){
   log(cpt2strx(arg0)) 
   log(cpt2strx(t0))
   die("Op not find "+op)
@@ -1768,6 +1768,9 @@ itemsget2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  Cptx#key = ast2cptx(Astx(ast[2]), def, local, func) 
  @if(v == _){
   #getf = getx(itemstc, "get")
+  @if(getf == _){
+   die("no getf")
+  }
   @return defx(callc, {
    callFunc: getf
    callArgs: arrNewx(arrc, [items, key])
@@ -1775,6 +1778,9 @@ itemsget2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  }
  #setf = getx(itemstc, "set")
   //TODO check/convert v type
+ @if(setf == _){
+  die("no setf")
+ }  
  #lefto = defx(callc, {
   callFunc: setf
   callArgs:  arrNewx(arrc, [items, key, v])
@@ -1966,10 +1972,6 @@ for2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
 def2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
  #id = Str(ast[1])
  #v = Astx(ast[2])
- #dfd = def.dic[id] 
- @if(dfd != _ && pre == 1){
-  die("def twice "+id)
- }
 
  #c = Str(v[0])
  @if(c == "func"){
@@ -1977,6 +1979,11 @@ def2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
  }
  @if(c == "class"){
   @return class2cptx(v, def, local, func, id, pre)    
+ }
+
+ #dfd = def.dic[id] 
+ @if(dfd != _ && pre == 1){
+  die("def twice "+id)
  }
  @if(dfd != _){
   @return dfd
@@ -2113,6 +2120,9 @@ assign2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    }
   }
   #ff = getx(lpredt, op)
+  @if(ff == _){
+   log("no op "+lpredt.name + " " +op)
+  }
   righto = defx(callc, {
    callFunc: ff
    callArgs: arrNewx(arrc, [lefto, righto])   
@@ -2488,11 +2498,7 @@ funcDefx(defmain, "methodGet", &(x Arrx, env Cptx)Cptx{
  Cptx#f = x[1]
  @return nullOrx(methodGetx(o, f))
 },[classc, funcc], cptc)
-funcDefx(defmain, "scopeGet", &(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1]
- @return nullOrx(classGetx(o, e.str))
-},[classc, strc], cptc)
+
 funcDefx(defmain, "opp", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#op = x[1]
@@ -2519,6 +2525,15 @@ funcDefx(defmain, "get", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
  @return nullOrx(getx(o, e.str))
+},[cptc, strc], cptc)
+funcDefx(defmain, "mustGet", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1]
+ #r = getx(o, e.str)
+ @if(r == _){
+  die(e.str + " not found!")
+ }
+ @return r
 },[cptc, strc], cptc)
 funcDefx(defmain, "set", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -2635,6 +2650,14 @@ funcDefx(defmain, "call", &(x Arrx, env Cptx)Cptx{
  Cptx#e = x[2];
  @if(e.fdefault){
   e = env
+ }
+ @if(f == _ || f.id == nullv.id){
+  log(cpt2strx(a))
+  die("call() error");
+ }
+ @if(!inClassx(classx(f), funcc)){
+  log(cpt2strx(f))
+  die("not func")
  }
  @return callx(f, a.arr, e)
 }, [funcc, arrc, envc], cptc)
@@ -2775,7 +2798,7 @@ methodDefx(arrc, "len", &(x Arrx, env Cptx)Cptx{
 methodDefx(arrc, "set", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#i = x[1]
- Cptx#v = x[2] 
+ Cptx#v = x[2]
  @if(len(o.arr) <= i.int){
   log(arr2strx(o.arr))
   log(i.int)
@@ -2882,11 +2905,12 @@ opDefx(dicc, "get", &(x Arrx, env Cptx)Cptx{
 
 opDefx(idlocalc, "assign", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
- Cptx#r = x[1];  
+ Cptx#r = x[1];
+
  #v = execx(r, env)
  Cptx#local = env.dic["envLocal"]
  #str = l.dic["idStr"]
- local.dic[str.str] = v 
+ local.dic[str.str] = v
  @return v
 }, cptc, cptc, opassignc)
 
@@ -3072,7 +3096,11 @@ prepareArgsx = &(args Arrx, f Cptx, env Cptx)Arrx{
 execDefx("Call", &(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
  Cptx#f = execx(c.dic["callFunc"], env)
- Arrx#args = c.dic["callArgs"].arr  
+ Arrx#args = c.dic["callArgs"].arr
+ @if(f == _ || f.id == nullv.id){
+  log(cpt2strx(c))
+  die("Call: empty func")
+ }
  #argsx = prepareArgsx(args, f, env)
  @return callx(f, argsx, env)
 })

@@ -1,6 +1,6 @@
 var jison = require("jison");
 var fs = require("fs");
-var str1 = " + $1.replace(/\\^([A-Za-z0-9_]+) *([^\\^]*)\\^/g, function(m, n, o){ return 'call(scopeGet(#$env.envExec, `' + n + '`), [' + o +'], #$env)'}) + "
+var str1 = " + $1.replace(/\\^([A-Za-z0-9_]+) *([^\\^]*)\\^/g, function(m, n, o){ return 'call(mustGet(#$env.envExec, `' + n + '`), [' + o +'], #$env)'}) + "
 var grammar = {
   "lex": {
 		"macros":{},

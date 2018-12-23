@@ -1,6 +1,6 @@
 ~
 Class#c = #0
-#typemap = scopeGet($env.envExec, "_typemap")
+#typemap = $env.envExec._typemap
  ~type ~=getName(c)~ struct {
 ~
  @each _ v c.parents(){
@@ -8,7 +8,7 @@ Class#c = #0
 ~
  }
  @each k v c.schema(){
-  ~~=ind("_"+k+" "+typemap(class(v)))~
+  ~~=ind("_"+k+" "+call(typemap, [class(v)], $env))~
 ~
  }
  ~}~

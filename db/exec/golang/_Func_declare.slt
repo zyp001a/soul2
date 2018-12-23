@@ -1,17 +1,17 @@
 ~
 Arr#vts = #0.funcVarTypes
 Class#ret = #0.funcReturn
-#typemap = scopeGet($env.envExec, "_typemap")
-#varname = scopeGet($env.envExec, "_varname")
+#typemap = $env.envExec._typemap
+#varname = $env.envExec._varname
 
 #argvx = ""
 @each i v vts{
  @if (i != 0) {argvx += ", "}
- argvx += typemap(class(v))
+ argvx += call(typemap, [class(v)], $env)
 }
 #returnx = ""
 @if(ret){
- returnx += " " + typemap(ret)
+ returnx += " " + call(typemap, [ret], $env)
 }
 
 ~func(~=argvx~)~=returnx~
