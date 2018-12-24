@@ -1,0 +1,4 @@
+~
+goImport("strings")
+funcImport("_split", $env)
+~_split(^0, ^1)

@@ -1,7 +1,7 @@
 ~
 Block#b = #0
 @each _ e b.blockVal {
-~~:exec(e, $env)~
+ ~~:exec(e, $env)~
 ~
 }
 ~

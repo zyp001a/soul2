@@ -1,6 +1,6 @@
 ~
 setIndent("  ")
-goImport -> (varname Str){
+goImport ->(varname Str){
  @if($imports[varname] != _){
   @return
  }

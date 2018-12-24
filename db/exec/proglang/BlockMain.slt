@@ -17,6 +17,13 @@ $globals := {}Str
 $funcs := {}Str
 $includes := {}Str
 
+funcImport ->(key Str, env){
+ @if($funcs[key]){
+  @return
+ }
+ $funcs[key] = call(mustGet(env.envExec, key+"Impl"), [], env)
+}
+
 ^_BlockMain_preMain^
 
 $mainContent := ^_Block_genContent #0^

@@ -6,7 +6,7 @@ Class#c = #0
  #t = getName(c)
  @if(t == "Cpt"){
   ~interface{}~
- }@elif(inClass(c, Empty)){
+ }@elif(inClass(c, EmptyReturn)){
  }@elif(inClass(c, Alias)){
   ~~=t~~ 
  }@elif(inClass(c, Bool)){
