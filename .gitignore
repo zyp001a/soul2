@@ -13,5 +13,5 @@ x
 soul2
 test/x*
 test/y*
-main.sl.golang
+main.sl.exec
 test/*exec

@@ -4,7 +4,21 @@ SOULE=$2
 SOULD=$3
 echo ===set exec $SOULE
 echo ===set def $SOULD
-if [ "main.sl" -nt "main.sl.golang/main.go" ]; then
+if [ "seed.sl" -nt "seed.sl.go" ]; then
+		node ../soul/bootstrap.sl.js seed.sl 3
+  	rc=$?
+		if [[ $rc -ne 0 ]]; then
+    		echo ===gen failed				
+				exit 1
+		fi		
+		echo ===gen seed.sl.go done
+fi
+if [ "seed.sl.go" -nt "soul2" ]; then
+		/usr/bin/go build	
+		echo ===gen soul2 done	
+fi				
+
+if [ "main.sl" -nt "main.sl.exec/golang/main.go" ]; then
 		./soul2 main.sl golang
   	rc=$?
 		if [[ $rc -ne 0 ]]; then

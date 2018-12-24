@@ -9,6 +9,8 @@ Class#c = #0
  }@elif(inClass(c, Empty)){
  }@elif(inClass(c, Alias)){
   ~~=t~~ 
+ }@elif(inClass(c, Bool)){
+  ~bool~
  }@elif(inClass(c, Float32)){
   ~float32~
  }@elif(inClass(c, Float)){

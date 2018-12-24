@@ -32,10 +32,11 @@ Cptx = <>{
  
  fmid: Boolean
  fdefault: Boolean
+ fprop: Boolean 
  
  name: Str
  id: Str
- scope: Cptx 
+ class: Cptx  
 
  obj: Cptx
  dic: Dicx
@@ -120,7 +121,9 @@ parentMakex = &(o Cptx, parentarr Arrx){
   o.arr = parentarr
   o.ctype = ctype
  }@else{
-  o.arr = @Arrx{}
+  @if(o.arr == _){
+   o.arr = @Arrx{}
+  }
  }
 }
 classNewx = &(arr Arrx, dic Dicx)Cptx{
@@ -133,12 +136,13 @@ classNewx = &(arr Arrx, dic Dicx)Cptx{
  parentMakex(r, arr)
  @return r;
 }
-routex = &(o Cptx, scope Cptx, name Str){
+routex = &(o Cptx, scope Cptx, name Str)Cptx{
  //TODO route name should not contain $
  #dic = scope.dic;
  dic[name] = o 
  o.name = name;
- o.scope = scope
+ o.class = scope
+ @return o
 }
 ##defns = nsNewx("def")
 ##defmain = scopeNewx(defns, "main")
@@ -253,8 +257,17 @@ subClassGetx = &(scope Cptx, key Str, cache Dic)Cptx{
  }
  @return _
 }
+propDefx = &(scope Cptx, key Str, r Cptx)Cptx{
+ Cptx#o = copyx(r)
+ o.class = scope
+ o.name = scope.name + "_" + key
+ @return o;
+}
 classGetx = &(scope Cptx, key Str)Cptx{
  Cptx#r = subClassGetx(scope, key, {})
+ @if(r != _ && r.fprop){
+  @return propDefx(scope, key, r)
+ }
  @return r;
 }
 subMethodGetx = &(scope Cptx, v Cptx, key Str)Cptx{
@@ -537,11 +550,6 @@ fpDefx = &(types Arrx, return Cptx)Cptx{
  @return x
 }
 
-fpVarTypesx = &(func Cptx)Cptx{
- Cptx#a0 = func.obj.arr[0]
- @return a0.dic["funcVarTypes"]
-}
-
 ##valfuncc = curryDefx(defmain, "ValFunc", valc)
 valfuncc.ctype = @T("VALFUNC")
 ##funcnativec = classDefx(defmain, "FuncNative", [funcprotoc], {
@@ -592,14 +600,14 @@ funcSetClosurex = &(func Cptx){
 ##callreflectc = curryDefx(defmain, "CallReflect", callc)
 
 
-##idc = classDefx(defmain, "Id", [midc])
+##idc = classDefx(defmain, "Id")
 ##idstrc =  classDefx(defmain, "IdStr", [idc], {
  idStr: strc,
 })
 //##iduintc =  classDefx(defmain, "IdUintc", [idc], {
 // idUint: uintc,
 //})
-##idstatec = classDefx(defmain, "IdState", [idstrc], {
+##idstatec = classDefx(defmain, "IdState", [idstrc, midc], {
  idState: classc 
 })
 ##idlocalc = curryDefx(defmain, "IdLocal", idstatec)
@@ -612,12 +620,13 @@ funcSetClosurex = &(func Cptx){
 ##aliasc = classDefx(defmain, "Alias")
 
 aliasDefx = &(scope Cptx, key Str, class Cptx)Cptx{
- #x= classDefx(scope, key, [aliasc, class])
+ Cptx#x = scope.dic[key]
+ parentMakex(x, [aliasc, class]);
  @return x
 }
 aliasGetx = &(c Cptx)Cptx{
  @if(c.arr == _){
-  log(cpt2strx(c))
+  log(strx(c))
   die("wrong cpt")
  }
  @if(len(c.arr) > 1){
@@ -781,6 +790,7 @@ methodDefx = &(class Cptx, name Str, val Funcx, argtypes Arrx, return Cptx)Cptx{
   argtypes = [class]
  }
  #fn = funcNewx(val, argtypes, return)
+ fn.fprop = @Boolean(1)
  class.dic[name] = fn;
  fn.name = class.name + "_" + name
  fn.str = name
@@ -859,11 +869,11 @@ classx = &(o Cptx)Cptx{
 }
 inClassx = &(c Cptx, t Cptx, cache Dic)Boolean{
  @if(c.type != @T("CLASS")){
-  log(cpt2strx(c))
+  log(strx(c))
   die("inClass: left not class")
  }
  @if(t.type != @T("CLASS")){
-  log(cpt2strx(t))
+  log(strx(t))
   die("inClass: right not class")
  }
  @if(t.id == cptc.id){//everything is cpt
@@ -960,12 +970,21 @@ defx = &(class Cptx, dic Dicx)Cptx{
   @return nullv
  }@elif(class.ctype == @T("INT")){
   Cptx#x = intNewx(0)
+  @if(class.name != "Int"){
+   x.obj = class
+  }
  }@elif(class.ctype == @T("FLOAT")){
   Cptx#x = floatNewx(0.0)
+  @if(class.name != "Float"){
+   x.obj = class
+  }  
  }@elif(class.ctype == @T("NUMBIG")){
   Cptx#x = nullv//TODO
  }@elif(class.ctype == @T("STR")){
   Cptx#x = strNewx("")
+  @if(class.name != "Str"){
+   x.obj = class
+  }    
  }@elif(class.ctype == @T("VALFUNC")){
   Cptx#x = valfuncNewx()
  }@elif(class.ctype == @T("DIC")){
@@ -996,10 +1015,11 @@ copyx = &(o Cptx)Cptx{
   ctype: o.ctype  
   fmid: o.fmid
   fdefault: o.fdefault
+  fprop: o.fprop
 
   name: o.name
   id: uidx()
-  scope: o.scope
+  class: o.class
   
   obj: o.obj
   
@@ -1069,7 +1089,7 @@ objGetLocalx = &(o Cptx, key Str)Cptx{
   @return r
  }
  @if(o.obj == _){
-  log(cpt2strx(o))
+  log(strx(o))
   die("local with no def")
  }
  r = classGetx(o.obj, key) 
@@ -1133,7 +1153,7 @@ typepredx = &(o Cptx)Cptx{
     Cptx#s = o.dic["idState"]
     #r = getx(s, o.dic["idStr"].str)
     @if(r == _){
-     log(cpt2strx(s)) 
+     log(strx(s)) 
      log(o.dic["idStr"].str)    
      die("not defined in idstate, may use #1 #2 like")
      @return r
@@ -1155,8 +1175,8 @@ typepredx = &(o Cptx)Cptx{
      #cg = getx(at0, arg1.str)
      @if(cg == _){
       @return _;
-      log(cpt2strx(arg0))
-      log(cpt2strx(at0))
+      log(strx(arg0))
+      log(strx(at0))
       die("typepred: cannot pred obj get, key is "+arg1.str)
      }
      @return classx(cg)
@@ -1181,7 +1201,7 @@ typepredx = &(o Cptx)Cptx{
      //TODO if is dynamic funcReturn, like values, to,
      #ret = getx(f, "funcReturn")
      @if(ret == _){
-      log(cpt2strx(f))
+      log(strx(f))
       die("no return")
      }
      @if(ret.id == emptyc.id){
@@ -1211,7 +1231,7 @@ typepredx = &(o Cptx)Cptx{
 dic2strx = &(d Dicx, i Int)Str{
  #s = "{\n"
  @each k v d{
-  s+=indx(k + ":" + cpt2strx(v, i+1))+"\n"
+  s+=indx(k + ":" + strx(v, i+1))+"\n"
  }
  @return s + "}"
 }
@@ -1220,11 +1240,11 @@ arr2strx = &(a Arrx, i Int)Str{
  @if(len(a) > 1){
   s+="\n"
   @foreach v a{
-   s+=indx(cpt2strx(v, i+1))+"\n"
+   s+=indx(strx(v, i+1))+"\n"
   }
  }@else{
   @foreach v a{
-   s += cpt2strx(v, i+1)
+   s += strx(v, i+1)
   }
  }
  @return s + "]"
@@ -1240,7 +1260,7 @@ parent2strx = &(d Arrx)Str{
  }
  @return s
 }
-cpt2strx = &(o Cptx, i Int)Str{
+strx = &(o Cptx, i Int)Str{
  @if(i > 3 && o.id != ""){
   @return "~"+o.id
  }
@@ -1334,7 +1354,7 @@ tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
 callx = &(func Cptx, args Arrx, env Cptx)Cptx{
  @if(func == _ || func.obj == _){
   log(arr2strx(args))
-  log(cpt2strx(func))  
+  log(strx(func))  
   die("func not defined")
  }
  @if(inClassx(func.obj, funcnativec)){
@@ -1346,7 +1366,7 @@ callx = &(func Cptx, args Arrx, env Cptx)Cptx{
  @if(inClassx(func.obj, funcblockc)){
   Cptx#block = func.dic["funcBlock"]
   #nstate = objNewx(block.dic["blockStateDef"])
-//  log(cpt2strx(block.dic["blockStateDef"]))    
+//  log(strx(block.dic["blockStateDef"]))    
 //  log("#"+block.dic["blockStateDef"].id)  
   Arrx#stack = env.dic["envStack"].arr;
   #ostate = env.dic["envLocal"]
@@ -1376,13 +1396,13 @@ callx = &(func Cptx, args Arrx, env Cptx)Cptx{
   }
   @return r;
  }
- log(cpt2strx(func.obj))
+ log(strx(func.obj))
  die("callx: unknown func")
  @return nullv;
 }
 classExecGetx = &(c Cptx, execsp Cptx, cache Dic)Cptx{
  @if(c.id == ""){
-  log(cpt2strx(c))
+  log(strx(c))
   die("no id")
  }
  #r = execsp.dic[c.id]
@@ -1487,7 +1507,7 @@ id2cptx = &(id Str, def Cptx, local Cptx, func Cptx)Cptx{
    }
    #p = getParentx(local, id)
    @if(p == _){
-    log(cpt2strx(local))   
+    log(strx(local))   
     log(id)
     die("no parent")
    }
@@ -1619,6 +1639,7 @@ class2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx
   @return x
  }
 //'class' parents schema
+ #c = Str(ast[0])
  #parents = Astx(ast[1])
  Arrx#arr = @Arrx{}
  @foreach e parents{
@@ -1630,10 +1651,17 @@ class2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx
   push(arr, r)
  }
  parentMakex(x, arr);
- Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);
- @each k v schema.dic{
-  x.dic[k] = v
- } 
+ Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);  
+ @if(c == "classx"){
+  @each k v schema.dic{
+   x.dic[k] = v
+  }
+ }@else{
+ //TODO free schema
+  @each k v schema.dic{
+   x.dic[k] = defx(v)
+  }
+ }
  @return x
 }
 blockmain2cptx = &(ast Astx, def Cptx, local Cptx, name Str)Cptx{
@@ -1732,8 +1760,8 @@ op2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
  #f = getx(t0, op);
  @if(f == _ || f.id == nullv.id){
-  log(cpt2strx(arg0)) 
-  log(cpt2strx(t0))
+  log(strx(arg0)) 
+  log(strx(t0))
   die("Op not find "+op)
  }
  @if(len(args) == 1){
@@ -1861,7 +1889,7 @@ if2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  @for Int#i=0;i<l-1;i+=2{
   #t = typepredx(args[i])
   @if(t == _){
-   log(cpt2strx(args[i]))
+   log(strx(args[i]))
    die("if: typepred error")
   }
   @if(!inClassx(t, boolc)){
@@ -1908,7 +1936,7 @@ each2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
     local.dic[key] = uintNewx(0)
    }
   }@else{
-   log(cpt2strx(et))
+   log(strx(et))
    die("TODO: items other than dic or arr")
   }
  }
@@ -1977,25 +2005,30 @@ def2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
  @if(c == "func"){
   @return func2cptx(v, def, local, func, id, pre)
  }
- @if(c == "class"){
+ @if(c == "class" || c == "classx"){
   @return class2cptx(v, def, local, func, id, pre)    
  }
-
- #dfd = def.dic[id] 
- @if(dfd != _ && pre == 1){
+ @if(pre != 0){
+  #dfd = def.dic[id] 
+  @if(dfd != _ && pre == 1){
   die("def twice "+id)
+  }
+  @if(dfd != _){
+   @return dfd
+  }
  }
- @if(dfd != _){
-  @return dfd
- }
-
  @if(c == "enum"){
   @return enum2cptx(v, def, local, func, id)
  }@elif(c == "tpl"){
   @return tpl2cptx(v, def, local, func, id)  
  }@elif(c == "blockmain"){
-  @return blockmain2cptx(v, def, local, id)  
- }@elif(c == "alias"){
+  @return blockmain2cptx(v, def, local, id)
+ }
+ @if(pre != 0){ 
+  @return routex(classNewx(), def, id)
+ }
+ 
+ @if(c == "alias"){
   Str#n = Str(v[1])
   @if(n == "Class" || n== "Obj" || n == "Cpt"){
    die("no alias for this")
@@ -2019,6 +2052,8 @@ def2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
   #x = subFunc2cptx(v, def, local, func, 1)  
   @return aliasDefx(def, id, x)
  }
+ 
+
  @if(pre > 0){
   @return _
  }
@@ -2060,6 +2095,7 @@ assign2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #leftt = Str(left[0])
  Cptx#righto = ast2cptx(right, def, local, func)
  #predt = typepredx(righto)
+
  @if(leftt == "objget"){
   Cptx#lefto = objget2cptx(left, def, local, func, righto)
   //TODO check type
@@ -2105,6 +2141,7 @@ assign2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    }
   }
  }
+
  @if(lpredt == _){
   #lpredt = typepredx(lefto)
  }
@@ -2166,7 +2203,7 @@ call2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   }
   #r = getx(t, "to"+f.name)
   @if(r == _){
-   log(cpt2strx(t))
+   log(strx(t))
    log(f.name)
    die("convert func not defined")
   }
@@ -2188,15 +2225,15 @@ callmethod2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  Cptx#oo = ast2cptx(Astx(ast[1]), def, local, func)
  Cptx#to = typepredx(oo)
  @if(to == _){
-  log(cpt2strx(oo))
+  log(strx(oo))
   die("cannot typepred obj")
  }
  //TODO CLASS get CALL
  Cptx#arr = ast2arrx(Astx(ast[3]), def, local, func)
  #f = getx(to, Str(ast[2]))
  @if(f == _){
-  log(cpt2strx(oo))
-  log(cpt2strx(to))
+  log(strx(oo))
+  log(strx(to))
   log(Str(ast[2]))  
   die("no method")
  }
@@ -2266,6 +2303,14 @@ ast2arrx = &(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
   }    
   push(arrx, ee)
  }
+
+ @if(!callable){
+  @each i v arrx{
+   arrx[i] = preExecx(v)
+  }
+ }
+ 
+
  @if(it != _ || callable){
   #c = itemDefx(arrc, it, callable)
   #r = arrNewx(c, arrx)
@@ -2296,6 +2341,12 @@ ast2dicx = &(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
   }
   push(arrx, strNewx(k))
   dicx[k] = ee;
+ }
+ 
+ @if(!callable){
+  @each k v dicx{
+   dicx[k] = preExecx(v)
+  }
  }
  
  @if(it != _ || callable){
@@ -2406,12 +2457,6 @@ ast2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
    die("enum val not defined")
   }  
   @return r  
-// }@elif(t == "tpl"){
-//  @return tpl2cptx(ast, def, local, func, name)
-// }@elif(t == "enum"){
-//  @return enum2cptx(ast, def, local, func, name)  
-// }@elif(t == "class"){
-//  @return class2cptx(ast, def, local, func, name)
  }@elif(t == "func"){
   @return func2cptx(ast, def, local, func, name)  
  }@elif(t == "obj"){
@@ -2617,7 +2662,7 @@ funcDefx(defmain, "uid", &(x Arrx, env Cptx)Cptx{
 }, _, strc)
 funcDefx(defmain, "log", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
- log(cpt2strx(o))
+ log(strx(o))
  @return nullv
 }, [cptc])
 funcDefx(defmain, "die", &(x Arrx, env Cptx)Cptx{
@@ -2652,11 +2697,11 @@ funcDefx(defmain, "call", &(x Arrx, env Cptx)Cptx{
   e = env
  }
  @if(f == _ || f.id == nullv.id){
-  log(cpt2strx(a))
+  log(strx(a))
   die("call() error");
  }
  @if(!inClassx(classx(f), funcc)){
-  log(cpt2strx(f))
+  log(strx(f))
   die("not func")
  }
  @return callx(f, a.arr, e)
@@ -3016,7 +3061,7 @@ opDefx(cptc, "add", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
  @if(l.type != r.type){
-  log(cpt2strx(l)) 
+  log(strx(l)) 
   die("add: wrong type")
  }
  @if(l.type == @T("INT")){ 
@@ -3028,14 +3073,14 @@ opDefx(cptc, "add", &(x Arrx, env Cptx)Cptx{
  @if(l.type == @T("STR")){ 
   @return strNewx(l.str + r.str)
  }
- log(cpt2strx(l))
+ log(strx(l))
  die("cannot add")
  @return nullv
 }, cptc, cptc, opaddc)
 opDefx(cptc, "not", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @if(l.type != @T("INT")){
-  log(cpt2strx(l)) 
+  log(strx(l)) 
   die("not wrong type")
  }
  @return boolNewx(l.int == 0)
@@ -3098,7 +3143,7 @@ execDefx("Call", &(x Arrx, env Cptx)Cptx{
  Cptx#f = execx(c.dic["callFunc"], env)
  Arrx#args = c.dic["callArgs"].arr
  @if(f == _ || f.id == nullv.id){
-  log(cpt2strx(c))
+  log(strx(c))
   die("Call: empty func")
  }
  #argsx = prepareArgsx(args, f, env)
@@ -3256,7 +3301,7 @@ execDefx("CtrlEach", &(x Arrx, env Cptx)Cptx{
    }
   }  
  }@else{
-  log(cpt2strx(da))
+  log(strx(da))
   die("CtrlEach: type not defined");
  }
  @return nullv
