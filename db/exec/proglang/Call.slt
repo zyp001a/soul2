@@ -12,9 +12,12 @@ Arr#a = #0.callArgs
   ~~=call(r, a, $env)~~
  }@else{
   Arr#vt = f.funcVarTypes
-  @for #i=a.len(); i<vt.len(); i++ {  
+  @for #i=a.len(); i<vt.len(); i++ {
+   @if(getDefaultFlag(vt[i])){
+    a.push(_)      
+   }@else{
     a.push(vt[i])   
-//   }
+   }
   }
   printargs = 1
   ~~=n~~

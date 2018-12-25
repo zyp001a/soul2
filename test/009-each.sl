@@ -16,13 +16,13 @@ log("#3")
  log(k)
 }
 #b = [1,2]
-@each i v b{
+@each i v2 b{
  log(i)
  @continue; 
- log(v)
+ log(v2)
 }
-@each _ v b{
- log(v)
+@each _ v2 b{
+ log(v2)
  @break;
 }
 @for #i=0; i<2; i++ {

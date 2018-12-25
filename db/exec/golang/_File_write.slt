@@ -1,0 +1,11 @@
+~
+goImport("io/ioutil")
+goImport("log")
+goImport("os")
+~func _File_write(f string, s string){
+ err := ioutil.WriteFile(f, []byte(s), 0666);
+ if(err != nil){
+  log.Fatal(err);
+  os.Exit(1)
+ }
+}

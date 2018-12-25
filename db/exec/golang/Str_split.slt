@@ -1,4 +1,3 @@
 ~
-goImport("strings")
-funcImport("_split", $env)
-~_split(^0, ^1)
+funcImport("_Str_split", $env)
+~_Str_split(^0, ^1)

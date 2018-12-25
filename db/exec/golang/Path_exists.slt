@@ -1,0 +1,3 @@
+~
+funcImport("_Path_exists", $env)
+~_Path_exists(^0)

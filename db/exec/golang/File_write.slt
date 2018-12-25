@@ -1,0 +1,3 @@
+~
+funcImport("_File_write", $env)
+~_File_write(^0, ^1)

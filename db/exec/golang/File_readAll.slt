@@ -1,0 +1,3 @@
+~
+funcImport("_File_readAll", $env)
+~_File_readAll(^0)

@@ -1,11 +1,15 @@
 ~
+#n = getName(#0)
 @if(inClass(#0, Alias)){
- $types[getName(#0)] = ^_Alias_def #0^
+ $types[n] = ^_Alias_def #0^
 }@elif(inClass(#0, Enum)){
- $types[getName(#0)] = ^_Enum_def #0^
+ $types[n] = ^_Enum_def #0^
 }@elif(inClass(#0, Items)){
- $types[getName(#0)] = ^_Items_def #0^
+ $types[n] = ^_Items_def #0^
 }@else{
- $classes[getName(#0)] = ^_Class_gen #0^
+ @if(inClass(#0, Val)){
+  die("!!some func call Class!!")
+ }
+ $classes[n] = ^_Class_gen #0^
 }
 ~

@@ -1,4 +1,5 @@
 ~
+typemapCache := {} Str
 setIndent("  ")
 goImport ->(varname Str){
  @if($imports[varname] != _){

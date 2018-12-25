@@ -1,0 +1,12 @@
+~
+goImport("io/ioutil")
+goImport("log")
+goImport("os")
+~func _File_readAll(s string)string{
+ r, err := ioutil.ReadFile(s)
+ if(err != nil){
+  log.Fatal(err) //TODO error mechanism
+  os.Exit(1)
+ }
+ return string(r)
+}

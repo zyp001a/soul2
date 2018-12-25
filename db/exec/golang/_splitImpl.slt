@@ -1,4 +1,0 @@
-func _split(s string, sep string) *[]string {
- tmp:=strings.Split(s, sep);
- return &tmp;
-}

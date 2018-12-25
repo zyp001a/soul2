@@ -1,16 +1,17 @@
 ~
 #var = $env.envExec._var
 #varname = $env.envExec._varname
+
 #filter = {}
-Arr#x = #1;
+Arr_Str#x = #1;
 @if(x){
- @each _ v x{
-  filter[v] = 1
+ @each _ k x{
+  filter[k] = 1
  }
 }
 
 @each k v #0.blockStateDef.schema() {
- @if(!filter.hasKey(k)){
+ @if(!filter[k]){
   ~~:call(var, [varname(k), v], $env)~
 ~
  }

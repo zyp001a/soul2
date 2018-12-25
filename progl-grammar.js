@@ -31,8 +31,8 @@ var grammar = {
 			//TODO bignumber
       ["0[0-9]+\\b", "return 'OCT';"],
       ["0[xX][a-fA-F0-9]+\\b", "return 'HEX';"],
-      ["\\b{int}{frac}?{exp}?f?\\b", "return 'INT';"],
-      ["\\b{int}{frac}?{exp}?u?[slb]?\\b", "return 'FLOAT';"],
+      ["\\b{int}{frac}{exp}?u?[slb]?\\b", "return 'FLOAT';"],			
+      ["\\b{int}{exp}?f?\\b", "return 'INT';"],
 			["@if", "return 'IF'"],
 			["@else", "return 'ELSE'"],
 			["@elif", "return 'ELIF'"],						
@@ -151,6 +151,8 @@ var grammar = {
 			["( Expr )", "$$ = $2"],
 		],		
 		Null: "$$ = ['null']",
+		True: "$$ = ['true']",
+		False: "$$ = ['false']",		
 		Char: "$$ = ['char', $1]",
 		Num: [
 			["FLOAT", "$$ = ['float', $1]"],

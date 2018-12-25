@@ -4,33 +4,45 @@ Class#c = #0
  ~interface{}~
 }@else{
  #t = getName(c)
- @if(t == "Cpt"){
-  ~interface{}~
- }@elif(inClass(c, EmptyReturn)){
- }@elif(inClass(c, Alias)){
-  ~~=t~~ 
- }@elif(inClass(c, Bool)){
-  ~bool~
- }@elif(inClass(c, Float32)){
-  ~float32~
- }@elif(inClass(c, Float)){
-  ~float64~
- }@elif(inClass(c, Uint)){
-  ~uint~
- }@elif(inClass(c, Int)){
-  ~int~
- }@elif(inClass(c, Str)){
-  ~string~
- }@elif(inClass(c, ArrStatic)){
-  ~[]~=call($this, [class(c.itemsType)], $env)~~
- }@elif(inClass(c, Arr)){
-  ~*[]~=call($this, [class(c.itemsType)], $env)~~
- }@elif(inClass(c, Dic)){
-  ~map[string]~=call($this, [class(c.itemsType)], $env)~~
- }@elif(inClass(c, FuncProto)){
-  ~~=^_Func_declare c^~~
+ #id = getId(c)
+ #r = typemapCache[id]
+ @if(r){
+  ~~=r~~
  }@else{
-  ~*~=t~~
+  #res = ""
+  @if(t == "Cpt"){
+   res = "interface{}"
+  }@elif(inClass(c, EmptyReturn)){
+   res = "" 
+  }@elif(inClass(c, Alias)){
+   res = t
+  }@elif(inClass(c, Bool)){
+   res = "bool"
+  }@elif(inClass(c, Uint)){
+   res = "uint"
+  }@elif(inClass(c, Int)){
+   res = "int"
+  }@elif(inClass(c, Float32)){
+   res = "float32"
+  }@elif(inClass(c, Num)){
+   res = "float64"
+  }@elif(inClass(c, Str)){
+   res = "string"
+  }@elif(inClass(c, Path)){
+   res = "string"
+  }@elif(inClass(c, ArrStatic)){
+   res = "[]"+call($this, [class(c.itemsType)], $env)
+  }@elif(inClass(c, Arr)){
+   res = "*[]"+call($this, [class(c.itemsType)], $env)
+  }@elif(inClass(c, Dic)){
+  res = "map[string]"+call($this, [class(c.itemsType)], $env)
+  }@elif(inClass(c, FuncProto)){
+   res = ^_Func_declare c^
+  }@else{
+   res = "*"+t
+  }
+  typemapCache[id] = res
+  ~~=res~~
  }
 }
 ~

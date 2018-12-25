@@ -21,7 +21,7 @@ funcImport ->(key Str, env){
  @if($funcs[key]){
   @return
  }
- $funcs[key] = call(mustGet(env.envExec, key+"Impl"), [], env)
+ $funcs[key] = call(mustGet(env.envExec, key), [], env)
 }
 
 ^_BlockMain_preMain^
