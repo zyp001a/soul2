@@ -762,6 +762,10 @@ funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  @if(return == _){
   return = emptyreturnc
  }
+ Arrx#arr = &Arrx
+ @each _ v argtypes{
+  arr.push(defx(v))
+ } 
  #fp = fpDefx(argtypes, return)
  @if(val != _){
   Cptx#x = classNewx([fp, funcnativec])

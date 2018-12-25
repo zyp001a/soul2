@@ -767,7 +767,11 @@ funcNewx = &(val Funcx, argtypes Arrx, return Cptx)Cptx{
  @if(return == _){
   return = emptyreturnc
  }
- #fp = fpDefx(argtypes, return)
+ Arrx#arr = @Arrx{}
+ @foreach v argtypes{
+  push(arr, defx(v))
+ }
+ #fp = fpDefx(arr, return)
  @if(val != _){
   Cptx#x = classNewx([fp, funcnativec])
   x.dic["funcNative"] = valfuncNewx(val)  

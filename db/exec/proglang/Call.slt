@@ -14,7 +14,7 @@ Arr#a = #0.callArgs
   Arr#vt = f.funcVarTypes
   @for #i=a.len(); i<vt.len(); i++ {
    @if(getDefaultFlag(vt[i])){
-    a.push(_)      
+    a.push(_)
    }@else{
     a.push(vt[i])   
    }
