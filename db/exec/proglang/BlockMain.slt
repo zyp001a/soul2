@@ -34,10 +34,10 @@ $mainVar := ^_Block_genVar #0^
 
 mainDir.write($fileList)
 @if($cmdBuild != ""){
- mainDir.writeFile("build.log", cmdRun($cmdBuild))
+ mainDir.writeFile("build.log", osCmd($cmdBuild))
 }
 @if($cmdExec != ""){
-// print(cmdRun($cmdExec + " " + osArgs().join(" ")))
- print(cmdRun($cmdExec))
+// print(osCmd($cmdExec + " " + osArgs().join(" ")))
+ print(osCmd($cmdExec))
 }
 ~

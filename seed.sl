@@ -435,7 +435,7 @@ floatNewx = &(x Num)Cptx{
 })
 ##arrc = curryDefx(defmain, "Arr", itemsc)
 arrc.ctype = @T("ARR")
-##arrstaticc = curryDefx(defmain, "ArrStatic", arrc)
+##staticarrc = curryDefx(defmain, "StaticArr", arrc)
 
 ##midc = classDefx(defmain, "Mid")
 itemDefx = &(class Cptx, type Cptx, mid Boolean)Cptx{
@@ -454,7 +454,7 @@ itemDefx = &(class Cptx, type Cptx, mid Boolean)Cptx{
  }
  @return r;
 }
-itemDefx(arrc, bytec)
+##arrbytec = itemDefx(arrc, bytec)
 ##dicc = curryDefx(defmain, "Dic", itemsc)
 dicc.ctype = @T("DIC")
 
@@ -519,6 +519,7 @@ strNewx = &(x Str)Cptx{
 })
 ##bufferc = classDefx(defmain, "Buffer", [strc])
 ##jsonc = classDefx(defmain, "Json")
+##jsonarrc = classDefx(defmain,, "JsonArr", [arrc])
 ##pointerc = classDefx(defmain, "Pointer", [valc])
 
 ##pathc = classDefx(defmain, "Path", _, {
@@ -1146,11 +1147,15 @@ typepredx = &(o Cptx)Cptx{
   @if(o.fmid){
    //if is idstate
    @if(inClassx(o.obj, idstatec)){
+    Str#id = o.dic["idStr"].str
+    @if(id.isInt()){
+     @return cptc
+    }
     Cptx#s = o.dic["idState"]
-    #r = getx(s, o.dic["idStr"].str)
+    #r = getx(s, id)
     @if(r == _){
      log(strx(s)) 
-     log(o.dic["idStr"].str)    
+     log(id)
      die("not defined in idstate, may use #1 #2 like")
      @return r
     }
@@ -1168,6 +1173,14 @@ typepredx = &(o Cptx)Cptx{
      Cptx#arg1 = args.arr[1]
      @return arg1
     }
+    @if(f.id == defmain.dic["numConvert"].id){
+     Cptx#arg1 = args.arr[1]
+     @return arg1
+    }
+    @if(f.id == defmain.dic["type"].id){
+     Cptx#arg0 = args.arr[0]
+     @return arg0
+    }
     //if is itemGet    
     @if(f.id == defmain.dic["get"].id){
      Cptx#arg0 = args.arr[0]       
@@ -1178,10 +1191,12 @@ typepredx = &(o Cptx)Cptx{
      }
      #cg = getx(at0, arg1.str)
      @if(cg == _){
-      @return _;
-      log(strx(arg0))
-      log(strx(at0))
-      die("typepred: cannot pred obj get, key is "+arg1.str)
+//      @if(arg1.str == "farg"){
+  //     log(strx(arg0))
+    //   log(strx(at0))
+      // die("typepred: cannot pred obj get, key is "+arg1.str)
+      //}
+      @return _;      
      }
      @return classx(cg)
     }
@@ -1330,7 +1345,11 @@ tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
    Astx#ast = jsonParse(cmd("./slt-reader", sstr))
    @if(len(ast) == 0){
     die("tplCall: grammar error" + getx(func, "funcTplPath").str)
-   }
+   }/*
+   #localx = classNewx()
+   localx.dic["$env"] = env
+   localx.dic["$this"] = func
+   */
    func.val = ast;
   }
  }@else{
@@ -1590,6 +1609,10 @@ subFunc2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, isproto Int)Cptx{
  }
  @if(len(v) > 2 && v[2] != _){
   #ret = classGetx(def, Str(v[2]))
+  @if(ret == _){
+   log(v[2])
+   die("return not defined")
+  }
  }@else{
   #ret = emptyreturnc
  }
@@ -1795,6 +1818,8 @@ itemsget2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  @if(v == _){
   #getf = getx(itemstc, "get")
   @if(getf == _){
+   log(strx(items))
+   log(strx(itemstc))  
    die("no getf")
   }
   @return defx(callc, {
@@ -1825,9 +1850,9 @@ itemsget2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
   #it = getx(itemst, "itemsType")
   @if(predt != _ && predt.id != cptc.id){ 
    @if(it.id == cptv.id){
-    @if(itemstt.name != "Dic" && itemstt.name != "Arr"){
-     die("error, itemsType defined but name not changed "+itemst.obj.name)
-    }
+//    @if(itemstt.name != "Dic" && itemstt.name != "Arr"){
+//     die("error, itemsType defined but name not changed "+itemst.obj.name)
+ //   }
     itemst.obj = itemDefx(itemstt, predt)
     @if(itemst.val != _){
      //cached init right expr a = {}/[]
@@ -2101,10 +2126,10 @@ def2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
 }
 convertx = &(from Cptx, to Cptx, val Cptx)Cptx{
  @if(to.id == from.id){
-  @return _
+  @return val
  }
  @if(from.id == cptc.id){
-  @return defx(callrawc, {
+  @return defx(callc, {
    callFunc: defmain.dic["as"]
    callArgs: arrNewx(arrc, [val, to])
   })
@@ -2114,7 +2139,10 @@ convertx = &(from Cptx, to Cptx, val Cptx)Cptx{
  }
  @if(inClassx(classx(val), midc)){
   @if(to.ctype == @T("INT") || to.ctype == @T("FLOAT")){
-   @return 
+   @return defx(callc, {
+    callFunc: defmain.dic["numConvert"]
+    callArgs: arrNewx(arrc, [val, to])
+   })
   } 
   @return _
  }
@@ -2225,10 +2253,14 @@ call2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
  Cptx#arr = ast2arrx(Astx(ast[2]), def, local, func) 
  @if(f.type == @T("CLASS")){
-  Cptx#a0 = arr.arr[0]
-  @if(a0.id == cptv.id){
-   @return 
+  f = aliasGetx(f)
+  @if(len(arr.arr) == 0){
+   @return defx(callrawc, {
+    callFunc: defmain.dic["type"]
+    callArgs: arrNewx(arrc, [f])
+   })
   }
+  Cptx#a0 = arr.arr[0]
   #t = typepredx(a0)
   @if(t == _){
    log(a0)
@@ -2245,7 +2277,7 @@ call2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   #r = getx(t, "to"+f.name)
   @if(r == _){
    log(strx(t))
-   log(strx(a0))   
+   log(strx(a0))  
    log(f.name)
    die("convert func not defined")
   }
@@ -2560,7 +2592,7 @@ funcDefx(defmain, "env", &(x Arrx, env Cptx)Cptx{
  //test function TODO delete
  @return env
 }, _, envc)
-funcDefx(defmain, "cmdRun", &(x Arrx, env Cptx)Cptx{
+funcDefx(defmain, "osCmd", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#p = x[1]
  @return strNewx(cmd(o.str, p.str))
@@ -2644,10 +2676,22 @@ funcDefx(defmain, "new", &(x Arrx, env Cptx)Cptx{
  Cptx#e = x[1]
  @return defx(o, e.dic)
 },[classc, dicc], cptc)
-funcDefx(defmain, "as", &(x Arrx, env Cptx)Cptx{
+funcDefx(defmain, "as", &(x Arrx, env Cptx)Cptx{//Cpt to any
  Cptx#o = x[0]
  @return o
-},[cptc, cptc], cptc)
+},[cptc, classc], cptc)
+funcDefx(defmain, "type", &(x Arrx, env Cptx)Cptx{//Cpt to any
+ @return nullv
+},[cptc], cptc)
+funcDefx(defmain, "numConvert", &(x Arrx, env Cptx)Cptx{//int/ convertion
+ Cptx#o = x[0]
+ Cptx#c = x[0]
+ @if(o.type != c.ctype){//int to int
+  die("numConvert between float int big")
+ }
+ o.obj = c
+ @return o
+},[cptc, classc], cptc)
 funcDefx(defmain, "get", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
@@ -2792,6 +2836,10 @@ funcDefx(defmain, "tplCall", &(x Arrx, env Cptx)Cptx{
  }
  @return tplCallx(f, a.arr, e)
 }, [functplc, arrc, envc], cptc)
+funcDefx(defmain, "keys", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return copyx(arrNewx(arrstrc, o.arr))
+}, [dicc], arrstrc)
 ##_mapping = @Dicx{} //TODO remove this line
 ##_mapping = _
 readWordMap = &(key Str, dic Dicx){
@@ -2834,6 +2882,11 @@ methodDefx(pathc, "exists", &(x Arrx, env Cptx)Cptx{
  Str#p = o.dic["path"].str
  @return boolNewx(fileExists(p))
 }, [strc], boolc)
+methodDefx(pathc, "resolve", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Str#p = o.dic["path"].str
+ @return strNewx(pathResolve(p))
+}, [strc], strc)
 
 methodDefx(filec, "write", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -2922,6 +2975,12 @@ methodDefx(strc, "replace", &(x Arrx, env Cptx)Cptx{
  Cptx#to = x[2]  
  @return strNewx(o.str.replace(fr.str, to.str))
 },[strc, strc], strc)
+methodDefx(strc, "toPath", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return objNewx(filec, {
+  path: strNewx(pathResolve(o.str))
+ })
+},_, filec)
 methodDefx(strc, "toFile", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return objNewx(filec, {
@@ -2934,13 +2993,35 @@ methodDefx(strc, "toDir", &(x Arrx, env Cptx)Cptx{
   path: strNewx(pathResolve(o.str) + "/")
  })
 },_, dirc)
+methodDefx(strc, "toJsonArr", &(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+ //TODO
+ @return nullv
+},_, jsonarrc)
+methodDefx(strc, "toJson", &(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+ //TODO
+ @return nullv
+},_, jsonc)
+methodDefx(strc, "toInt", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return intNewx(int(o.str))
+},_, intc)
+methodDefx(strc, "toFloat", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return floatNewx(float(o.str))
+},_, floatc)
 escapex = &(s Str)Str{
  @return s.replace("\\", "\\\\").replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r").replace("\"", "\\\"")
 }
 methodDefx(strc, "escape", &(x Arrx, env Cptx)Cptx{
  Str#s = x[0].str
- @return strNewx(escapex(s))//TODO replace 
+ @return strNewx(escapex(s))
 },[strc], strc)
+methodDefx(strc, "isInt", &(x Arrx, env Cptx)Cptx{
+ Str#s = x[0].str
+ @return boolNewx(s.isInt())
+},[strc], boolc)
 
 methodDefx(arrc, "push", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -2948,6 +3029,11 @@ methodDefx(arrc, "push", &(x Arrx, env Cptx)Cptx{
  push(o.arr, e)
  @return nullv
 },[cptc])
+methodDefx(arrc, "pop", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ pop(o.arr)
+ @return nullv
+})
 methodDefx(arrc, "unshift", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1] 
@@ -2970,6 +3056,11 @@ methodDefx(arrc, "set", &(x Arrx, env Cptx)Cptx{
  o.arr[i.int] = v
  @return v
 }, [uintc, cptc], cptc)
+methodDefx(arrstrc, "sort", &(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+ //TODO
+ @return nullv
+},_, arrstrc)
 
 methodDefx(arrstrc, "join", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -2984,9 +3075,15 @@ methodDefx(arrstrc, "join", &(x Arrx, env Cptx)Cptx{
  @return strNewx(s)
 },[strc], strc)
 
+methodDefx(jsonc, "len", &(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return intNewx(len(o.dic))
+},_, intc)
+
+
 methodDefx(dicc, "len", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- @return intNewx(len(o.arr))
+ @return intNewx(len(o.dic))
 },_, intc)
 methodDefx(dicc, "set", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -3023,10 +3120,6 @@ methodDefx(dicc, "appendClass", &(x Arrx, env Cptx)Cptx{
  appendClassx(o, c)
  @return o
 }, [classc], dicc)
-methodDefx(dicc, "keys", &(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return copyx(arrNewx(arrstrc, o.arr))
-}, _, arrc)
 valuesx = &(o Cptx)Cptx{
  #arr = @Arrx{}
  @foreach k o.arr{
@@ -3056,14 +3149,18 @@ opDefx(arrc, "get", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
  @return o.arr[e.int]
-},strc, cptc, opgetc)
-
+},intc, cptc, opgetc)
 opDefx(dicc, "get", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
  #r = o.dic[e.str]
- @if(r == _){ r = nullv}
- @return r
+ @return nullOrx(r)
+},strc, cptc, opgetc)
+opDefx(jsonc, "get", &(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#e = x[1]
+ //TODO
+ @return nullv
 },strc, cptc, opgetc)
 
 opDefx(idlocalc, "assign", &(x Arrx, env Cptx)Cptx{

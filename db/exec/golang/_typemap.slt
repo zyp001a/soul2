@@ -30,7 +30,11 @@ Class#c = #0
    res = "string"
   }@elif(inClass(c, Path)){
    res = "string"
-  }@elif(inClass(c, ArrStatic)){
+  }@elif(inClass(c, JsonArr)){
+   res = "[]interface{}"
+  }@elif(inClass(c, Json)){
+   res = "map[string]interface{}"
+  }@elif(inClass(c, StaticArr)){
    res = "[]"+call($this, [class(c.itemsType)], $env)
   }@elif(inClass(c, Arr)){
    res = "*[]"+call($this, [class(c.itemsType)], $env)

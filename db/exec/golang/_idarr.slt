@@ -1,7 +1,13 @@
 ~
 #t = typepred(#0)
-@if(inClass(t, ArrStatic)){
- ~~=#0~~
+@if(#1){
+ Str#res = #1
 }@else{
- ~(*~=#0~)~
-}~
+ #res = exec(#0, $env)
+}
+@if(inClass(t, StaticArr) || inClass(t, JsonArr)){
+}@else{
+ @if(getName(#0.callFunc) != "keys"){
+  res = "(*"+res+")"
+ }
+}~~=res~

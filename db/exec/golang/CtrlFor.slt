@@ -1,4 +1,4 @@
-~#a = #0.ctrlArgs
+~Arr#a = #0.ctrlArgs
 @if(a[0]){
  #start = exec(a[0], $env) + "; "
 }@else{
