@@ -527,6 +527,7 @@ enumc := classDefx(defmain, "Enum", [uintc], {
  enumDic: dicuintc
 })
 bufferc := classDefx(defmain, "Buffer", [strc])
+jsonc := classDefx(defmain, "Json")
 pointerc := classDefx(defmain, "Pointer", [valc])
 
 pathc := classDefx(defmain, "Path", _, {
@@ -862,6 +863,9 @@ inClassx ->(c Cptx, t Cptx, cache Dic)Bool{
  @if(t.id == cptc.id){//everything is cpt
   @return @true
  }
+ @if(t.id == objc.id && c.ctype == T##OBJ){
+  @return @true
+ }
  @if(c.id != "" && c.id == t.id){
   @return @true
  }
@@ -892,24 +896,6 @@ defaultx ->(t Cptx)Cptx{
  }
  @return tar
 }
-inx ->(c Cptx, t Cptx)Bool{
- @if(t.type == T##CPT){
-  @return @true
- }
- @if(t.type == T##OBJ && c.type == T##OBJ){
-  @return @true
- }
- @if(c.type != t.type){
-  @return @false
- }
- @if(c.obj != _){
-  Bool#r = inClassx(classx(c), classx(t) )
-  @if(!r){
-   @return @false
-  }
- }
- @return @true
-}
 defx ->(class Cptx, dic Dicx)Cptx{
  @if(class.ctype == T##CPT){
   @return cptv
@@ -924,13 +910,16 @@ defx ->(class Cptx, dic Dicx)Cptx{
      log(k)
      die("defx: dic val null")     
     }
-    @if(!inx(v, t) ){
-     log(v)
-     log(t)
-     log(v.obj)
-     log(t.obj)
+    Cptx#pt = typepredx(v);
+    @if(pt == _ || pt.id == cptc.id){
+     @continue;
+    }
+    @if(!inClassx(pt, classx(t))){
+     log(class.name)    
      log(k)
-     log(class.name)
+     log(strx(v))
+     log(strx(pt))     
+     log(strx(t))
      die("defx: type error")
     }
    }
@@ -1218,8 +1207,6 @@ dic2strx ->(d Dicx, i Int)Str{
  @return s + "}"
 }
 
-/*
-
 arr2strx ->(a Arrx, i Int)Str{
  #s = "["
  @if(a.len() > 1){
@@ -1299,6 +1286,175 @@ strx ->(o Cptx, i Int)Str{
   @return ""
  }
 }
+
+/////18 func exec
+execns := nsNewx("exec")
+execmain := scopeNewx(execns, "main")
+tplmain := classNewx([defmain])
+/*
+tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
+// log(func.dic["funcTplPath"].str)
+ @if(func.val == _){//use val as cache
+  Str#sstr = func.dic["funcTpl"].str
+  @if(sstr == ""){
+   @return strNewx("")
+  }@else{
+   Astx#ast = jsonParse(cmd("./slt-reader", sstr))
+   @if(len(ast) == 0){
+    die("tplCall: grammar error" + getx(func, "funcTplPath").str)
+   }
+   func.val = ast;
+  }
+ }@else{
+  ast = Astx(func.val)
+ }
+ 
+ #localx = classNewx()
+ localx.dic["$env"] = env
+ localx.dic["$this"] = func
+ @each i v args{
+  localx.dic[str(i)] = v;
+ }
+ 
+ Cptx#b = ast2cptx(ast, tplmain, localx)
+
+ #local = objNewx(localx) 
+ #nenv = defx(envc, {
+  envLocal: local
+  envStack: arrNewx(arrc, @Arrx{})
+  envExec: execmain
+  envBlock: b
+  envActive: truev
+ })
+ blockExecx(b, nenv) //short for execx(&BlockMain, nenv)
+ @return local.dic["$str"]
+}
+callx = &(func Cptx, args Arrx, env Cptx)Cptx{
+ @if(func == _ || func.obj == _){
+  log(arr2strx(args))
+  log(strx(func))  
+  die("func not defined")
+ }
+ @if(inClassx(func.obj, funcnativec)){
+  @return call(Funcx(getx(func, "funcNative").val), [args, env]);
+ }
+ @if(inClassx(func.obj, functplc)){ 
+  @return tplCallx(func, args, env)
+ }
+ @if(inClassx(func.obj, funcblockc)){
+  Cptx#block = func.dic["funcBlock"]
+  #nstate = objNewx(block.dic["blockStateDef"])
+  Arrx#stack = env.dic["envStack"].arr;
+  #ostate = env.dic["envLocal"]
+  push(stack, ostate)
+  env.dic["envLocal"]  = nstate
+  Arrx#vars = func.dic["funcVars"].arr
+  @each i arg args{
+   nstate.dic[vars[i].str] = arg   
+  }
+  Cptx#r = blockExecx(func.dic["funcBlock"], env)
+  env.dic["envLocal"] = stack[len(stack)-1]
+  pop(stack)
+
+  @if(inClassx(classx(r), signalc)){
+   @if(r.obj.id == returnc.id){
+    @return r.dic["return"]
+   }  
+   @if(r.obj.id == errorc.id){
+    //TODO pass to blockpost or up
+   }  
+   @if(r.obj.id == breakc.id){
+    die("break in function!")
+   }
+   @if(r.obj.id == continuec.id){
+    die("continue in function!")
+   }
+  }
+  @return r;
+ }
+ log(strx(func.obj))
+ die("callx: unknown func")
+ @return nullv;
+}
+classExecGetx = &(c Cptx, execsp Cptx, cache Dic)Cptx{
+ @if(c.id == ""){
+  log(strx(c))
+  die("no id")
+ }
+ #r = execsp.dic[c.id]
+ @if(r != _){
+  @return r;
+ }
+ @if(c.name != ""){
+  #exect = classGetx(execsp, c.name)
+  @if(exect != _){
+   execsp.dic[c.id] = exect;  
+   @return exect
+  }
+ }
+ @if(c.arr != _){
+  @foreach v c.arr{
+   @if(cache[v.id] != _){ @return; }
+   cache[v.id] = 1;
+   Cptx#exect = classExecGetx(v, execsp, cache);
+   @if(exect != _){
+    @return exect;
+   }
+  }
+ }
+ @return _
+}
+execGetx = &(c Cptx, execsp Cptx)Cptx{
+ @if(c.type == @T("CLASS")){
+  Cptx#exect = classExecGetx(classc, execsp, {});
+  @if(exect != _){
+   @return exect;
+  }
+ }@else{
+  Cptx#t = classx(c)
+  Cptx#exect = classExecGetx(t, execsp, {});
+  @if(exect != _){
+   @return exect;
+  }
+  @if(c.type == @T("OBJ")){
+   Cptx#exect = classExecGetx(objc, execsp, {});
+   @if(exect != _){
+    @return exect;
+   }
+  }
+ }
+ //Cpt no need
+ @return _
+}
+blockExecx = &(o Cptx, env Cptx, stt Uint)Cptx{
+ Cptx#b = o.dic["blockVal"]
+ @each i v b.arr{
+  @if(stt != 0 && stt < i){
+   @continue
+  }
+  Cptx#r = execx(v, env)
+  @if(inClassx(classx(r), signalc)){
+   @return r
+  }
+ }
+ @return nullv
+}
+preExecx = &(o Cptx)Cptx{
+//TODO pre exec 1+1 =2 like
+//pre exec idClass.idVal
+ @if(inClassx(classx(o), idclassc)){
+  @return o.dic["idVal"]
+ }
+ @return o
+}
+execx = &(o Cptx, env Cptx)Cptx{
+ #sp = env.dic["envExec"]
+ #ex = execGetx(o, sp)
+ @if(!ex){
+  die("exec: unknown type "+classx(o).name);
+ }
+ @return callx(ex, [o], env);
+}
 */
-strx ->(o Cptx, i Int)Str{@return ""}
+
 libProgl2cptx ->(str Str, def Cptx, name Str)Cptx{@return _}

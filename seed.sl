@@ -518,6 +518,7 @@ strNewx = &(x Str)Cptx{
  enumDic: dicuintc
 })
 ##bufferc = classDefx(defmain, "Buffer", [strc])
+##jsonc = classDefx(defmain, "Json")
 ##pointerc = classDefx(defmain, "Pointer", [valc])
 
 ##pathc = classDefx(defmain, "Path", _, {
@@ -883,6 +884,9 @@ inClassx = &(c Cptx, t Cptx, cache Dic)Boolean{
  @if(t.id == cptc.id){//everything is cpt
   @return @Boolean(1)
  }
+ @if(t.id == objc.id && c.ctype == @T("OBJ")){
+  @return @Boolean(1)
+ }
  @if(c.id != "" && c.id == t.id){
   @return @Boolean(1)
  }
@@ -913,24 +917,7 @@ defaultx = &(t Cptx)Cptx{
  }
  @return tar
 }
-inx = &(c Cptx, t Cptx)Boolean{
- @if(t.type == @T("CPT")){
-  @return @Boolean(1)
- }
- @if(t.type == @T("OBJ") && c.type == @T("OBJ")){
-  @return @Boolean(1)
- }
- @if(c.type != t.type){
-  @return @Boolean(0)
- }
- @if(c.obj != _){
-  Boolean#r = inClassx(classx(c), classx(t))
-  @if(!r){
-   @return @Boolean(0)
-  }
- }
- @return @Boolean(1)
-}
+
 defx = &(class Cptx, dic Dicx)Cptx{
  @if(class.ctype == @T("CPT")){
   @return cptv
@@ -945,13 +932,16 @@ defx = &(class Cptx, dic Dicx)Cptx{
      log(k)
      die("defx: dic val null")     
     }
-    @if(!inx(v, t)){
-     log(v)
-     log(t)
-     log(v.obj)
-     log(t.obj)
+    Cptx#pt = typepredx(v);
+    @if(pt == _ || pt.id == cptc.id){
+     @continue;
+    }
+    @if(!inClassx(pt, classx(t))){
+     log(class.name)    
      log(k)
-     log(class.name)
+     log(strx(v))
+     log(strx(pt))     
+     log(strx(t))
      die("defx: type error")
     }
    }
@@ -1679,6 +1669,9 @@ blockmain2cptx = &(ast Astx, def Cptx, local Cptx, name Str)Cptx{
   #d = classNewx([nsGetx(defns, scopename)])
   #l = classNewx()
  }@else{
+  @if(local == _){
+   die("no local for blockmain")
+  }
   #d = def
   #l = local
  }
@@ -1739,7 +1732,7 @@ obj2cptx =  &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
  Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);
  @if(schema.fmid){
-  #x = defx(callrawc, {
+  #x = defx(callc, {
    callFunc: defmain.dic["new"]
    callArgs: arrNewx(arrc, [c, schema])
   })
@@ -2688,11 +2681,6 @@ funcDefx(defmain, "type", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return strNewx(typex(l))
 }, [cptc], strc)
-funcDefx(defmain, "in", &(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1]; 
- @return boolNewx(inx(l, r))
-}, [cptc, cptc], boolc)
 funcDefx(defmain, "inClass", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1]; 
@@ -3477,8 +3465,6 @@ execDefx("IdState", &(x Arrx, env Cptx)Cptx{
 })
 
 /////24 main func
-#local = classNewx()
-//log("###"+local.id)
 Str#fc = fileRead(osArgs()[1])
 Str#execsp = "main"
 Str#defsp = "main"
@@ -3488,13 +3474,5 @@ Str#defsp = "main"
 @if(len(osArgs()) > 3){
  #defsp = osArgs()[3] 
 }
-#main = progl2cptx("@env "+execsp+" | " + defsp + " {"+fc+"}'"+osArgs()[1]+"'", defmain, local)
-#env = defx(envc, {
- envLocal: objNewx(local)
- envStack: arrNewx(arrc, @Arrx{})
- 
- envExec: execmain
- envBlock: main
- envActive: truev
-})
-execx(main, env);
+#main = progl2cptx("@env "+execsp+" | " + defsp + " {"+fc+"}'"+osArgs()[1]+"'", defmain)
+execx(main.dic["envBlock"], main)
