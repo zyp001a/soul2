@@ -1,0 +1,15 @@
+~
+goImport("os/exec")
+goImport("strings")
+~func _osCmd(cmdstr string, sin string) string {
+ cmd:= exec.Command("/bin/bash", "-c", cmdstr);
+ if(sin != ""){
+  cmd.Stdin = strings.NewReader(sin)
+ };
+ cmd.Stderr = os.Stderr;
+ out, err := cmd.Output();
+ if(err!= nil){
+  ~=^_error "err"^~
+ }
+ return string(out);
+}

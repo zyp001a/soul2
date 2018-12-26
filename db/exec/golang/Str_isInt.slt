@@ -1,0 +1,3 @@
+~
+funcImport("_Str_isInt", $env)
+~_Str_isInt(^0)

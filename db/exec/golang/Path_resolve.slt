@@ -1,0 +1,4 @@
+~
+goImport("path/filepath")
+funcImport("_lf", $env)
+~_lf(filepath.Abs(^0)).(string)

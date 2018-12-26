@@ -1,0 +1,6 @@
+~
+goImport("strconv")
+~func _Str_isInt(v string)bool{
+ _, err := strconv.Atoi(v);
+ return err == nil
+}

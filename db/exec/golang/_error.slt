@@ -1,0 +1,4 @@
+~
+goImport("log")
+goImport("os")
+~log.Fatal(~=#0~);os.Exit(1)

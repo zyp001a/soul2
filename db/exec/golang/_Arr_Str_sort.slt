@@ -1,0 +1,6 @@
+~
+goImport("sort")
+~func _Arr_Str_sort(c *[]string)*[]string{
+ sort.Strings(*c)
+ return c
+}

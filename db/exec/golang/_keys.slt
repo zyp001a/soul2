@@ -1,0 +1,7 @@
+func _keys(dic map[string]*Cptx)*[]string{
+ keys := make([]string, 0, len(dic))
+ for k, _ := range dic {
+  keys = append(keys, k)
+ }
+ return &keys
+}

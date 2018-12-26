@@ -1,0 +1,6 @@
+~goImport("encoding/json")
+~func _Str_toJsonArr(x string)[]interface{}{
+ var res []interface{};
+ json.Unmarshal([]byte(x), &res);
+ return res;
+}
