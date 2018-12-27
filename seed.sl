@@ -2196,12 +2196,34 @@ assign2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  Cptx#righto = ast2cptx(right, def, local, func)
  #predt = typepredx(righto)
 
+ @if(len(v) > 2){// a += 1   -= *= ...
+  #op = Str(v[2])
+  @if(op == "add"){
+   Cptx#lefto = ast2cptx(left, def, local, func)
+   #lpredt = typepredx(lefto)
+   #ff = getx(lpredt, "concat")
+   @if(ff != _){
+    @return defx(callc, {
+     callFunc: ff
+     callArgs: arrNewx(arrc, [lefto, righto])
+    })  
+   }
+  }
+  #ff = getx(lpredt, op)
+  @if(ff == _){
+   log("no op "+lpredt.name + " " +op)
+  }
+  righto = defx(callc, {
+   callFunc: ff
+   callArgs: arrNewx(arrc, [lefto, righto])   
+  })
+ }
+
  @if(leftt == "objget"){
   Cptx#lefto = objget2cptx(left, def, local, func, righto)
   //TODO check type
   @return lefto
- }
- @if(leftt == "itemsget"){ //expr[1] = 1
+ }@elif(leftt == "itemsget"){ //expr[1] = 1
   Cptx#lefto = itemsget2cptx(left, def, local, func, righto)
   @return lefto
  }
@@ -2219,10 +2241,13 @@ assign2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    }
   }
  }
+
  @if(lefto == _){
   Cptx#lefto = ast2cptx(left, def, local, func)
  }
-
+// @if(lpredt == _){
+//  #lpredt = typepredx(lefto)
+// }
 
  @if(inClassx(classx(lefto), idstatec)){ //#a = 1  set a type Int
   Cptx#s = lefto.dic["idState"]
@@ -2242,29 +2267,6 @@ assign2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   }
  }
 
- @if(lpredt == _){
-  #lpredt = typepredx(lefto)
- }
- @if(len(v) > 2){// a += 1   -= *= ...
-  #op = Str(v[2])
-  @if(op == "add"){
-   #ff = getx(lpredt, "concat")
-   @if(ff != _){
-    @return defx(callc, {
-     callFunc: ff
-     callArgs: arrNewx(arrc, [lefto, righto])
-    })  
-   }
-  }
-  #ff = getx(lpredt, op)
-  @if(ff == _){
-   log("no op "+lpredt.name + " " +op)
-  }
-  righto = defx(callc, {
-   callFunc: ff
-   callArgs: arrNewx(arrc, [lefto, righto])   
-  })
- }
 /*
  @if(predt != _ && lpredt != _){ //for exp: Uint#a = 1
   #cvt = convertx(predt, lpredt, righto)

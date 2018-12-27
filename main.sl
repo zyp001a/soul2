@@ -823,7 +823,7 @@ funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  @each _ v argtypes{
   arr.push(defx(v))
  } 
- #fp = fpDefx(argtypes, return)
+ #fp = fpDefx(arr, return)
  @if(val != _){
   Cptx#x = classNewx([fp, funcnativec])
   x.dic["funcNative"] = valfuncNewx(val)  
@@ -2185,6 +2185,31 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  Cptx#righto = ast2cptx(right, def, local, func)
  #predt = typepredx(righto)
 
+ @if(v.len() > 2){// a += 1   -= *= ...
+  #op = Str(v[2])
+  @if(op == "add"){
+   Cptx#lefto = ast2cptx(left, def, local, func)
+   #lpredt = typepredx(lefto)
+   
+   #ff = getx(lpredt, "concat")
+   @if(ff != _){
+    @return defx(callc, {
+     callFunc: ff
+     callArgs: arrNewx(arrc, [lefto, righto])
+    })  
+   }
+  }
+  #ff = getx(lpredt, op)
+  @if(ff == _){
+   log("no op "+lpredt.name + " " +op)
+  }
+  righto = defx(callc, {
+   callFunc: ff
+   callArgs: arrNewx(arrc, [lefto, righto])   
+  })
+ }
+
+
  @if(leftt == "objget"){
   Cptx#lefto = objget2cptx(left, def, local, func, righto)
   //TODO check type
@@ -2229,30 +2254,6 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
     }
    }
   }
- }
-
- @if(lpredt == _){
-  #lpredt = typepredx(lefto)
- }
- @if(v.len() > 2){// a += 1   -= *= ...
-  #op = Str(v[2])
-  @if(op == "add"){
-   #ff = getx(lpredt, "concat")
-   @if(ff != _){
-    @return defx(callc, {
-     callFunc: ff
-     callArgs: arrNewx(arrc, [lefto, righto])
-    })  
-   }
-  }
-  #ff = getx(lpredt, op)
-  @if(ff == _){
-   log("no op "+lpredt.name + " " +op)
-  }
-  righto = defx(callc, {
-   callFunc: ff
-   callArgs: arrNewx(arrc, [lefto, righto])   
-  })
  }
 
 // @if(predt != _ && lpredt != _){ //for exp: Uint#a = 1
@@ -2987,6 +2988,13 @@ methodDefx(strc, "replace", ->(x Arrx, env Cptx)Cptx{
  Cptx#to = x[2]  
  @return strNewx(o.str.replace(fr.str, to.str))
 },[strc, strc], strc)
+methodDefx(strc, "toPath", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #p = Path(o.str)
+ @return objNewx(filec, {
+  path: strNewx(p.resolve())
+ })
+},_, filec)
 methodDefx(strc, "toFile", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #p = File(o.str)
@@ -3023,6 +3031,10 @@ methodDefx(strc, "escape", ->(x Arrx, env Cptx)Cptx{
  Str#s = x[0].str
  @return strNewx(escapex(s))//TODO replace 
 },[strc], strc)
+methodDefx(strc, "isInt", ->(x Arrx, env Cptx)Cptx{
+ Str#s = x[0].str
+ @return boolNewx(s.isInt())
+},[strc], boolc)
 
 methodDefx(arrc, "push", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
