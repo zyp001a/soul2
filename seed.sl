@@ -1361,6 +1361,18 @@ tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
  
  Cptx#b = ast2cptx(ast, tplmain, localx)
 
+
+ #nstate = objNewx(localx)
+ nstate.int = 2
+ Arrx#stack = env.dic["envStack"].arr;
+ #ostate = env.dic["envLocal"]
+ push(stack, ostate)
+ env.dic["envLocal"]  = nstate
+ blockExecx(b, env)
+ env.dic["envLocal"] = stack[len(stack)-1]
+ pop(stack)
+
+/*
  #local = objNewx(localx) 
  #nenv = defx(envc, {
   envLocal: local
@@ -1370,7 +1382,8 @@ tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
   envActive: truev
  })
  blockExecx(b, nenv) //short for execx(&BlockMain, nenv)
- @return local.dic["$str"]
+ */ 
+ @return nstate.dic["$str"]
 }
 callx = &(func Cptx, args Arrx, env Cptx)Cptx{
  @if(func == _ || func.obj == _){
@@ -1387,6 +1400,7 @@ callx = &(func Cptx, args Arrx, env Cptx)Cptx{
  @if(inClassx(func.obj, funcblockc)){
   Cptx#block = func.dic["funcBlock"]
   #nstate = objNewx(block.dic["blockStateDef"])
+  nstate.int = 2
   Arrx#stack = env.dic["envStack"].arr;
   #ostate = env.dic["envLocal"]
   push(stack, ostate)
@@ -1395,7 +1409,7 @@ callx = &(func Cptx, args Arrx, env Cptx)Cptx{
   @each i arg args{
    nstate.dic[vars[i].str] = arg   
   }
-  Cptx#r = blockExecx(func.dic["funcBlock"], env)
+  Cptx#r = blockExecx(block, env)
   env.dic["envLocal"] = stack[len(stack)-1]
   pop(stack)
 
@@ -1490,8 +1504,19 @@ preExecx = &(o Cptx)Cptx{
  }
  @return o
 }
-execx = &(o Cptx, env Cptx)Cptx{
- #sp = env.dic["envExec"]
+execx = &(o Cptx, env Cptx, flag Int)Cptx{
+ #l = env.dic["envLocal"]
+ @if(flag == 1){
+  #sp = env.dic["envExec"]
+ }@elif(flag == 2){
+  #sp = execmain
+ }@elif(l.int == 1){
+  #sp = env.dic["envExec"]
+ }@elif(l.int == 2){
+  #sp = execmain
+ }@else{
+  #sp = env.dic["envExec"]
+ }
  #ex = execGetx(o, sp)
  @if(!ex){
   die("exec: unknown type "+classx(o).name);
@@ -2649,7 +2674,7 @@ funcDefx(defmain, "opp", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#op = x[1]
  Cptx#e = x[2]
- Cptx#ret = execx(o, e)
+ Cptx#ret = execx(o, e, 1)
  @if(ret.type != @T("STR")){
   die("opp: not used in tplCall")
  }
@@ -2716,7 +2741,7 @@ funcDefx(defmain, "set", &(x Arrx, env Cptx)Cptx{
 funcDefx(defmain, "exec", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
- @return execx(l, r)
+ @return execx(l, r, 1)
 }, [cptc, envc], cptc)
 funcDefx(defmain, "type", &(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];

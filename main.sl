@@ -1366,16 +1366,17 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  
  Cptx#b = ast2cptx(ast, tplmain, localx)
 
- #local = objNewx(localx) 
- #nenv = defx(envc, {
-  envLocal: local
-  envStack: arrNewx(arrc, &Arrx)
-  envExec: execmain
-  envBlock: b
-  envActive: truev
- })
- blockExecx(b, nenv) //short for execx(&BlockMain, nenv)
- @return local.dic["$str"]
+ #nstate = objNewx(localx)
+ nstate.int = 2
+ Arrx#stack = env.dic["envStack"].arr;
+ #ostate = env.dic["envLocal"]
+ stack.push(ostate)
+ env.dic["envLocal"]  = nstate
+ blockExecx(b, env)
+ env.dic["envLocal"] = stack[len(stack)-1]
+ stack.pop()
+
+ @return nstate.dic["$str"]
 }
 
 callx ->(func Cptx, args Arrx, env Cptx)Cptx{
@@ -1393,6 +1394,7 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
  @if(inClassx(func.obj, funcblockc)){
   Cptx#block = func.dic["funcBlock"]
   #nstate = objNewx(block.dic["blockStateDef"])
+  nstate.int = 2
   Arrx#stack = env.dic["envStack"].arr;
   #ostate = env.dic["envLocal"]
   stack.push(ostate)
@@ -1401,7 +1403,7 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
   @each i arg args{
    nstate.dic[vars[i].str] = arg   
   }
-  Cptx#r = blockExecx(func.dic["funcBlock"], env)
+  Cptx#r = blockExecx(block, env)
   env.dic["envLocal"] = stack[stack.len()-1]
   stack.pop()
 
@@ -1496,8 +1498,19 @@ preExecx ->(o Cptx)Cptx{
  }
  @return o
 }
-execx ->(o Cptx, env Cptx)Cptx{
- #sp = env.dic["envExec"]
+execx ->(o Cptx, env Cptx, flag Int)Cptx{
+ #l = env.dic["envLocal"]
+ @if(flag == 1){
+  #sp = env.dic["envExec"]
+ }@elif(flag == 2){
+  #sp = execmain
+ }@elif(l.int == 1){
+  #sp = env.dic["envExec"]
+ }@elif(l.int == 2){
+  #sp = execmain
+ }@else{
+  #sp = env.dic["envExec"]
+ } 
  #ex = execGetx(o, sp)
  @if(!ex){
   die("exec: unknown type "+classx(o).name);
@@ -2447,7 +2460,7 @@ ast2dicx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
 ast2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  Cptx#x = subAst2cptx(ast, def, local, func, name);
  x.ast = ast
-
+ @return x
 }
 subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  @if(def == _){
@@ -2670,28 +2683,6 @@ funcDefx(defmain, "methodGet", ->(x Arrx, env Cptx)Cptx{
  @return nullOrx(methodGetx(o, f))
 },[classc, funcc], cptc)
 
-funcDefx(defmain, "opp", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#op = x[1]
- Cptx#e = x[2]
- Cptx#ret = execx(o, e)
- @if(ret.type != T##STR){
-  die("opp: not used in tplCall")
- }
- @if(!inClassx(classx(o), callc)){
-  @return ret
- }
- Cptx#f = o.dic["callFunc"]
- @if(!inClassx(classx(f), opc)){
-  @return ret
- }
- Int#sub = getx(f, "opPrecedence").int
- Int#main = getx(op, "opPrecedence").int
- @if(sub > main){
-  @return strNewx("(" + ret.str + ")")
- }
- @return ret
-},[cptc, opc, envc], strc)
 funcDefx(defmain, "new", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
@@ -2830,8 +2821,30 @@ funcDefx(defmain, "ind", ->(x Arrx, env Cptx)Cptx{
 funcDefx(defmain, "exec", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
- @return execx(l, r)
+ @return execx(l, r, 1)
 }, [cptc, envc], cptc)
+funcDefx(defmain, "opp", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#op = x[1]
+ Cptx#e = x[2]
+ Cptx#ret = execx(o, e, 1)
+ @if(ret.type != T##STR){
+  die("opp: not used in tplCall")
+ }
+ @if(!inClassx(classx(o), callc)){
+  @return ret
+ }
+ Cptx#f = o.dic["callFunc"]
+ @if(!inClassx(classx(f), opc)){
+  @return ret
+ }
+ Int#sub = getx(f, "opPrecedence").int
+ Int#main = getx(op, "opPrecedence").int
+ @if(sub > main){
+  @return strNewx("(" + ret.str + ")")
+ }
+ @return ret
+},[cptc, opc, envc], strc)
 funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
  Cptx#f = x[0];
  Cptx#a = x[1];

@@ -36,7 +36,7 @@ if [ "$OP" = "all" ]; then
 		fi				
 		for f in `ls test/0*.sl `
 		do
-				res=$(./soul2 $f $SOULE $SOULD | diff ${f}.$SOULE${SOULD}log -)
+				res=$(time ./soul2 $f $SOULE $SOULD | diff ${f}.$SOULE${SOULD}log -)
 				rc=${PIPESTATUS[0]}
 				if [[ $rc -ne 0 ]]; then
 						echo ===error: $f
@@ -52,7 +52,7 @@ else
 		echo "===check $1"
 		for f in `ls test/$1*.sl `
 		do
- 				/usr/bin/go run seed.sl.go $f $SOULE $SOULD | tee ${f}.$SOULE${SOULD}log
+ 				time /usr/bin/go run seed.sl.go $f $SOULE $SOULD | tee ${f}.$SOULE${SOULD}log
 				rc=${PIPESTATUS[0]}
 				if [[ $rc -ne 0 ]]; then
 						exit 1
