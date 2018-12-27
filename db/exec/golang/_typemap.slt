@@ -14,8 +14,8 @@ Class#c = #0
    res = "interface{}"
   }@elif(inClass(c, EmptyReturn)){
    res = "" 
-  }@elif(inClass(c, Alias)){
-   res = t
+//  }@elif(inClass(c, Alias)){
+//   res = t
   }@elif(inClass(c, Bool)){
    res = "bool"
   }@elif(inClass(c, Uint)){

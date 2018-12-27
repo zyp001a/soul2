@@ -22,15 +22,22 @@ if [ "tpl-grammar.js" -nt "tpl-parser.js" ]; then
 		node tpl-grammar.js
 		echo ===gen tpl parser				
 fi
-exit 1
+OP=$1
 if [ -z "$1" ]; then
+		OP=all
+fi
+if [ "$SOULE$SOULD" = "main" ]; then
+		SOULE=
+fi
+
+if [ "$OP" = "all" ]; then
 		echo "===check all"
-	  if [ "seed.sl.go" -nt "soul2" ]; then
-				cd main.sl.golang && /usr/bin/go build && cd ..
+	  if [ "main.sl.exec/golang/main.go" -nt "main.sl.exec/golang/golang" ]; then
+				cd main.sl.exec/golang && /usr/bin/go build && cd ../..
 		fi
 		for f in `ls test/0*.sl `
 		do
-				res=$(./main.sl.golang/main.sl.golang $f $SOULE $SOULD | diff ${f}.$SOULE${SOULD}log -)
+				res=$(./main.sl.exec/golang/golang $f $SOULE $SOULD | diff ${f}.$SOULE${SOULD}log -)
 				rc=${PIPESTATUS[0]}
 				if [[ $rc -ne 0 ]]; then
 						echo ===error: $f
@@ -46,7 +53,7 @@ else
 		echo "===check $1"
 		for f in `ls test/$1*.sl `
 		do
- 				/usr/bin/go run main.sl.golang/main.go $f $SOULE $SOULD | tee ${f}.$SOULE${SOULD}log
+ 				/usr/bin/go run main.sl.exec/golang/main.go $f $SOULE $SOULD | tee ${f}.$SOULE${SOULD}log
 				rc=${PIPESTATUS[0]}
 				if [[ $rc -ne 0 ]]; then
 						exit 1

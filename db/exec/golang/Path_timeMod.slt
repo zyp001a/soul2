@@ -1,0 +1,3 @@
+~
+funcImport("_Path_timeMod", $env)
+~_Path_timeMod(^0)

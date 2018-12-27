@@ -71,7 +71,7 @@ dicCopyx ->(o Dicx)Dicx{
  }
  @return n
 }
-_indentx := ""
+_indentx := " "
 indx ->(s Str, first Int)Str{
  @if(s == ""){
   @return s
@@ -318,17 +318,38 @@ nsGetx ->(ns Cptx, key Str)Cptx{
 }
 
 //TOOD cachedb
-dbGetx ->(scope Cptx, key Str)Str{
- #fstr = osEnvGet("HOME")+"/soul2/db/"+scope.str + "/" + key + ".sl"
+dbGetx ->(scope Cptx, key Str)Cptx{
+ #fstr = osEnvGet("HOME")+"/soul2/db/"+scope.str + "/" + key + ".sl" 
  #f = File(fstr)
- #f2 = File(fstr+"t") 
-
+ #f2 = File(fstr+"t")
+ #fcache = File(fstr+".cache")
+ #f2cache = File(fstr+"t.cache")  
+ 
  @if(f.exists()){
-  @return f.readAll()
+  Str#str = f.readAll()
+  @if(f.timeMod() > fcache.timeMod()){
+   Str#jstr = osCmd("./sl-reader", key + " := "+str)
+   fcache.write(jstr)
+  }@else{
+   Str#jstr = fcache.readAll()
+  }
  }@elif(f2.exists()){
-  @return "@`"+f2.readAll()+"` '"+fstr+"t'";
+  str = "@`"+f2.readAll()+"` '"+fstr+"t'";
+  @if(f2.timeMod() > f2cache.timeMod()){
+   Str#jstr = osCmd("./sl-reader", key + " := "+str)
+   f2cache.write(jstr)
+  }@else{
+   Str#jstr = f2cache.readAll()
+  }
+ }@else{
+  @return _
  }
- @return ""
+ Astx#ast = JsonArr(jstr)
+ @if(ast.len() == 0){
+  die("dbGetx: wrong grammar")
+ }
+ Cptx#r = ast2cptx(ast, scope, classNewx())
+ @return r
 }
 subClassGetx ->(scope Cptx, key Str, cache Dic)Cptx{
  #r = scope.dic[key]
@@ -336,9 +357,8 @@ subClassGetx ->(scope Cptx, key Str, cache Dic)Cptx{
   @return r
  }
  @if(scope.str != ""){
-  #sstr = dbGetx(scope, key);
-  @if(sstr != ""){
-   r = libProgl2cptx(sstr, scope, key)
+  #r = dbGetx(scope, key);
+  @if(r != _){
    scope.dic[key] = r
    @return r;
   }
@@ -627,7 +647,7 @@ funcblockc := classDefx(defmain, "FuncBlock", [funcprotoc], {
 funcclosurec := curryDefx(defmain, "FuncClosure", funcblockc)
 
 functplc := classDefx(defmain, "FuncTpl", [funcc], {
- funcTpl: strc
+ funcTplAst: strc
  funcTplPath: strc
 })
 
@@ -917,7 +937,7 @@ inClassx ->(c Cptx, t Cptx, cache Dic)Bool{
    @return @true
   }
  }
- @return @false 
+ @return @false
 }
 defaultx ->(t Cptx)Cptx{
  @if(t.ctype == T##INT){
@@ -1342,21 +1362,11 @@ tplmain := classNewx([defmain])
 
 tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
 // log(func.dic["funcTplPath"].str)
- @if(func.val == _){//use val as cache
-  Str#sstr = func.dic["funcTpl"].str
-  @if(sstr == ""){
-   @return strNewx("")
-  }@else{
-   Astx#ast = JsonArr(osCmd("./slt-reader", sstr))
-   @if(ast.len() == 0){
-    die("tplCall: grammar error" + getx(func, "funcTplPath").str)
-   }
-   func.val = ast;
-  }
- }@else{
-  ast = Astx(func.val)
+ Astx#ast = JsonArr(func.dic["funcTplAst"].str)
+ @if(ast.len() == 0){
+  @return strNewx("")
  }
- 
+
  #localx = classNewx()
  localx.dic["$env"] = env
  localx.dic["$this"] = func
@@ -1373,7 +1383,7 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  stack.push(ostate)
  env.dic["envLocal"]  = nstate
  blockExecx(b, env)
- env.dic["envLocal"] = stack[len(stack)-1]
+ env.dic["envLocal"] = stack[stack.len()-1]
  stack.pop()
 
  @return nstate.dic["$str"]
@@ -1732,7 +1742,7 @@ tpl2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
   die("tpl no name")
  }
  #x = defx(functplc, {
-  funcTpl: strNewx(Str(ast[1]))   
+  funcTplAst: strNewx(Str(ast[1]))   
  })
  @if(ast.len() == 3){
   x.dic["funcTplPath"] = strNewx(Str(ast[2]))
@@ -1856,7 +1866,7 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
   Cptx#s = items.dic["idState"]
   Str#str = items.dic["idStr"].str
   Cptx#itemst = s.dic[str]
-  Cptx#itemstt = itemst.obj
+  Cptx#itemstt = aliasGetx(itemst.obj)
   @if(itemst.farg){
    @return lefto
   }
@@ -2266,7 +2276,7 @@ call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
  Cptx#arr = ast2arrx(Astx(ast[2]), def, local, func) 
  @if(f.type == T##CLASS){
-  f = aliasGetx(f)
+  f = aliasGetx(f)   
   @if(arr.arr.len() == 0){
    @return defx(callrawc, {
     callFunc: defmain.dic["type"]
@@ -2597,15 +2607,6 @@ progl2cptx ->(str Str, def Cptx, local Cptx)Cptx{
  #r = ast2cptx(ast, def, local)
  @return r
 }
-libProgl2cptx ->(str Str, def Cptx, name Str)Cptx{
- Astx#ast = JsonArr(osCmd("./sl-reader", name + " := "+str))
- @if(ast.len() == 0){
-  die("libProgl2cpt: wrong grammar")
- }
- #r = ast2cptx(ast, def, classNewx())
- @return r
-}
-
 
 /////20 func def
 _osArgs := Cptx()
@@ -2882,6 +2883,12 @@ methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
  @return aliasGetx(o)
 }, _, classc)
 
+methodDefx(pathc, "timeMod", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Str#p = o.dic["path"].str
+ //TODO
+ @return nullv
+}, _, intc)
 methodDefx(pathc, "exists", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #p = File(o.dic["path"].str)
@@ -3116,7 +3123,7 @@ methodDefx(dicstrc, "values", ->(x Arrx, env Cptx)Cptx{
  @return valuesx(o)
 }, _, arrstrc)
 
-/*
+
 /////22 op def
 opDefx(arrc, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -3199,13 +3206,13 @@ opDefx(intc, "subtract", ->(x Arrx, env Cptx)Cptx{
  Cptx#r = x[1];
  @return intNewx(l.int - r.int)
 }, intc, intc, opsubtractc)
-*/
+
 opDefx(intc, "multiply", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
  @return intNewx(l.int * r.int)
 }, intc, intc, opmultiplyc)
-/*
+
 opDefx(intc, "divide", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
@@ -3296,6 +3303,7 @@ opDefx(cptc, "eq", ->(x Arrx, env Cptx)Cptx{
  Cptx#r = x[1];
  @return boolNewx(eqx(l, r))
 }, cptc, boolc, opeqc)
+
 
 /////23 exec def
 execDefx ->(name Str, f Funcx)Cptx{
@@ -3429,7 +3437,7 @@ execDefx("CtrlFor", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
  Arrx#args = c.dic["ctrlArgs"].arr
  execx(args[0], env)
- @while(1){
+ @for 1 {
   Cptx#c = execx(args[1], env)
   @if(!ifcheckx(c)){
    @break
@@ -3531,15 +3539,15 @@ execDefx("IdState", ->(x Arrx, env Cptx)Cptx{
 })
 
 /////24 main func
-Str#fc = fileRead(osArgs()[1])
+#osargs = osArgs()
+Str#fc = File(osargs[1]).readAll()
 Str#execsp = "main"
 Str#defsp = "main"
-@if(osArgs().len()) > 2){
- #execsp = osArgs()[2] 
+@if(osargs.len() > 2){
+ #execsp = osargs[2] 
 }
-@if(osArgs().len()) > 3){
- #defsp = osArgs()[3] 
+@if(osargs.len() > 3){
+ #defsp = osargs[3] 
 }
 #main = progl2cptx("@env "+execsp+" | " + defsp + " {"+fc+"}'"+osArgs()[1]+"'", defmain)
 execx(main.dic["envBlock"], main)
-*/

@@ -114,7 +114,7 @@ var grammar = {
 		["left", "(", ")", "[", "]", "{", "}", "."],
 	],
   "start": "Start",
-//	"parseParams": ["m"],
+	"parseParams": ["tplparse", "proglparse"],
   "bnf": {
 		Start: [
 			["Expr", "return $$= $1"],
@@ -162,8 +162,8 @@ var grammar = {
 		],
 		Str: "$$ = ['str', $1]",
 		Tpl: [
-			["TPL", "$$ = ['tpl', $1]"],
-			["TPL STR", "$$ = ['tpl', $1, $2]"],
+			["TPL", "$$ = ['tpl', JSON.stringify(proglparse(tplparse($1)))]"],
+			["TPL STR", "$$ = ['tpl', JSON.stringify(proglparse(tplparse($1))), $2]"],
 		],
 		Func: "$$ = ['func', $1]",
 		Arr: [

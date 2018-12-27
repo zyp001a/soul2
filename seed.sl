@@ -232,15 +232,36 @@ nsGetx = &(ns Cptx, key Str)Cptx{
  @return s;
 }
 //TOOD cachedb
-dbGetx = &(scope Cptx, key Str)Str{
+dbCache = &(){
+}
+dbGetx = &(scope Cptx, key Str)Cptx{
  Str#f = pathResolve(getenv("HOME")+"/soul2/db/"+scope.str + "/" + key + ".sl")
-
  @if(fileExists(f)){
-  @return fileRead(f)
+  Str#str = fileRead(f)
+  @if(fileNt(f, f+".cache") != ""){
+   Str#jstr = cmd("./sl-reader", key + " := "+str)
+   fileWrite(f+".cache", jstr)
+  }@else{
+   Str#jstr = fileRead(f+".cache")
+  }
  }@elif(fileExists(f+"t")){
-  @return "@`"+fileRead(f+"t")+"` '"+f+"t'";
+  str = "@`"+fileRead(f+"t")+"` '"+f+"t'";
+  @if(fileNt(f+"t", f+"t.cache") != ""){
+   Str#jstr = cmd("./sl-reader", key + " := "+str)
+   fileWrite(f+"t.cache", jstr)
+   Astx#ast = jsonParse(jstr)
+  }@else{
+   Str#jstr = fileRead(f+"t.cache")
+  }
+ }@else{
+  @return _
  }
- @return ""
+ Astx#ast = jsonParse(jstr)
+ @if(len(ast) == 0){
+  die("dbGetx: wrong grammar")
+ }
+ Cptx#r = ast2cptx(ast, scope, classNewx())
+ @return r
 }
 subClassGetx = &(scope Cptx, key Str, cache Dic)Cptx{
  #r = scope.dic[key]
@@ -248,11 +269,10 @@ subClassGetx = &(scope Cptx, key Str, cache Dic)Cptx{
   @return r
  }
  @if(scope.str != ""){
-  #sstr = dbGetx(scope, key);
-  @if(sstr != ""){
-   r = libProgl2cptx(sstr, scope, key)
+  #r = dbGetx(scope, key);
+  @if(r != _){
    scope.dic[key] = r
-   @return r;
+   @return r
   }
  }
 
@@ -286,6 +306,9 @@ classGetx = &(scope Cptx, key Str)Cptx{
  @if(r.fprop){
   @return propDefx(scope, key, r)
  }
+// @if(scope.dic[key] == _){
+//  scope.dic[key] = copyx(r)
+// }
  @return r;
 }
 subMethodGetx = &(scope Cptx, v Cptx, key Str)Cptx{
@@ -583,7 +606,7 @@ blockc.dic["blockParent"] = defx(blockc)
 ##funcclosurec = curryDefx(defmain, "FuncClosure", funcblockc)
 
 ##functplc = classDefx(defmain, "FuncTpl", [funcc], {
- funcTpl: strc
+ funcTplAst: strc
  funcTplPath: strc
 })
 
@@ -873,7 +896,7 @@ classx = &(o Cptx)Cptx{
  }
  @return classRawx(o.type)
 }
-inClassx = &(c Cptx, t Cptx, cache Dic)Boolean{
+inClassx = &(c Cptx, t Cptx, cache Dic)Boolean{ 
  @if(c.type != @T("CLASS")){
   log(strx(c))
   die("inClass: left not class")
@@ -1336,20 +1359,9 @@ strx = &(o Cptx, i Int)Str{
 ##tplmain = classNewx([defmain])
 tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
 // log(func.dic["funcTplPath"].str)
-// log(arr2strx(args)) 
- @if(func.val == _){//use val as cache
-  Str#sstr = func.dic["funcTpl"].str
-  @if(sstr == ""){
-   @return strNewx("")
-  }@else{
-   Astx#ast = jsonParse(cmd("./slt-reader", sstr))
-   @if(len(ast) == 0){
-    die("tplCall: grammar error" + getx(func, "funcTplPath").str)
-   }
-   func.val = ast;
-  }
- }@else{
-  ast = Astx(func.val)
+ Astx#ast = jsonParse(func.dic["funcTplAst"].str)
+ @if(len(ast) == 0){
+  @return strNewx("")
  }
  
  #localx = classNewx()
@@ -1739,8 +1751,9 @@ tpl2cptx = &(ast Astx, def Cptx, local Cptx, name Str)Cptx{
  @if(name == ""){
   die("tpl no name")
  }
+ #sstr = Str(ast[1])
  #x = defx(functplc, {
-  funcTpl: strNewx(Str(ast[1]))   
+  funcTplAst: strNewx(sstr)
  })
  @if(len(ast) == 3){
   x.dic["funcTplPath"] = strNewx(Str(ast[2]))
@@ -1864,7 +1877,7 @@ itemsget2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
   Cptx#s = items.dic["idState"]
   Str#str = items.dic["idStr"].str
   Cptx#itemst = s.dic[str]
-  Cptx#itemstt = itemst.obj
+  Cptx#itemstt = aliasGetx(itemst.obj)
   @if(itemst.farg){
    @return lefto
   }
@@ -2291,7 +2304,6 @@ call2cptx = &(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   @if(aa0 != _){
    @return aa0
   }
-
   @if(f.name == ""){
    die("class with no name")
   }
@@ -2600,14 +2612,6 @@ progl2cptx = &(str Str, def Cptx, local Cptx)Cptx{
  #r = ast2cptx(ast, def, local)
  @return r
 }
-libProgl2cptx = &(str Str, def Cptx, name Str)Cptx{
- Astx#ast = jsonParse(cmd("./sl-reader", name + " := "+str))
- @if(len(ast) == 0){
-  die("libProgl2cpt: wrong grammar")
- }
- #r = ast2cptx(ast, def, classNewx())
- @return r
-}
 /////20 func def
 funcDefx(defmain, "env", &(x Arrx, env Cptx)Cptx{
  //test function TODO delete
@@ -2909,6 +2913,12 @@ methodDefx(pathc, "resolve", &(x Arrx, env Cptx)Cptx{
  Str#p = o.dic["path"].str
  @return strNewx(pathResolve(p))
 }, [strc], strc)
+methodDefx(pathc, "timeMod", &(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Str#p = o.dic["path"].str
+ //TODO
+ @return nullv
+}, _, intc)
 
 methodDefx(filec, "write", &(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]

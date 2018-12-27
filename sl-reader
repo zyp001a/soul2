@@ -1,12 +1,25 @@
 #!/usr/bin/env node
 var p = require("./progl-parser");
+var t = require("./tpl-parser");
 var g = require("./get-stdin");
 var fs = require("fs")
+function tparse(str){
+	if(str == ""){
+		return ""
+	}
+	return t.parse(str)
+}
+function pparse(str, x, y){
+	if(str == ""){
+		return ""
+	}
+	return p.parse(str, x, y)	
+}
 if(!process.argv[2]){
   g().then(str => {
-  	console.log(JSON.stringify(p.parse(str)))
+  	console.log(JSON.stringify(pparse(str, tparse, pparse)))
 	});
 }else{
 	var str = fs.readFileSync(process.argv[2]).toString()
-  console.log(JSON.stringify(p.parse(str)))	
+  console.log(JSON.stringify(pparse(str, tparse, pparse)))	
 }
