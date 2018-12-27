@@ -14,7 +14,9 @@ Cptx => {
  fdefault: Bool
  fprop: Bool
  fstatic: Bool
- farg: Bool  
+ farg: Bool
+
+ ast: Astx
  
  name: Str
  id: Str
@@ -2443,6 +2445,11 @@ ast2dicx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
  @return r;
 }
 ast2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
+ Cptx#x = subAst2cptx(ast, def, local, func, name);
+ x.ast = ast
+
+}
+subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  @if(def == _){
   die("no def")
  }
@@ -2728,13 +2735,9 @@ funcDefx(defmain, "set", ->(x Arrx, env Cptx)Cptx{
  @if(r != _){
   @return r
  }
+ o.fdefault = @false 
  @return nullv 
 },[cptc, strc, cptc], cptc)
-funcDefx(defmain, "exec", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
- @return execx(l, r)
-}, [cptc, envc], cptc)
 funcDefx(defmain, "type", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return strNewx(typex(l))
@@ -2824,6 +2827,11 @@ funcDefx(defmain, "ind", ->(x Arrx, env Cptx)Cptx{
  Cptx#f = x[1] 
  @return strNewx(indx(o.str, f.int))
 }, [strc, intc], strc)
+funcDefx(defmain, "exec", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return execx(l, r)
+}, [cptc, envc], cptc)
 funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
  Cptx#f = x[0];
  Cptx#a = x[1];
@@ -3027,6 +3035,7 @@ methodDefx(arrc, "set", ->(x Arrx, env Cptx)Cptx{
   die("arrset: index out of range")
  }
  o.arr[i.int] = v
+ o.fdefault = @false
  @return v
 }, [uintc, cptc], cptc)
 methodDefx(arrstrc, "sort", ->(x Arrx, env Cptx)Cptx{
@@ -3066,7 +3075,8 @@ methodDefx(dicc, "set", ->(x Arrx, env Cptx)Cptx{
  @if(o.dic[i.str] == _){
   o.arr.push(i)
  }
- o.dic[i.str] = v 
+ o.dic[i.str] = v
+ o.fdefault = @false 
  @return v
 }, [strc, cptc], cptc)
 methodDefx(dicc, "hasKey", ->(x Arrx, env Cptx)Cptx{

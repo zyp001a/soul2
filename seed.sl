@@ -1345,11 +1345,7 @@ tplCallx = &(func Cptx, args Arrx, env Cptx)Cptx{
    Astx#ast = jsonParse(cmd("./slt-reader", sstr))
    @if(len(ast) == 0){
     die("tplCall: grammar error" + getx(func, "funcTplPath").str)
-   }/*
-   #localx = classNewx()
-   localx.dic["$env"] = env
-   localx.dic["$this"] = func
-   */
+   }
    func.val = ast;
   }
  }@else{
@@ -2714,6 +2710,7 @@ funcDefx(defmain, "set", &(x Arrx, env Cptx)Cptx{
  @if(r != _){
   @return r
  }
+ o.fdefault = @Boolean(0)
  @return nullv 
 },[cptc, strc, cptc], cptc)
 funcDefx(defmain, "exec", &(x Arrx, env Cptx)Cptx{
@@ -3054,6 +3051,7 @@ methodDefx(arrc, "set", &(x Arrx, env Cptx)Cptx{
   die("arrset: index out of range")
  }
  o.arr[i.int] = v
+ o.fdefault = @Boolean(0) 
  @return v
 }, [uintc, cptc], cptc)
 methodDefx(arrstrc, "sort", &(x Arrx, env Cptx)Cptx{
@@ -3092,7 +3090,8 @@ methodDefx(dicc, "set", &(x Arrx, env Cptx)Cptx{
  @if(o.dic[i.str] == _){
   push(o.arr, i)
  }
- o.dic[i.str] = v 
+ o.dic[i.str] = v
+ o.fdefault = @Boolean(0) 
  @return v
 }, [strc, cptc], cptc)
 methodDefx(dicc, "hasKey", &(x Arrx, env Cptx)Cptx{

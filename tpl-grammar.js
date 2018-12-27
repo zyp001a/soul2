@@ -23,7 +23,7 @@ var grammar = {
 //	"parseParams": [""],
   "bnf": {
 		"Start": [
-			["ES", "return $$ = '|{#$str = ``;$str += `' + $1 + '`;}'"]
+			["ES", "$$ = '|{#$str = ``;$str += `' + $1 + '`;}'; $$= $$.replace(/\\$str \\+= ``;/g, ''); return $$"]
 		],
 		"ES": [
 			["E", "$$ = $1"],

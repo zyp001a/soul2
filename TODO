@@ -1,3 +1,10 @@
+-@env go -> go
+ state1 -> main
+	when Call keep main  	 
+  when exec flag1-> go -> 
+	when call 
+	 ->callx -all main
+
 speed up!
 make CallId
 dynamic allow arr length
