@@ -1,2 +1,2 @@
-a = File("xx")
-log(a)
+a = File("test/019-file.sl")
+log(a.exists())
