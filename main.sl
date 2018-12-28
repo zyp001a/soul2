@@ -1419,7 +1419,6 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  }
 
  #localx = classNewx()
- localx.dic["$env"] = env
  localx.dic["$this"] = func
  @each i v args{
   localx.dic[Str(i)] = v;

@@ -1,0 +1,2 @@
+#!/bin/bash 
+time go run seed.go main.sl golang
