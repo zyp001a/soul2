@@ -1,1 +1,8 @@
+~#sep = "\n";
+~~:$imports.values().join(sep)~
+~:$types.values().join(sep)~
+~:$classes.values().join(sep)~
+~:$globals.values().join(sep)~
+~:$funcs.values().join(sep)~
+~:$includes.values().join(sep)~
 ~=$mainContent~

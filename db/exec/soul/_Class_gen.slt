@@ -1,9 +1,8 @@
 ~
 Class#c = #0
-#typemap = getExec()._typemap
 ~~=getName(c)~ => {
 ~@each k v c.schema(){
- ~~=ind(k+": "+ getName(v))~
+ ~~=ind(k+": "+ getName(class(v)))~
 ~
 }
 ~}~
