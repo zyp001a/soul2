@@ -1,5 +1,5 @@
 ~
 $fileList["main.sl"] = ^_BlockMain_main^
 
-$cmdExec = "./soul2 "+mainDir.path+"main.sl"
+$cmdExec = "./main.sl.exec/golang/golang "+mainDir.path+"main.sl"
 ~

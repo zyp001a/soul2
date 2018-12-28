@@ -4,7 +4,7 @@ Dic#d = #1
 ~&~=getName(c)~{
 ~@each k v d.appendClass(c){
  @if(!getDefaultFlag(v)){
-  ~~=ind(^_varname k^)~: ~=ind(exec(v), 1)~,  
+  ~~=ind(k)~: ~=ind(exec(v), 1)~,  
 ~
  }
 }~}

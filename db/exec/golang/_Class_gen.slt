@@ -1,15 +1,14 @@
 ~
 Class#c = #0
 #typemap = getExec()._typemap
- ~type ~=getName(c)~ struct {
+~type ~=getName(c)~ struct {
+~@each _ v c.parents(){
+ ~~=ind(getName(v))~
 ~
- @each _ v c.parents(){
-  ~~=ind(getName(v))~
+}
+@each k v c.schema(){
+ ~~=ind(^_varname k^+" "+call(typemap, [class(v)]))~
 ~
- }
- @each k v c.schema(){
-  ~~=ind("_"+k+" "+call(typemap, [class(v)]))~
-~
- }
- ~}~
+}
+~}~
 ~

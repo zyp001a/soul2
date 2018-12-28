@@ -1,0 +1,23 @@
+~
+Block#bl = #0.funcBlock
+Arr_Str#vars = #0.funcVars
+Arr#vts = #0.funcVarTypes
+Class#ret = #0.funcReturn
+#blockx = ^_Block_genContent bl^ 
+#argvx = ""
+@each i v vts{
+ @if (i != 0) {argvx += ", "}
+ argvx += vars[i] + " " + getName(class(v))
+}
+#returnx = ""
+@if(ret){
+ returnx += " " + getName(class(v))
+}
+@if(inClass(class(#0), FuncClosure)){
+ #namex = ""
+}@else{
+ #namex = getName(#0)
+}
+~~=namex~->(~=argvx~)~=returnx~{
+~:ind(blockx)~
+}
