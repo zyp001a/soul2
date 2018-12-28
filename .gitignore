@@ -11,6 +11,7 @@ seed.sl.go
 tpl-parser.js
 x
 soul2
+soul3
 test/x*
 test/y*
 main.sl.exec

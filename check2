@@ -7,7 +7,7 @@ echo ===set def $SOULD
 
 if [ "main.sl" -nt "main.sl.exec/golang/main.go" ]; then
  		echo ===gen start
-		time ./soul3 main.sl golang
+		time go run seed.go main.sl golang
   	rc=$?
 		if [[ $rc -ne 0 ]]; then
     		echo ===gen failed				
@@ -26,7 +26,6 @@ fi
 if [ "main.sl.exec/golang/main.go" -nt "main.sl.exec/golang/golang" ]; then
 		echo ===build
   	cd main.sl.exec/golang && /usr/bin/go build && cd ../..
-		cp main.sl.exec/golang/golang soul3
 fi
 OP=$1
 if [ -z "$1" ]; then
@@ -53,6 +52,8 @@ if [ "$OP" = "all" ]; then
 				echo ===done: $f				
 		done
 		if [ "$SOULE" = "golang" ]; then
+				cp main.sl.exec/golang/main.go seed.go				
+ 				cp main.sl.exec/golang/golang soul3
  				cp main.sl.exec/golang/golang soul.cache/soul3-$(date +%Y%m%d-%H%M%S)
 				cp main.sl.exec/golang/main.go soul.cache/soul3-$(date +%Y%m%d-%H%M%S).go
 		fi		
