@@ -10,6 +10,7 @@
 ///special usage
 //class.str: ns, scope, str
 //call.class: func
+//env.int: active
 version := 100
 /////1 set class/structs
 T := @enum CPT OBJ CLASS NULL INT FLOAT NUMBIG STR DIC ARR VALFUNC CALL FUNC BLOCK ID IF FOR EACH CTRL
@@ -812,7 +813,6 @@ envc := classDefx(defmain, "Env", _, {
  
  envExec: classc 
  envBlock: blockmainc
- envActive: boolc
 })
 
 /////15 func newfunc
@@ -1644,7 +1644,6 @@ env2cptx ->(ast Astx, def Cptx, local Cptx)Cptx{
   envStack: arrNewx(arrc, &Arrx) 
   envExec: execsp
   envBlock: b
-  envActive: falsev    
  })
  @return x
 }
@@ -2620,10 +2619,14 @@ valuesx ->(o Cptx)Cptx{
  @return arrNewx(c, arr) 
 }
 
-funcDefx(defmain, "env", ->(x Arrx, env Cptx)Cptx{
- //test function TODO delete
+//internal function!!
+funcDefx(defmain, "getEnv", ->(x Arrx, env Cptx)Cptx{
  @return env
 }, _, envc)
+funcDefx(defmain, "getExec", ->(x Arrx, env Cptx)Cptx{
+ @return env.dic["envExec"]
+}, _, classc)
+
 funcDefx(defmain, "osCmd", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#p = x[1]
@@ -2820,14 +2823,12 @@ funcDefx(defmain, "ind", ->(x Arrx, env Cptx)Cptx{
 }, [strc, intc], strc)
 funcDefx(defmain, "exec", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
- Cptx#r = x[1];
- @return execx(l, r, 1)
-}, [cptc, envc], cptc)
+ @return execx(l, env, 1)
+}, [cptc], cptc)
 funcDefx(defmain, "opp", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#op = x[1]
- Cptx#e = x[2]
- Cptx#ret = execx(o, e, 1)
+ Cptx#ret = execx(o, env, 1)
  @if(ret.type != T##STR){
   die("opp: not used in tplCall")
  }
@@ -2848,10 +2849,6 @@ funcDefx(defmain, "opp", ->(x Arrx, env Cptx)Cptx{
 funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
  Cptx#f = x[0];
  Cptx#a = x[1];
- Cptx#e = x[2];
- @if(e.fdefault){
-  e = env
- }
  @if(f == _ || f.id == nullv.id){
   log(strx(a))
   die("call() error");
@@ -2860,8 +2857,8 @@ funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
   log(strx(f))
   die("not func")
  }
- @return callx(f, a.arr, e)
-}, [funcc, arrc, envc], cptc)
+ @return callx(f, a.arr, env)
+}, [funcc, arrc], cptc)
 funcDefx(defmain, "tplCall", ->(x Arrx, env Cptx)Cptx{
  Cptx#f = x[0];
  Cptx#a = x[1];
@@ -3334,12 +3331,11 @@ execDefx ->(name Str, f Funcx)Cptx{
 execDefx("Env", ->(x Arrx, env Cptx)Cptx{
  Cptx#nenv = x[0]
  _indentx = " "
- Cptx#a = nenv.dic["envActive"]
- @if(a.int == 1){
+ @if(nenv.int == 1){
   @return nenv
  }
  //if not active, start
- nenv.dic["envActive"] = truev
+ nenv.int = 1
  @return execx(nenv.dic["envBlock"], nenv)
 })
 execDefx("BlockMain", ->(x Arrx, env Cptx)Cptx{

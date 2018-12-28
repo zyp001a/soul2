@@ -1,8 +1,8 @@
 ~
 Arr#vts = #0.funcVarTypes
 Class#ret = #0.funcReturn
-#typemap = $env.envExec._typemap
-#varname = $env.envExec._varname
+#typemap = getExec()._typemap
+#varname = getExec()._varname
 
 #argvx = ""
 @each i v vts{

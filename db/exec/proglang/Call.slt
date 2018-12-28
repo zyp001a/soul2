@@ -10,7 +10,7 @@ Arr#a = callArgs(#0)
  ~~=tplCall(f, a, $env)~~
 }@elif(inClass(c, Func)){//TODO func tmp
  #n = getName(f)
- #r = methodGet($env.envExec, f)
+ #r = methodGet(getExec(), f)
  @if(r){
   ~~=call(r, a, $env)~~
  }@else{

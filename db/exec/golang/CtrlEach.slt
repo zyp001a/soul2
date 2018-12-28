@@ -1,6 +1,6 @@
 ~
 Arr#a = #0.ctrlArgs
-#varname = $env.envExec._varname
+#varname = getExec()._varname
 #pp = typepred(a[2])
 #a0 = varname(a[0])
 #a1 = varname(a[1])

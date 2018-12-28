@@ -12,7 +12,7 @@ if [ "main.sl" -nt "main.sl.exec/golang/main.go" ]; then
 		if [[ $rc -ne 0 ]]; then
     		echo ===gen failed				
 				exit 1
-		fi		
+		fi
 		echo ===gen done
 fi
 if [ "progl-grammar.js" -nt "progl-parser.js" ]; then
@@ -56,6 +56,8 @@ if [ "$OP" = "all" ]; then
  				cp main.sl.exec/golang/golang soul3
  				cp main.sl.exec/golang/golang soul.cache/soul3-$(date +%Y%m%d-%H%M%S)
 				cp main.sl.exec/golang/main.go soul.cache/soul3-$(date +%Y%m%d-%H%M%S).go
+		else
+				cp main.sl.exec/golang/main.go soul.cache/soul3-$(date +%Y%m%d-%H%M%S).tmp.go		
 		fi		
 else
 		echo "===check $1"

@@ -1,6 +1,6 @@
 ~
-Str#mainPath = $env.envBlock.blockPath
-#mainFlag = getNote($env.envExec)
+Str#mainPath = getEnv().envBlock.blockPath
+#mainFlag = getNote(getExec())
 
 #mainDirStr = mainPath + "." + mainFlag
 mainDir := Dir(mainDirStr)
@@ -17,11 +17,11 @@ $globals := {}Str
 $funcs := {}Str
 $includes := {}Str
 
-funcImport ->(key Str, env){
+funcImport ->(key Str){
  @if($funcs[key]){
   @return
  }
- $funcs[key] = call(mustGet(env.envExec, key), [], env)
+ $funcs[key] = call(mustGet(getExec(), key), [])
 }
 
 ^_BlockMain_preMain^

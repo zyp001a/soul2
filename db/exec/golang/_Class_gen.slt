@@ -1,6 +1,6 @@
 ~
 Class#c = #0
-#typemap = $env.envExec._typemap
+#typemap = getExec()._typemap
  ~type ~=getName(c)~ struct {
 ~
  @each _ v c.parents(){

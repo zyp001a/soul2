@@ -1,6 +1,6 @@
 ~
-#var = $env.envExec._var
-#varname = $env.envExec._varname
+#var = getExec()._var
+#varname = getExec()._varname
 
 #filter = {}
 Arr_Str#x = #1;
