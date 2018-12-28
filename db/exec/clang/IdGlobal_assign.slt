@@ -2,7 +2,7 @@
 #n = #0.idStr
 #nn = ^_varname n^
 $globals[n] = ^_var nn, get(#0.idState, n)^
-Str#x = exec(#1, $env)
+Str#x = exec(#1)
 @if(x){
  ~^0 = ~=x~~
 }~

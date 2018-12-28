@@ -1,1 +1,1 @@
-@return ~=exec(#0.ctrlArg, $env)~
+@return ~=exec(#0.ctrlArg)~

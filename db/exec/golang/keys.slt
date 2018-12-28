@@ -1,3 +1,3 @@
 ~
-funcImport("_keys", $env)
+funcImport("_keys")
 ~_keys(^0)

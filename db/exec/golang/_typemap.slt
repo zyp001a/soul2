@@ -35,11 +35,11 @@ Class#c = #0
   }@elif(inClass(c, Json)){
    res = "map[string]interface{}"
   }@elif(inClass(c, StaticArr)){
-   res = "[]"+call($this, [class(c.itemsType)], $env)
+   res = "[]"+call($this, [class(c.itemsType)])
   }@elif(inClass(c, Arr)){
-   res = "*[]"+call($this, [class(c.itemsType)], $env)
+   res = "*[]"+call($this, [class(c.itemsType)])
   }@elif(inClass(c, Dic)){
-  res = "map[string]"+call($this, [class(c.itemsType)], $env)
+  res = "map[string]"+call($this, [class(c.itemsType)])
   }@elif(inClass(c, FuncProto)){
    res = ^_Func_declare c^
   }@else{

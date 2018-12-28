@@ -1,1 +1,1 @@
-~=opp(#0, OpEq, $env)~ == ~=opp(#1, OpEq, $env)~
+~=opp(#0, OpEq)~ == ~=opp(#1, OpEq)~

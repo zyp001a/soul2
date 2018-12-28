@@ -8,7 +8,7 @@ Class#c = #0
 ~
  }
  @each k v c.schema(){
-  ~~=ind("_"+k+" "+call(typemap, [class(v)], $env))~
+  ~~=ind("_"+k+" "+call(typemap, [class(v)]))~
 ~
  }
  ~}~

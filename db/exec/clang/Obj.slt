@@ -4,7 +4,7 @@ Obj#o = #0;
 
 #r = get(getExec(), getName(class(o)))
 @if(r){
- #res = call(r, [#0], $env)
+ #res = call(r, [#0])
 }@else{
  #res = ^new class(o), Dic(o)^
 }

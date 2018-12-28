@@ -7,12 +7,12 @@ Arr#a = callArgs(#0)
 #c = class(f)
 #printargs = 0
 @if(inClass(c, FuncTpl)){
- ~~=tplCall(f, a, $env)~~
+ ~~=tplCall(f, a)~~
 }@elif(inClass(c, Func)){//TODO func tmp
  #n = getName(f)
  #r = methodGet(getExec(), f)
  @if(r){
-  ~~=call(r, a, $env)~~
+  ~~=call(r, a)~~
  }@else{
   Arr#vt = f.funcVarTypes
   @for #i=a.len(); i<vt.len(); i++ {
@@ -27,7 +27,7 @@ Arr#a = callArgs(#0)
  }
 }@elif(inClass(c, Mid)){
  printargs = 1
- ~~=exec(f, $env)~~
+ ~~=exec(f)~~
 }@else{
 }
 #arr = []Str

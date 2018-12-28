@@ -1,1 +1,1 @@
-~=opp(#0, OpAnd, $env)~ && ~=opp(#1, OpAnd, $env)~
+~=opp(#0, OpAnd)~ && ~=opp(#1, OpAnd)~

@@ -1,3 +1,3 @@
 ~
-funcImport("_Str_split", $env)
+funcImport("_Str_split")
 ~_Str_split(^0, ^1)

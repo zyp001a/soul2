@@ -1,8 +1,8 @@
 ~
-funcImport("_osCmd", $env)
+funcImport("_osCmd")
 @if(!#1){
  #in = '""'
 }@else{
- #in = exec(#1, $env)
+ #in = exec(#1)
 }
 ~_osCmd(^0, ~=in~)

@@ -3,7 +3,7 @@
 @if(#1){
  Str#res = #1
 }@else{
- #res = exec(#0, $env)
+ #res = exec(#0)
 }
 @if(inClass(t, StaticArr) || inClass(t, JsonArr)){
 }@else{

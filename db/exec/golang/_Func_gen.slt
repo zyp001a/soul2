@@ -10,11 +10,11 @@ Class#ret = #0.funcReturn
 #argvx = ""
 @each i v vts{
  @if (i != 0) {argvx += ", "}
- argvx += varname(vars[i]) + " " + call(typemap, [class(v)], $env)
+ argvx += varname(vars[i]) + " " + call(typemap, [class(v)])
 }
 #returnx = ""
 @if(ret){
- returnx += " " + call(typemap, [ret], $env)
+ returnx += " " + call(typemap, [ret])
 }
 @if(inClass(class(#0), FuncClosure)){
  #namex = ""

@@ -1,1 +1,1 @@
-~=opp(#0, OpLe, $env)~ <= ~=opp(#1, OpLe, $env)~
+~=opp(#0, OpLe)~ <= ~=opp(#1, OpLe)~

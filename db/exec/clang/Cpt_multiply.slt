@@ -1,1 +1,1 @@
-~=opp(#0, OpMultiply, $env)~ * ~=opp(#1, OpMultiply, $env)~
+~=opp(#0, OpMultiply)~ * ~=opp(#1, OpMultiply)~

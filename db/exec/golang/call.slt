@@ -1,5 +1,5 @@
 ^0~Arr_Str#arr = []
 @each _ e #1{
- arr.push(exec(e, $env))
+ arr.push(exec(e))
 }
 ~(~=arr.join(", ")~)

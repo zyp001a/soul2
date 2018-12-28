@@ -1,6 +1,6 @@
 var jison = require("jison");
 var fs = require("fs");
-var str1 = " + $1.replace(/\\^([A-Za-z0-9_]+) *([^\\^]*)\\^/g, function(m, n, o){ return 'call(mustGet(#$env.envExec, `' + n + '`), [' + o +'], #$env)'}) + "
+var str1 = " + $1.replace(/\\^([A-Za-z0-9_]+) *([^\\^]*)\\^/g, function(m, n, o){ return 'call(mustGet(getExec(), `' + n + '`), [' + o +'])'}) + "
 var grammar = {
   "lex": {
 		"macros":{},
@@ -33,8 +33,8 @@ var grammar = {
 			["GET", "$$ = '`;$str += ('" + str1 + "');$str += `'"],
 			["GET2", "$$ = '`;$str += appendIfExists('" + str1 + "');$str += `'"],			
 			["INS", "$$ = '`;'" + str1 + "';$str += `'"],
-			["EXEC", "$$ = '`;$str += exec(#' + $1 + ', #$env);$str += `'"],
-			["EXEC2", "$$ = '`);$str += exec(#0.' + $1 + ', #$env);$str += `'"],			
+			["EXEC", "$$ = '`;$str += exec(#' + $1 + ');$str += `'"],
+			["EXEC2", "$$ = '`);$str += exec(#0.' + $1 + ');$str += `'"],			
 //			["MACRO", "$$ = '`);' + $1 + ';push(#$arr, `'"],
 			["RAW", "$$ = $1"],
 		],

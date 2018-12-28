@@ -1,14 +1,14 @@
 ~Arr#a = #0.ctrlArgs
 @if(a[0]){
- #start = exec(a[0], $env) + "; "
+ #start = exec(a[0]) + "; "
 }@else{
  #start = ""
 }
 @if(a[2]){
- #inc = "; " +exec(a[2], $env)
+ #inc = "; " +exec(a[2])
 }@else{
  #inc = ""
 }
-~for ~=start + exec(a[1], $env) + inc~ {
+~for ~=start + exec(a[1]) + inc~ {
 ~:ind(^_Block_genContent a[3]^)~
 }
