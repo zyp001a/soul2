@@ -6,7 +6,8 @@ echo ===set exec $SOULE
 echo ===set def $SOULD
 
 if [ "main.sl" -nt "main.sl.exec/golang/main.go" ]; then
-		go run seed.sl.go main.sl golang
+ 		echo ===gen start
+		time ./soul3 main.sl golang
   	rc=$?
 		if [[ $rc -ne 0 ]]; then
     		echo ===gen failed				
@@ -22,6 +23,11 @@ if [ "tpl-grammar.js" -nt "tpl-parser.js" ]; then
 		node tpl-grammar.js
 		echo ===gen tpl parser				
 fi
+if [ "main.sl.exec/golang/main.go" -nt "main.sl.exec/golang/golang" ]; then
+		echo ===build
+  	cd main.sl.exec/golang && /usr/bin/go build && cd ../..
+		cp main.sl.exec/golang/golang soul3
+fi
 OP=$1
 if [ -z "$1" ]; then
 		OP=all
@@ -32,9 +38,6 @@ fi
 
 if [ "$OP" = "all" ]; then
 		echo "===check all"
-	  if [ "main.sl.exec/golang/main.go" -nt "main.sl.exec/golang/golang" ]; then
-				cd main.sl.exec/golang && /usr/bin/go build && cd ../..
-		fi
 		for f in `ls test/0*.sl `
 		do
 				res=$(./main.sl.exec/golang/golang $f $SOULE $SOULD | diff ${f}.$SOULE${SOULD}log -)
@@ -47,8 +50,12 @@ if [ "$OP" = "all" ]; then
 						echo ===error: $f
 						echo $res
 				fi
-				echo ===done: $f 				
+				echo ===done: $f				
 		done
+		if [ "$SOULE" = "golang" ]; then
+ 				cp main.sl.exec/golang/golang soul.cache/soul3-$(date +%Y%m%d-%H%M%S)
+				cp main.sl.exec/golang/main.go soul.cache/soul3-$(date +%Y%m%d-%H%M%S).go
+		fi		
 else
 		echo "===check $1"
 		for f in `ls test/$1*.sl `

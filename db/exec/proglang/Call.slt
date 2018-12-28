@@ -1,6 +1,9 @@
 ~
-Cpt#f = #0.callFunc
-Arr#a = #0.callArgs
+Cpt#f = callFunc(#0)
+Arr#a = callArgs(#0)
+//Call#ca = #0
+//Cpt#f = ca.func()
+//Arr#a = ca.args()
 #c = class(f)
 #printargs = 0
 @if(inClass(c, FuncTpl)){

@@ -1,11 +1,19 @@
+//field usage
+//*.obj ->the class of obj
+//*.class ->the class of method/prop
+
 ///cache usage
-//functpl.val: cache ast(progl2ast from str)
 //func.val: cache state(nlocal)
 //items.val: cache init expr
 //class.obj: cache single instance
+
+///special usage
 //class.str: ns, scope, str
+//call.class: func
+version := 100
 /////1 set class/structs
-T := @enum CPT OBJ CLASS NULL INT FLOAT NUMBIG STR DIC ARR VALFUNC
+T := @enum CPT OBJ CLASS NULL INT FLOAT NUMBIG STR DIC ARR VALFUNC CALL FUNC BLOCK ID IF FOR EACH CTRL
+Funcx := @type ->(Arrx, Cptx)Cptx
 Cptx => {
  type: T
  ctype: T
@@ -27,15 +35,18 @@ Cptx => {
  arr: Arrx
  str: Str
  int: Int
+ func: Funcx
  val: Cpt
 }
 Dicx := @type Dic Cptx
 Arrx := @type Arr Cptx
 Astx := @type JsonArr
-Funcx := @type ->(Arrx, Cptx)Cptx
 
-/////2 common func ...
+/////2 global var and common func ...
 uidi := Uint(0);
+inClassCache := {}Int
+root := &Dicx
+_indentx := " "
 uidx ->()Str{
  Str#r = Str(uidi)
  uidi += 1
@@ -71,7 +82,7 @@ dicCopyx ->(o Dicx)Dicx{
  }
  @return n
 }
-_indentx := " "
+
 indx ->(s Str, first Int)Str{
  @if(s == ""){
   @return s
@@ -128,7 +139,6 @@ ifcheckx ->(r Cptx)Bool{
 
 
 /////3 root newfuncs
-root := &Dicx
 parentMakex ->(o Cptx, parentarr Arrx){
  @if parentarr != _ {
   T#ctype = o.ctype
@@ -656,12 +666,12 @@ funcSetClosurex ->(func Cptx){
 }
 /////10 def mid
 
-callc := classDefx(defmain, "Call", [midc], {
- callFunc: funcc
- callArgs: arrc
-})
+callc := classDefx(defmain, "Call", [midc])
+callc.ctype = T##CALL
 
 callrawc := curryDefx(defmain, "CallRaw", callc)
+calltypec := curryDefx(defmain, "CallType", callrawc)
+callassignc := curryDefx(defmain, "CallAssign", callrawc)
 
 callmethodc := curryDefx(defmain, "CallMethod", callc)
 callreflectc := curryDefx(defmain, "CallReflect", callc)
@@ -814,7 +824,16 @@ valfuncNewx ->(f Funcx)Cptx{
  } 
 }
 
-
+callNewx ->(func Cptx, args Arrx, obj Cptx)Cptx{
+ @return &Cptx{
+  type: T##CALL
+  id: uidx()
+  fmid: @true
+  obj: obj  
+  class: func
+  arr: arrOrx(args)
+ }
+}
 funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  @if(return == _){
   return = emptyreturnc
@@ -890,6 +909,12 @@ classRawx ->(t T)Cptx{
   @return arrc
  }@elif(t == T##VALFUNC){
   @return valfuncc
+ }@elif(t == T##CALL){
+  @return callc
+ }@elif(t == T##FUNC){
+  @return funcc
+ }@elif(t == T##BLOCK){
+  @return blockc
  }@else{
   die("NOTYPE")
  }
@@ -925,6 +950,14 @@ inClassx ->(c Cptx, t Cptx, cache Dic)Bool{
  @if(c.id != "" && c.id == t.id){
   @return @true
  }
+ #key = c.id + "_" + t.id
+ #r = inClassCache[key]
+ @if(r == 1){
+  @return @true
+ }
+ @if(r == 2){
+  @return @false
+ }
  @if(!cache){
   cache = {}
  }
@@ -933,10 +966,12 @@ inClassx ->(c Cptx, t Cptx, cache Dic)Bool{
    @continue
   }
   cache[v.id] = 1
-  @if(inClassx(v, t, cache) ){
+  @if(inClassx(v, t, cache)){
+   inClassCache[key] = 1
    @return @true
   }
  }
+ inClassCache[key] = 2
  @return @false
 }
 defaultx ->(t Cptx)Cptx{
@@ -1015,6 +1050,13 @@ defx ->(class Cptx, dic Dicx)Cptx{
   }
  }@elif(class.ctype == T##VALFUNC){
   Cptx#x = valfuncNewx()
+ }@elif(class.ctype == T##CALL){
+  Cptx#x = callNewx()
+  x.fdefault = @true     
+ }@elif(class.ctype == T##FUNC){
+  Cptx#x = nullv//TODO
+ }@elif(class.ctype == T##BLOCK){
+  Cptx#x = nullv//TODO
  }@elif(class.ctype == T##DIC){
   #x = dicNewx(class)
   x.fdefault = @true     
@@ -1079,6 +1121,12 @@ eqx ->(l Cptx, r Cptx)Bool{
   @return l.id == r.id
  }@elif(t == T##VALFUNC){
   @return l.id == r.id  
+ }@elif(t == T##CALL){
+  @return l.id == r.id  
+ }@elif(t == T##FUNC){
+  @return l.id == r.id
+ }@elif(t == T##BLOCK){
+  @return l.id == r.id    
  }@elif(t == T##INT){
   @return l.int == r.int
  }@elif(t == T##FLOAT){
@@ -1165,106 +1213,103 @@ setx ->(o Cptx, key Str, val Cptx)Cptx{
 
 typepredx ->(o Cptx)Cptx{
  #t = o.type
- @if(t == T##OBJ){
-  @if(o.fmid){
-   //if is idstate
-   @if(inClassx(o.obj, idstatec)){
-    Str#id = o.dic["idStr"].str
-    @if(id.isInt()){
-     @return cptc
-    }
-    Cptx#s = o.dic["idState"]
-    #r = getx(s, id)
-    @if(r == _){
-     log(strx(s)) 
-     log(id)
-     die("not defined in idstate, may use #1 #2 like")
-     @return r
-    }
-    @return typepredx(r)
-   }
-   //if is call
-   @if(inClassx(o.obj, callc)){
-    Cptx#f = o.dic["callFunc"]
-    Cptx#args = o.dic["callArgs"]
-    @if(f.id == defmain.dic["new"].id){
-     Cptx#arg0 = args.arr[0]
-     @return arg0
-    }
-    @if(f.id == defmain.dic["as"].id){
-     Cptx#arg1 = args.arr[1]
-     @return arg1
-    }
-    @if(f.id == defmain.dic["numConvert"].id){
-     Cptx#arg1 = args.arr[1]
-     @return arg1
-    }
-    @if(f.id == defmain.dic["type"].id){
-     Cptx#arg0 = args.arr[0]
-     @return arg0
-    }    
-    //if is itemGet    
-    @if(f.id == defmain.dic["get"].id){
-     Cptx#arg0 = args.arr[0]       
-     Cptx#arg1 = args.arr[1]
-     Cptx#at0 = typepredx(arg0)
-     @if(at0 == _ || at0.id == cptv.id){
-      @return _
-     }
-     #cg = getx(at0, arg1.str)
-     @if(cg == _){
-      @return _;
-      log(strx(arg0))
-      log(strx(at0))
-      die("typepred: cannot pred obj get, key is "+arg1.str)
-     }
-     @return classx(cg)
-    }
-    //if is opGet
-    @if(inClassx(f.obj, opgetc)){
-     Cptx#arg0 = args.arr[0]
-     Cptx#at0 = typepredx(arg0)     
-     #r = getx(at0, "itemsType")
-     @if(r != _){
-      @return classx(r)
-     }@else{
-      @return cptc
-     }
-    }
-    
-    @if(inClassx(f.obj, functplc)){
-     @return strc
-    }
-
-    @if(inClassx(f.obj, funcc)){
-     //TODO if is dynamic funcReturn, like values, to,
-     #ret = getx(f, "funcReturn")
-     @if(ret == _){
-      log(strx(f))
-      die("no return")
-     }
-     @if(ret.id == emptyreturnc.id){
-      @return cptc;
-     }
-     @return ret
-    }
-    @if(inClassx(f.obj, midc)){
-     //TODO predict return func call
-     @return _
-    }
+ @if(t == T##CALL){
+  Cptx#f = o.class
+  #args = o.arr
+  @if(f == _){
+   @return callc
+  }
+  @if(f.id == defmain.dic["new"].id){
+   Cptx#arg0 = args[0]
+   @return arg0
+  }
+  @if(f.id == defmain.dic["as"].id){
+   Cptx#arg1 = args[1]
+   @return arg1
+  }
+  @if(f.id == defmain.dic["numConvert"].id){
+   Cptx#arg1 = args[1]
+   @return arg1
+  }
+  @if(f.id == defmain.dic["type"].id){
+   Cptx#arg0 = args[0]
+   @return arg0
+  }    
+  //if is itemGet    
+  @if(f.id == defmain.dic["get"].id){
+   Cptx#arg0 = args[0]     
+   Cptx#arg1 = args[1]
+   Cptx#at0 = typepredx(arg0)
+   @if(at0 == _ || at0.id == cptv.id){
     @return _
    }
-   //if is idscope
-   @if(inClassx(o.obj, idclassc)){
-    Cptx#s = o.dic["idVal"]
-    @return typepredx(s)
+   #cg = getx(at0, arg1.str)
+   @if(cg == _){
+    @return _;
+    log(strx(arg0))
+    log(strx(at0))
+    die("typepred: cannot pred obj get, key is "+arg1.str)
    }
-   log(o)
-   die("typepred: wrong mid")
+   @return classx(cg)
+  }
+    //if is opGet
+  @if(inClassx(f.obj, opgetc)){
+   Cptx#arg0 = args[0]
+   Cptx#at0 = typepredx(arg0)     
+   #r = getx(at0, "itemsType")
+   @if(r != _){
+    @return classx(r)
+   }@else{
+    @return cptc
+   }
+  }
+    
+  @if(inClassx(f.obj, functplc)){
+   @return strc
+  }
+
+  @if(inClassx(f.obj, funcc)){
+   //TODO if is dynamic funcReturn, like values, to,
+   #ret = getx(f, "funcReturn")
+   @if(ret == _){
+    log(strx(f))
+    die("no return")
+   }
+   @if(ret.id == emptyreturnc.id){
+    @return cptc;
+   }
+   @return ret
+  }
+  @if(inClassx(f.obj, midc)){
+   //TODO predict return func call
+   @return _
+  }
+  @return _
+ }@elif(t == T##OBJ){
+  //if is idstate
+  @if(inClassx(o.obj, idstatec)){
+   Str#id = o.dic["idStr"].str
+   @if(id.isInt()){
+    @return cptc
+   }
+   Cptx#s = o.dic["idState"]
+   #r = getx(s, id)
+   @if(r == _){
+    log(strx(s)) 
+    log(id)
+    die("not defined in idstate, may use #1 #2 like")
+    @return r
+   }
+   @return typepredx(r)
+  }
+   //if is idscope
+  @if(inClassx(o.obj, idclassc)){
+   Cptx#s = o.dic["idVal"]
+   @return typepredx(s)
   }
   @return o.obj
  }@else{
-  @return classx(o)
+  @return classx(o) 
  }
 }
 dic2strx ->(d Dicx, i Int)Str{
@@ -1342,6 +1387,12 @@ strx ->(o Cptx, i Int)Str{
  }@elif(t == T##STR){
   @return '"'+ escapex(o.str) + '"'
  }@elif(t == T##VALFUNC){
+  @return "&ValFunc"
+ }@elif(t == T##CALL){
+  @return "CALL"
+ }@elif(t == T##FUNC){
+  @return "&ValFunc"
+ }@elif(t == T##BLOCK){
   @return "&ValFunc"
  }@elif(t == T##DIC){
   @return dic2strx(o.dic, i)
@@ -1778,10 +1829,7 @@ obj2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
  Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);
  @if(schema.fmid){
-  #x = defx(callc, {
-   callFunc: defmain.dic["new"]
-   callArgs: arrNewx(arrc, [c, schema])
-  })
+  #x = callNewx(defmain.dic["new"], [c, schema])
  }@else{
   #x = defx(c, schema.dic)
  }
@@ -1807,25 +1855,16 @@ op2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  @if(args.len() == 1){
   //TODO not
   @if(op == "not"){
-   @if(!inClassx(t0, boolc)){    
-    @return defx(callc, {
-     callFunc: getx(t0, "eq")
-     callArgs: arrNewx(arrc, [arg0, defaultx(t0)])
-    })
+   @if(!inClassx(t0, boolc)){
+    @return callNewx(getx(t0, "eq"), [arg0, defaultx(t0)])
    }
   }
   
-  @return defx(callc, {
-   callFunc: f
-   callArgs: arrNewx(arrc, [arg0])
-  })
+  @return callNewx(f, [arg0])
  }@else{
   Cptx#arg1 = ast2cptx(Astx(args[1]), def, local, func)
   //TODO convert arg1
-  @return defx(callc, {
-   callFunc: f
-   callArgs: arrNewx(arrc, [arg0, arg1])
-  })  
+  @return callNewx(f, [arg0, arg1])
  }
  @return _
 }
@@ -1845,20 +1884,14 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
    log(strx(itemstc))
    die("no getf")
   }
-  @return defx(callc, {
-   callFunc: getf
-   callArgs: arrNewx(arrc, [items, key])
-  })
+  @return callNewx(getf, [items, key])
  }
  #setf = getx(itemstc, "set")
   //TODO check/convert v type
  @if(setf == _){
   die("no setf")
  }  
- #lefto = defx(callc, {
-  callFunc: setf
-  callArgs:  arrNewx(arrc, [items, key, v])
- })
+ #lefto = callNewx(setf, [items, key, v])
   
  #predt = typepredx(v)  
   
@@ -1913,17 +1946,11 @@ return2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
 }
 objget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  Cptx#obj = ast2cptx(Astx(ast[1]), def, local, func)
- @if(obj.type == T##OBJ){
+ @if(obj.type == T##OBJ || obj.type == T##CALL){
   @if(v == _){
-   @return defx(callc, {
-    callFunc: defmain.dic["get"]
-    callArgs: arrNewx(arrc, [obj, strNewx(Str(ast[2]))])
-   })
+   @return callNewx(defmain.dic["get"], [obj, strNewx(Str(ast[2]))])
   }@else{
-   @return defx(callc, {
-    callFunc: defmain.dic["set"]
-    callArgs: arrNewx(arrc, [obj, strNewx(Str(ast[2])), v])
-   })  
+   @return callNewx(defmain.dic["set"], [obj, strNewx(Str(ast[2])), v])
   }
  }@else{
  //TODO objget for other type
@@ -1942,10 +1969,7 @@ if2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
    die("if: typepred error")
   }
   @if(!inClassx(t, boolc)){
-   args[i] = defx(callc, {
-    callFunc: getx(t, "ne")
-    callArgs: arrNewx(arrc, [args[i], defaultx(t)])
-   })
+   args[i] = callNewx(getx(t, "ne"), [args[i], defaultx(t)])
   }
   Cptx#d = args[i+1]
   d.dic["blockParent"] = block
@@ -2026,10 +2050,7 @@ for2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  Cptx#check = ast2cptx(Astx(v[1]), def, local, func)
  #t = typepredx(check)
  @if(!inClassx(t, boolc)){
-  check = defx(callc, {
-   callFunc: getx(t, "ne")
-   callArgs: arrNewx(arrc, [check, defaultx(t)])
-  })
+  check = callNewx(getx(t, "ne"), [check, defaultx(t)])
  }
  
  @if(v[2] != _){ 
@@ -2140,10 +2161,8 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
    idStr: strNewx(id),
    idState: def
   })
-  @return defx(callrawc, {
-   callFunc: classGetx(idglobalc, "assign")
-   callArgs: arrNewx(arrc, [ip, r])
-  })
+  #af = classGetx(idglobalc, "assign")
+  @return callNewx(af, [ip, r], callassignc)
  }
  @return r
 }
@@ -2152,20 +2171,14 @@ convertx ->(from Cptx, to Cptx, val Cptx)Cptx{
   @return _
  }
  @if(from.id == cptc.id){
-  @return defx(callc, {
-   callFunc: defmain.dic["as"]
-   callArgs: arrNewx(arrc, [val, to])
-  })
+  @return callNewx(defmain.dic["as"], [val, to])
  }
  @if(to.ctype != from.ctype){
   @return _ 
  }
  @if(inClassx(classx(val), midc)){
   @if(to.ctype == T##INT || to.ctype == T##FLOAT){
-   @return defx(callc, {
-    callFunc: defmain.dic["numConvert"]
-    callArgs: arrNewx(arrc, [val, to])
-   })
+   @return callNewx(defmain.dic["numConvert"], [val, to])
   } 
   @return _
  }
@@ -2193,20 +2206,14 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    
    #ff = getx(lpredt, "concat")
    @if(ff != _){
-    @return defx(callc, {
-     callFunc: ff
-     callArgs: arrNewx(arrc, [lefto, righto])
-    })  
+    @return callNewx(ff, [lefto, righto])
    }
   }
   #ff = getx(lpredt, op)
   @if(ff == _){
    log("no op "+lpredt.name + " " +op)
   }
-  righto = defx(callc, {
-   callFunc: ff
-   callArgs: arrNewx(arrc, [lefto, righto])   
-  })
+  righto = callNewx(ff, [lefto, righto])
  }
 
 
@@ -2264,10 +2271,7 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
 // }
 
  #f = getx(lefto, "assign")
- @return defx(callrawc, {
-  callFunc: f
-  callArgs: arrNewx(arrc, [lefto, righto])
- })
+ @return callNewx(f, [lefto, righto], callassignc)
 }
 call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #v = Astx(ast[1])
@@ -2279,10 +2283,7 @@ call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  @if(f.type == T##CLASS){
   f = aliasGetx(f)   
   @if(arr.arr.len() == 0){
-   @return defx(callrawc, {
-    callFunc: defmain.dic["type"]
-    callArgs: arrNewx(arrc, [f])
-   })
+   @return callNewx(defmain.dic["type"], [f], calltypec)
   }  
   Cptx#a0 = arr.arr[0]
   #t = typepredx(a0)
@@ -2305,16 +2306,10 @@ call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    log("to"+f.name)
    die("convert func not defined")
   }
-  @return defx(callc, {
-   callFunc: r
-   callArgs: arr
-  })
+  @return callNewx(r, arr.arr)
  }
  //TODO if f is funcproto check type
- @return defx(callc, {
-  callFunc: f
-  callArgs: arr
- }) 
+ @return callNewx(f, arr.arr)
 }
 callreflect2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  @return nullv
@@ -2336,10 +2331,7 @@ callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   die("no method")
  }
  arr.arr.unshift(oo)
- @return defx(callmethodc, {
-  callFunc: f
-  callArgs: arr
- })
+ @return callNewx(f, arr.arr, callmethodc)
 }
 preAst2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx){
  @each i e ast{
@@ -2470,7 +2462,9 @@ ast2dicx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
 }
 ast2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  Cptx#x = subAst2cptx(ast, def, local, func, name);
- x.ast = ast
+ @if(x){
+  x.ast = ast
+ }
  @return x
 }
 subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
@@ -2661,6 +2655,10 @@ funcDefx(defmain, "getDefaultFlag", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return boolNewx(o.fdefault)
 }, [cptc], boolc)
+funcDefx(defmain, "getMidFlag", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return boolNewx(o.fmid)
+}, [cptc], boolc)
 funcDefx(defmain, "getName", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return strNewx(o.name)
@@ -2836,7 +2834,7 @@ funcDefx(defmain, "opp", ->(x Arrx, env Cptx)Cptx{
  @if(!inClassx(classx(o), callc)){
   @return ret
  }
- Cptx#f = o.dic["callFunc"]
+ Cptx#f = o.class
  @if(!inClassx(classx(f), opc)){
   @return ret
  }
@@ -2877,12 +2875,22 @@ funcDefx(defmain, "keys", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return copyx(arrNewx(arrstrc, o.arr))
 }, [dicc], arrstrc)
+funcDefx(defmain, "callFunc", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return o.class
+}, [callc], funcc)
+funcDefx(defmain, "callArgs", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return arrNewx(arrc, o.arr)
+}, [callc], arrc)
+
 
 /////21 method def
 methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return aliasGetx(o)
 }, _, classc)
+
 
 methodDefx(pathc, "timeMod", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
@@ -3361,8 +3369,8 @@ prepareArgsx ->(args Arrx, f Cptx, env Cptx)Arrx{
 }
 execDefx("Call", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
- Cptx#f = execx(c.dic["callFunc"], env)
- Arrx#args = c.dic["callArgs"].arr
+ Cptx#f = execx(c.class, env)
+ Arrx#args = c.arr
  @if(f == _ || f.id == nullv.id){
   log(strx(c))
   die("Call: empty func")
@@ -3372,8 +3380,8 @@ execDefx("Call", ->(x Arrx, env Cptx)Cptx{
 })
 execDefx("CallRaw", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
- Arrx#args = c.dic["callArgs"].arr
- @return callx(c.dic["callFunc"], args, env)
+ Arrx#args = c.arr
+ @return callx(c.class, args, env)
 })
 execDefx("Obj", ->(x Arrx, env Cptx)Cptx{
  @return x[0]
@@ -3552,14 +3560,18 @@ execDefx("IdState", ->(x Arrx, env Cptx)Cptx{
 
 /////24 main func
 #osargs = osArgs()
-Str#fc = File(osargs[1]).readAll()
-Str#execsp = "main"
-Str#defsp = "main"
-@if(osargs.len() > 2){
- #execsp = osargs[2] 
+@if(osargs.len() == 1){
+ log("./soul3 [FILE] [EXECFLAG] [DEFFLAG]")
+}@else{
+ Str#fc = File(osargs[1]).readAll()
+ Str#execsp = "main"
+ Str#defsp = "main"
+ @if(osargs.len() > 2){
+  #execsp = osargs[2] 
+ }
+ @if(osargs.len() > 3){
+  #defsp = osargs[3] 
+ }
+ #main = progl2cptx("@env "+execsp+" | " + defsp + " {"+fc+"}'"+osargs[1]+"'", defmain)
+ execx(main.dic["envBlock"], main)
 }
-@if(osargs.len() > 3){
- #defsp = osargs[3] 
-}
-#main = progl2cptx("@env "+execsp+" | " + defsp + " {"+fc+"}'"+osArgs()[1]+"'", defmain)
-execx(main.dic["envBlock"], main)

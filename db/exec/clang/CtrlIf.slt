@@ -1,6 +1,9 @@
 ~
 Arr#a = #0.ctrlArgs;
 #l = a.len()
+@if(l > 4){
+//TODO switch
+}
 @for #i=0;i<l-1;i+=2 {
  @if i == 0 {
   ~if~
