@@ -9,8 +9,7 @@ Arr_Str#vars = #0.funcVars
  #namex = ""
 }@else{
  #namex = getName(#0)
- @if(namex){ namex = " "+namex}
 }
-~~=namex~~=^_Func_declare #0^~{
+~~=namex~ ~=^_Func_declare #0^~{
 ~:ind(^_Block_genContent bl^)~
 }

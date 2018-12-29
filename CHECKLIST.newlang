@@ -9,6 +9,7 @@ _varname
 _typemap
 
 _Func_gen
+_Func_declare
 FuncClosure
 _Class_gen
 new
@@ -18,4 +19,5 @@ CtrlReturn/Break/Continue/Goto
 
 _Enum_def
 _Alias_def(type)
-_Func
+
+as(void -> type/ interface ->type)

@@ -2,6 +2,6 @@
 Arr_Str#a = #0.enum
 ~~=getName(#0)~ := @enum ~
 @each i v a{
-  ~~=Str(i)~~
+  ~~=v~ ~
  }
 ~
