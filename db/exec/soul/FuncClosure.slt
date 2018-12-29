@@ -1,0 +1,4 @@
+~
+#n = getName(#0)
+$globals[n] = ^_var n, class(#0)^
+~~=^_Func_gen #0^~

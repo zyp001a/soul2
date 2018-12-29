@@ -4,8 +4,6 @@
  $types[n] = ^_Alias_def #0^
 }@elif(inClass(#0, Enum)){
  $types[n] = ^_Enum_def #0^
-//}@elif(inClass(#0, Items)){
-// $types[n] = ^_Items_def #0^
 }@else{
  @if(inClass(#0, Val)){
   die("!!some func call Class!!")

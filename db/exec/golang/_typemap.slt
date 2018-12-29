@@ -42,7 +42,7 @@ Class#c = #0
   }@elif(inClass(c, Dic)){
   res = "map[string]"+typemap(class(c.itemsType))
   }@elif(inClass(c, FuncProto)){
-   res = ^_Func_declare c^
+   res = "func"+^_Func_declare c^
   }@else{
    res = "*"+t
   }

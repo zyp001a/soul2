@@ -1,0 +1,19 @@
+~
+Arr#a = #0.ctrlArgs;
+#l = a.len()
+@for #i=0;i<l-1;i+=2 {
+ @if i == 0 {
+  ~@if~
+ }@else{
+  ~@elif~
+ }
+ ~(~=exec(a[i])~){
+~=ind(^_Block_genContent a[i+1]^)~
+}~
+}
+@if l % 2 == 1 {
+~@else{
+~=ind(^_Block_genContent a[l-1]^)~
+}~
+}
+~

@@ -1,9 +1,6 @@
 ~
 Cpt#f = callFunc(#0)
 Arr#a = callArgs(#0)
-//Call#ca = #0
-//Cpt#f = ca.func()
-//Arr#a = ca.args()
 #c = class(f)
 #printargs = 0
 @if(inClass(c, FuncTpl)){
@@ -22,8 +19,12 @@ Arr#a = callArgs(#0)
     a.push(vt[i])   
    }
   }
-  printargs = 1
-  ~~=n~~
+  @if(getPropFlag(f)){
+   ~~=^_Call_genMethod f,a^~~
+  }@else{
+   printargs = 1  
+   ~~=n~~
+  }
  }
 }@elif(inClass(c, Mid)){
  printargs = 1

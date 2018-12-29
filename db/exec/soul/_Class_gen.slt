@@ -1,8 +1,9 @@
 ~
+#varname = getExec()._varname
 Class#c = #0
 ~~=getName(c)~ => {
 ~@each k v c.schema(){
- ~~=ind(k+": "+ getName(class(v)))~
+ ~~=ind(varname(k)+": "+ getName(class(v)))~
 ~
 }
 ~}~

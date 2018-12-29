@@ -1,7 +1,7 @@
 ~
 Arr_Str#arr = []
 Arr#arro = #0
-@each _ e #0{
+@each _ e arro{
  arr.push(exec(e))
 }
 ~~=arr.join(#1)~

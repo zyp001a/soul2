@@ -8,7 +8,9 @@
 //class.obj: cache single instance
 
 ///special usage
-//class.str: ns, scope, str
+//method.str: store pure name
+//ns.str: store pure name
+//scope.str: store pure name
 //call.class: func
 //env.int: active
 version := 100
@@ -2680,6 +2682,10 @@ funcDefx(defmain, "getDefaultFlag", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return boolNewx(o.fdefault)
 }, [cptc], boolc)
+funcDefx(defmain, "getPropFlag", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return boolNewx(o.fprop)
+}, [cptc], boolc)
 funcDefx(defmain, "getMidFlag", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return boolNewx(o.fmid)
@@ -3016,7 +3022,7 @@ methodDefx(strc, "split", ->(x Arrx, env Cptx)Cptx{
 methodDefx(strc, "replace", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#fr = x[1]
- Cptx#to = x[2]  
+ Cptx#to = x[2]
  @return strNewx(o.str.replace(fr.str, to.str))
 },[strc, strc], strc)
 methodDefx(strc, "toPath", ->(x Arrx, env Cptx)Cptx{

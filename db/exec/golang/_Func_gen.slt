@@ -1,28 +1,17 @@
 ~
 Block#bl = #0.funcBlock
 Arr_Str#vars = #0.funcVars
-Arr#vts = #0.funcVarTypes
-Class#ret = #0.funcReturn
-#typemap = getExec()._typemap
-#varname = getExec()._varname
+
 #blockx = ^_Block_genContent bl^ 
 #varx = ^_Block_genVar bl,vars^
-#argvx = ""
-@each i v vts{
- @if (i != 0) {argvx += ", "}
- argvx += varname(vars[i]) + " " + typemap(class(v))
-}
-#returnx = ""
-@if(ret){
- returnx += " " + call(typemap, [ret])
-}
+
 @if(inClass(class(#0), FuncClosure)){
  #namex = ""
 }@else{
  #namex = getName(#0)
  @if(namex){ namex = " "+namex}
 }
-~func~=namex~(~=argvx~)~=returnx~{
+~func~=namex~~=^_Func_declare #0^~{
 ~:ind(varx)~
 ~:ind(blockx)~
 }

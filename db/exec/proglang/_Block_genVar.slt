@@ -1,0 +1,19 @@
+~
+#var = getExec()._var
+#varname = getExec()._varname
+
+#filter = {}
+Arr_Str#x = #1;
+@if(x){
+ @each _ k x{
+  filter[k] = 1
+ }
+}
+
+@each k v Block(#0).blockStateDef.schema() {
+ @if(!filter[k]){
+  ~~:var(varname(k), v)~
+~
+ }
+}
+~

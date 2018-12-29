@@ -1,0 +1,17 @@
+~
+Arr#a = #1
+#res = exec(a[0])
+res += "."
+res += getNote(#0)
+res += "("
+@each i e a{
+ @if(i == 0){
+  @continue;
+ }
+ @if(i != 1){
+  res += ", "
+ }
+ res += exec(e)
+}
+res += ")"
+~~=res~

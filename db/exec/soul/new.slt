@@ -1,10 +1,11 @@
 ~
 Class#c = #0
 Dic#d = #1
+#varname = getExec()._varname
 ~&~=getName(c)~{
 ~@each k v d.appendClass(c){
  @if(!getDefaultFlag(v)){
-  ~~=ind(k)~: ~=ind(exec(v), 1)~,  
+  ~~=ind(varname(k))~: ~=ind(exec(v), 1)~,  
 ~
  }
 }~}

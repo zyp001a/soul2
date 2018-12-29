@@ -1,0 +1,12 @@
+~
+Arr#a = #0.ctrlArgs
+#varname = getExec()._varname
+#pp = typepred(a[2])
+#a0 = varname(a[0])
+#a1 = varname(a[1])
+@if(a0 == ""){a0 = "_"}
+@if(a1 == ""){a1 = "_"}
+
+~@each ~=a0~ ~=a1~ ~=exec(a[2])~ {
+~:ind(^_Block_genContent a[3]^)~
+}

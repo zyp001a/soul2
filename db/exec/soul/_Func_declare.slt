@@ -19,4 +19,4 @@ Class#ret = #0.funcReturn
  returnx += " " + typemap(ret)
 }
 
-~(~=argvx~)~=returnx~
+~->(~=argvx~)~=returnx~

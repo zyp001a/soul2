@@ -1,0 +1,11 @@
+~
+Alias#a = #0
+#c = a.getClass()
+~~=getName(a)~ := @type ~
+@if(inClass(#0, Items)){
+ ~~=getName(c).replace("_"," ")~~
+}@elif(inClass(#0, FuncProto)){
+
+}@else{
+ ~~=^_typemap c^~~
+}~

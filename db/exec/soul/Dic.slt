@@ -1,0 +1,7 @@
+~
+Dic#c = #0
+~{~
+@each k v c{~
+~=ind("\""+k)~": ~=ind(exec(v), 1)~,~
+}~
+}~=^_typemap class(#0.itemsType)^~
