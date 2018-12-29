@@ -15,11 +15,11 @@ function tparse(str){
 	}
 	return t.parse(str)
 }
-function pparse(str, x){
+function pparse(str){
 	if(str == ""){
 		return ""
 	}
-	return p.parse(str, x)	
+	return p.parse(str, lib)	
 }
 function load(b, fp){
 	var libd = __dirname + "/db/lib"
@@ -49,7 +49,7 @@ function load(b, fp){
 				console.error("wrong load "+f)
 				process.exit(1)
 			}
-			var loadb = pparse("|{"+s+"}", lib)
+			var loadb = pparse("|{"+s+"}")
 			nb = nb.concat(loadb[1])//TODO line num and file name
 		}else{
 			nb.push(e)
@@ -59,9 +59,9 @@ function load(b, fp){
 }
 if(!process.argv[2]){
   g().then(str => {
-  	console.log(JSON.stringify(pparse(str, lib)))
+  	console.log(JSON.stringify(pparse(str)))
 	});
 }else{
 	var str = fs.readFileSync(process.argv[2]).toString()
-  console.log(JSON.stringify(pparse(str, lib)))	
+  console.log(JSON.stringify(pparse(str)))	
 }
