@@ -46,10 +46,11 @@ function load(b, fp){
 				}
 			}
 			if(!s){
+				console.error(fd)
 				console.error("wrong load "+f)
 				process.exit(1)
 			}
-			var loadb = pparse("|{"+s+"}")
+			var loadb = pparse("|{"+s+"}"+'"'+ff+'"')
 			nb = nb.concat(loadb[1])//TODO line num and file name
 		}else{
 			nb.push(e)

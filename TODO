@@ -1,6 +1,7 @@
 =soulserver
 
 =soulmain
+convert func call gen
 soul method grammar, scope grammar, typepredx
 substr
 make CallId
