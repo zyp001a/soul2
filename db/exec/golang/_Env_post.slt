@@ -1,5 +1,5 @@
 ~
-$fileList["main.go"] = ^_BlockMain_main^
+$fileList["main.go"] = ^_Env_main^
 
 $cmdExec = "go run "+mainDir.path+"main.go"
 ~

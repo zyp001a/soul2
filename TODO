@@ -1,11 +1,14 @@
-check fdefault!!!
-speed up! //ID FUNC BLOCK...
+=soulserver
+
+=soulmain
+import
 make CallId
 dynamic allow arr length
-interface to type
 setx
 //isdef flag
 auto gen soul "def" func to go func
 soul method grammar
 pointer, addr
 func type check
+check fdefault
+speed up! //ID FUNC BLOCK... fast enough now
