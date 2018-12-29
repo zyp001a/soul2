@@ -2,24 +2,66 @@
 var p = require("./progl-parser");
 var t = require("./tpl-parser");
 var g = require("./get-stdin");
+var path = require("path")
 var fs = require("fs")
+var lib = {
+	tplparse: tparse,
+	proglparse: pparse,
+	load: load
+}
 function tparse(str){
 	if(str == ""){
 		return ""
 	}
 	return t.parse(str)
 }
-function pparse(str, x, y){
+function pparse(str, x){
 	if(str == ""){
 		return ""
 	}
-	return p.parse(str, x, y)	
+	return p.parse(str, x)	
+}
+function load(b, fp){
+	var libd = __dirname + "/db/lib"
+	var fd;
+	if(fp){
+		fd = path.dirname(fp)
+	}
+	var nb = []
+	for(var i in b){
+		var e = b[i]
+		if(e[0][0] == "load"){
+			var f = e[0][1]
+			var ff, s;
+			if(fd){
+				ff = fd + "/" + f+".sl"
+ 				if(fs.existsSync(ff)){
+					s = fs.readFileSync(ff).toString()
+				}
+			}
+			if(!s){
+				ff = libd + "/" + f+".sl"
+ 				if(fs.existsSync(ff)){
+					s = fs.readFileSync(ff).toString()
+				}
+			}
+			if(!s){
+				console.error("wrong load "+f)
+				process.exit(1)
+			}
+			var loadb = pparse("|{"+s+"}", lib)
+			nb = nb.concat(loadb[1])//TODO line num and file name
+		}else{
+			nb.push(e)
+		}
+	}
+	return nb
 }
 if(!process.argv[2]){
   g().then(str => {
-  	console.log(JSON.stringify(pparse(str, tparse, pparse)))
+  	console.log(JSON.stringify(pparse(str, lib)))
 	});
 }else{
 	var str = fs.readFileSync(process.argv[2]).toString()
-  console.log(JSON.stringify(pparse(str, tparse, pparse)))	
+  console.log(JSON.stringify(pparse(str, lib)))	
 }

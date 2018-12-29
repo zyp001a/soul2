@@ -40,7 +40,6 @@ var grammar = {
 			["@continue", "return 'CONTINUE'"],
 			["@break", "return 'BREAK'"],			
 			["@goto", "return 'GOTO'"],	
-			["@foreach", "return 'FOREACH'"],		
 			["@for", "return 'FOR'"],
 			["@each", "return 'EACH'"],
 			["@env", "return 'ENV'"],
@@ -49,9 +48,8 @@ var grammar = {
 			["@type", "return 'TYPE'"],
 			["@true", "return 'TRUE'"],
 			["@false", "return 'FALSE'"],
-			
 			["@error", "return 'ERROR'"],	
-			["@include", "return 'INCLUDE'"],			
+			["@load", "return 'LOAD'"],			
 			["@debug", "return 'DEBUG'"],
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
@@ -114,7 +112,7 @@ var grammar = {
 		["left", "(", ")", "[", "]", "{", "}", "."],
 	],
   "start": "Start",
-	"parseParams": ["tplparse", "proglparse"],
+	"parseParams": ["lib"],
   "bnf": {
 		Start: [
 			["Expr", "return $$= $1"],
@@ -144,9 +142,7 @@ var grammar = {
 			"Def",			
 			"Env",
 			"BlockMain",
-//			"Enum",
 			"EnumGet",
-//			"Misc",
 			["ADDR ( Expr )", "$$ = ['addr', $3]"],
 			["( Expr )", "$$ = $2"],
 		],		
@@ -162,8 +158,8 @@ var grammar = {
 		],
 		Str: "$$ = ['str', $1]",
 		Tpl: [
-			["TPL", "$$ = ['tpl', JSON.stringify(proglparse(tplparse($1)))]"],
-			["TPL STR", "$$ = ['tpl', JSON.stringify(proglparse(tplparse($1))), $2]"],
+			["TPL", "$$ = ['tpl', JSON.stringify(lib.proglparse(lib.tplparse($1)))]"],
+			["TPL STR", "$$ = ['tpl', JSON.stringify(lib.proglparse(lib.tplparse($1))), $2]"],
 		],
 		Func: "$$ = ['func', $1]",
 		Arr: [
@@ -193,10 +189,10 @@ var grammar = {
       ["{ Elems }", "$$ = $2"],
     ],
 		BlockMain: [
-			["| ID Block", "$$ = ['blockmain', $3, $2]"],
-			["| Block", "$$ = ['blockmain', $2, '']"],
-			["| ID Block STR", "$$ = ['blockmain', $3, $2, $4]"],
-			["| Block STR", "$$ = ['blockmain', $2, '', $3]"],
+			["| ID Block", "$$ = ['blockmain', lib.load($3), $2]"],
+			["| Block", "$$ = ['blockmain', lib.load($2), '']"],
+			["| ID Block STR", "$$ = ['blockmain', lib.load($3,$4), $2, $4]"],
+			["| Block STR", "$$ = ['blockmain', lib.load($2,$3), '', $3]"],
 		],
 //		Switch: [
 //			["| Ids", "$$ = ['switchdef', $2]"],
@@ -218,11 +214,14 @@ var grammar = {
 //			["ID ## ID ", "$$ = ['idglobal', $3, $1]"],			
 		],
 		Elem: [
-			["Expr", "$$ = [$1]"],
-			["Ctrl", "$$ = [$1]"],
-			["Include", "$$ = [$1]"],
-		  ["KeyColon Expr", "$$ = [$2, $1]"],
-		  ["KeyColon , Expr", "$$ = [$3, $1]"],						
+			["SubElem", "$$ = [$1]"],
+		  ["KeyColon SubElem", "$$ = [$2, $1]"],
+		  ["KeyColon , SubElem", "$$ = [$3, $1]"],			
+		],
+		SubElem: [
+			["Expr", "$$ = $1"],
+			["Ctrl", "$$ = $1"],
+			["Load", "$$ = $1"],			
 		],
 		"Ctrl": [
 			["If", "$$ = ['if', $1]"],
@@ -244,9 +243,8 @@ var grammar = {
 			["ID", "$$ = $1"],
 			["NULL", "$$ = ''"],
 		],
-		Include: [
-			["INCLUDE ID", "$$ = ['include', $2]"],
-			["INCLUDE STR", "$$ = ['include', $2]"],
+		Load: [
+			["LOAD STR", "$$ = ['load', $2]"],
 		],
 		If: [
 			["IF Expr BlockOrPre", "$$ = [$2, $3]"],
@@ -394,10 +392,7 @@ var grammar = {
 		],
 		EnumGet: [
 			["ID ## ID", "$$ = ['enumget', $1, $3]"],
-		],		
-		Misc: [
-			["TEST", "$$ = ['test']"]
-		]
+		],
   }
 };
 for(var k in grammar.bnf){

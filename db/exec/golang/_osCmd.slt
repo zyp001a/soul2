@@ -1,6 +1,7 @@
 ~
 goImport("os/exec")
 goImport("strings")
+goImport("fmt")
 ~func _osCmd(cmdstr string, sin string) string {
  cmd:= exec.Command("/bin/bash", "-c", cmdstr);
  if(sin != ""){
@@ -9,6 +10,7 @@ goImport("strings")
  cmd.Stderr = os.Stderr;
  out, err := cmd.Output();
  if(err!= nil){
+  fmt.Println(out)
   ~=^_error "err"^~
  }
  return string(out);
