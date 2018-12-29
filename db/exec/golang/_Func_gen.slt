@@ -10,7 +10,7 @@ Class#ret = #0.funcReturn
 #argvx = ""
 @each i v vts{
  @if (i != 0) {argvx += ", "}
- argvx += varname(vars[i]) + " " + call(typemap, [class(v)])
+ argvx += varname(vars[i]) + " " + typemap(class(v))
 }
 #returnx = ""
 @if(ret){

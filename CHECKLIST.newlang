@@ -1,4 +1,19 @@
+_Env_post
 _Env_main
-Num/Str/Arr/Dic
 
+Null/Num/Str/Arr/Dic
+
+Id
+_var
+_varname
 _typemap
+
+_Func_gen
+_Class_gen
+new
+
+CtrlEach/If/For
+CtrlReturn/Break/Continue/Goto
+
+_Enum_def
+_Alias_def(type)

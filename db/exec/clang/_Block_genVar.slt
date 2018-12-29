@@ -12,7 +12,7 @@ Arr_Str#x = #1;
 
 @each k v Block(#0).blockStateDef.schema() {
  @if(!filter[k]){
-  ~~:call(var, [varname(k), v])~
+  ~~:var(varname(k), v)~
 ~
  }
 }
