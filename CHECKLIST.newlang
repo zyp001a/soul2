@@ -20,4 +20,6 @@ CtrlReturn/Break/Continue/Goto
 _Enum_def
 _Alias_def(type)
 
+//Advanced
+_Env_pre
 as(void -> type/ interface ->type)
