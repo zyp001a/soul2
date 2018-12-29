@@ -17,10 +17,6 @@ strc := curryDefx(defmain, "Str", valc)
 strc.ctype = T##STR
 
 
-
-midc := classDefx(defmain, "Mid")
-//midc must defined before itemDefx
-
 arrstrc := itemDefx(arrc, strc)
 dicstrc := itemDefx(dicc, strc)
 dicuintc := itemDefx(dicc, uintc)
@@ -28,10 +24,3 @@ dicclassc := itemDefx(dicc, classc)
 arrclassc := itemDefx(arrc, classc)
 
 
-enumc := classDefx(defmain, "Enum", [uintc], {
- enum: arrstrc
- enumDic: dicuintc
-})
-bufferc := classDefx(defmain, "Buffer", [strc])
-jsonc := classDefx(defmain, "Json", [dicc])
-jsonarrc := classDefx(defmain,, "JsonArr", [arrc])

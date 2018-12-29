@@ -39,3 +39,38 @@ itemDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
  }
  @return r;
 }
+fpDefx ->(types Arrx, return Cptx)Cptx{
+ #n = "FuncProto"
+ @each _ v types{
+  #n += "_" + aliasGetx(classx(v)).name
+ }
+ #n += "__"+return.name
+ #x = classGetx(defmain, n);
+ @if(x == _){
+  #x = curryDefx(defmain, n, funcprotoc, {
+   funcVarTypes: arrNewx(arrc, types)
+   funcReturn: return
+  })
+ }
+ @return x
+}
+funcSetClosurex ->(func Cptx){
+ func.obj.arr[1] = funcclosurec
+}
+aliasDefx ->(scope Cptx, key Str, class Cptx)Cptx{
+ #x = classDefx(scope, key, [aliasc, class])
+ @return x
+}
+aliasGetx ->(c Cptx)Cptx{
+ @if(c.arr == _){
+  log(strx(c))
+  die("wrong cpt")
+ }
+ @if(c.arr.len() > 1){
+  @if(c.arr[0].id == aliasc.id){  
+   @return aliasGetx(c.arr[1])
+  }
+ }
+ @return c
+}
+

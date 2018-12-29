@@ -27,3 +27,6 @@ emptyclassgetc := classDefx(defmain, "EmptyClassGet")//classGet none means cache
 emptyclassgetv := objNewx(emptyclassgetc)
 emptyclassgetc.fstatic = @true
 emptyclassgetv.fstatic = @true
+
+midc := classDefx(defmain, "Mid")
+//midc must defined before itemDefx

@@ -26,10 +26,13 @@
 @load "src/init-val"
 @load "src/init-items"
 
-@load "src/utils-inited"
-
-
-
+enumc := classDefx(defmain, "Enum", [uintc], {
+ enum: arrstrc
+ enumDic: dicuintc
+})
+bufferc := classDefx(defmain, "Buffer", [strc])
+jsonc := classDefx(defmain, "Json", [dicc])
+jsonarrc := classDefx(defmain,, "JsonArr", [arrc])
 /////7 def items
 pathc := classDefx(defmain, "Path", _, {
  path: strc
@@ -37,117 +40,12 @@ pathc := classDefx(defmain, "Path", _, {
 filec := classDefx(defmain, "File", [pathc])
 dirc := classDefx(defmain, "Dir", [pathc])
 
+@load "src/init-call"
+@load "src/init-id"
+
+@load "src/utils-inited"
 /////9 def var/block/func
-emptyreturnc := classDefx(defmain, "EmptyReturn")//return empty mean no return
-emptyreturnv := objNewx(emptyreturnc)
-emptyreturnc.fstatic = @true
-emptyreturnv.fstatic = @true
 
-funcc := classDefx(defmain, "Func")
-funcprotoc := classDefx(defmain, "FuncProto", [funcc], {
- funcVarTypes: arrc
- funcReturn: classc
-})
-fpDefx ->(types Arrx, return Cptx)Cptx{
- #n = "FuncProto"
- @each _ v types{
-  #n += "_" + aliasGetx(classx(v)).name
- }
- #n += "__"+return.name
- #x = classGetx(defmain, n);
- @if(x == _){
-  #x = curryDefx(defmain, n, funcprotoc, {
-   funcVarTypes: arrNewx(arrc, types)
-   funcReturn: return
-  })
- }
- @return x
-}
-
-nativec := classDefx(defmain, "Native")
-nativec.ctype = T##NATIVE
-funcnativec := classDefx(defmain, "FuncNative", [funcprotoc], {
- funcNative: nativec
-})
-
-//func -> vars + block/native/tpl
-//block -> val + state
-
-blockc := classDefx(defmain, "Block", _, {
- blockVal: arrc,
- blockStateDef: classc,
- blockLabels: dicuintc,
- 
- blockScope: classc, 
- blockPath: strc 
-})
-
-blockc.dic["blockParent"] = defx(blockc)
-
-blockmainc := curryDefx(defmain, "BlockMain", blockc)
-
-//stack
-funcblockc := classDefx(defmain, "FuncBlock", [funcprotoc], {
- funcVars: arrstrc
- funcBlock: blockc
-})
-funcclosurec := curryDefx(defmain, "FuncClosure", funcblockc)
-
-functplc := classDefx(defmain, "FuncTpl", [funcc], {
- funcTplBlock: blockc
- funcTplPath: strc
-})
-
-funcSetClosurex ->(func Cptx){
- func.obj.arr[1] = funcclosurec
-}
-/////10 def mid
-
-callc := classDefx(defmain, "Call", [midc])
-callc.ctype = T##CALL
-
-callpassrefc := curryDefx(defmain, "CallPassRef", callc)
-
-callrawc := curryDefx(defmain, "CallRaw", callc)
-calltypec := curryDefx(defmain, "CallType", callrawc)
-callassignc := curryDefx(defmain, "CallAssign", callrawc)
-
-callmethodc := curryDefx(defmain, "CallMethod", callc)
-callreflectc := curryDefx(defmain, "CallReflect", callc)
-
-
-idc := classDefx(defmain, "Id")
-idstrc :=  classDefx(defmain, "IdStr", [idc], {
- idStr: strc,
-})
-idstatec := classDefx(defmain, "IdState", [idstrc, midc], {
- idState: classc 
-})
-idlocalc := curryDefx(defmain, "IdLocal", idstatec)
-idparentc := curryDefx(defmain, "IdParent", idstatec)
-idglobalc := curryDefx(defmain, "IdGlobal", idstatec)
-
-idclassc := classDefx(defmain, "IdClass", [idstrc], {
- idVal: cptc
-})
-aliasc := classDefx(defmain, "Alias")
-
-aliasDefx ->(scope Cptx, key Str, class Cptx)Cptx{
- #x = classDefx(scope, key, [aliasc, class])
- @return x
-}
-aliasGetx ->(c Cptx)Cptx{
- @if(c.arr == _){
-  log(strx(c))
-  die("wrong cpt")
- }
- @if(c.arr.len() > 1){
-  @if(c.arr[0].id == aliasc.id){  
-   @return aliasGetx(c.arr[1])
-  }
- }
- @return c
-}
 
 /////11 def op
 //for op
