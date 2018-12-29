@@ -132,3 +132,96 @@ methodGetx ->(scope Cptx, func Cptx)Cptx{
  }   
  @return _
 }
+classRawx ->(t T)Cptx{
+ @if(t == T##CPT){
+  @return cptc
+ }@elif(t == T##OBJ){
+  @return objc
+ }@elif(t == T##CLASS){
+  @return classc
+ }@elif(t == T##NULL){
+  @return nullc
+ }@elif(t == T##INT){
+  @return intc
+ }@elif(t == T##FLOAT){
+  @return floatc  
+ }@elif(t == T##NUMBIG){
+  @return numbigc
+ }@elif(t == T##STR){
+  @return strc
+ }@elif(t == T##DIC){
+  @return dicc
+ }@elif(t == T##ARR){
+  @return arrc
+ }@elif(t == T##NATIVE){
+  @return nativec
+ }@elif(t == T##CALL){
+  @return callc
+ }@elif(t == T##FUNC){
+  @return funcc
+ }@elif(t == T##BLOCK){
+  @return blockc
+ }@else{
+  die("NOTYPE")
+ }
+ @return _
+}
+inClassx ->(c Cptx, t Cptx, cache Dic)Bool{
+ @if(c.type != T##CLASS){
+  log(strx(c) )
+  die("inClass: left not class")
+ }
+ @if(t.type != T##CLASS){
+  log(strx(t) )
+  die("inClass: right not class")
+ }
+ @if(t.id == cptc.id){//everything is cpt
+  @return @true
+ }
+ @if(t.id == objc.id && c.ctype == T##OBJ){
+  @return @true
+ }
+ @if(c.id != "" && c.id == t.id){
+  @return @true
+ }
+ #key = c.id + "_" + t.id
+ #r = inClassCache[key]
+ @if(r == 1){
+  @return @true
+ }
+ @if(r == 2){
+  @return @false
+ }
+ @if(!cache){
+  cache = {}
+ }
+ @each _ v c.arr{
+  @if(cache[v.id] != _){
+   @continue
+  }
+  cache[v.id] = 1
+  @if(inClassx(v, t, cache)){
+   inClassCache[key] = 1
+   @return @true
+  }
+ }
+ inClassCache[key] = 2
+ @return @false
+}
+parentClassGetx ->(o Cptx, key Str)Cptx{
+ @if(o.arr == _){
+  @return _
+ }
+ @each _ v o.arr{
+  Dicx#d = v.dic
+  Cptx#r = d[key]
+  @if(r != _){
+   @return v
+  }
+  r = parentClassGetx(v, key)
+  @if(r != _){
+   @return r
+  }
+ }
+ @return _;
+}

@@ -1,5 +1,3 @@
-defns := nsNewx("def")
-defmain := scopeNewx(defns, "main")
 
 cptc := classNewx();
 routex(cptc, defmain, "Cpt");

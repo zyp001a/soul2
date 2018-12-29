@@ -100,3 +100,50 @@ floatNewx ->(x Float)Cptx{
   val: x
  }
 }
+nativeNewx ->(f Funcx)Cptx{
+ @return &Cptx{
+  type: T##NATIVE
+  id: uidx()    
+  val: f
+ } 
+}
+callNewx ->(func Cptx, args Arrx, obj Cptx)Cptx{
+ @return &Cptx{
+  type: T##CALL
+  id: uidx()
+  fmid: @true
+  obj: obj  
+  class: func
+  arr: arrOrx(args)
+ }
+}
+funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
+ @if(return == _){
+  return = emptyreturnc
+ }
+ Arrx#arr = &Arrx
+ @each _ v argtypes{
+  arr.push(defx(v))
+ } 
+ #fp = fpDefx(arr, return)
+ @if(val != _){
+  Cptx#x = classNewx([fp, funcnativec])
+  x.dic["funcNative"] = nativeNewx(val)  
+ }@else{
+  #x = classNewx([fp])
+ }
+ @return objNewx(x)
+}
+uintNewx ->(x Int)Cptx{
+ @return &Cptx{
+  type: T##INT
+  obj: uintc
+  int: x
+ }
+}
+boolNewx ->(x Bool)Cptx{
+ @if(x){
+  @return truev
+ }
+ @return falsev;
+}

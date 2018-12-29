@@ -30,7 +30,19 @@ Arrx := @type Arr Cptx
 Astx := @type JsonArr
 
 version := 100
+
 uidi := Uint(0);
-inClassCache := {}Int
-root := &Dicx
 _indentx := " "
+
+inClassCache := {}Int
+
+root := &Dicx
+defns := nsNewx("def")
+defmain := scopeNewx(defns, "main")
+execns := nsNewx("exec")
+execmain := scopeNewx(execns, "main")
+tplmain := classNewx([defmain])
+
+
+_osArgs := Cptx()
+

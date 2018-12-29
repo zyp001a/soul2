@@ -122,3 +122,99 @@ routex ->(o Cptx, scope Cptx, name Str)Cptx{
  o.class = scope
  @return o
 }
+passx ->(v Cptx)Cptx{
+ @if(inClassx(classx(v), valc)){
+  @return copyx(v)
+ }
+ @return v
+}
+nullOrx ->(x Cptx)Cptx{
+ @if(x == _){
+  @return nullv
+ }
+ @return x
+}
+aliasGetx ->(c Cptx)Cptx{
+ @if(c.arr == _){
+  log(strx(c))
+  die("wrong cpt")
+ }
+ @if(c.arr.len() > 1){
+  @if(c.arr[0].id == aliasc.id){  
+   @return aliasGetx(c.arr[1])
+  }
+ }
+ @return c
+}
+
+funcSetClosurex ->(func Cptx){
+ func.obj.arr[1] = funcclosurec
+}
+funcSetOpx ->(func Cptx, op Cptx){
+ func.obj.arr.push(op)
+}
+checkid ->(id Str, local Cptx, func Cptx)Cptx{
+ #r = getx(local, id)
+ @if(r != _){
+  #r = local.dic[id]
+  @if(r == _){
+   die("checkid: "+id + " used in parent block");
+  }
+  @return r
+ }
+ @return _
+}
+valuesx ->(o Cptx)Cptx{
+ #arr = &Arrx
+ @each _ k o.arr{
+  Cptx#v = o.dic[k.str]
+  arr.push(v)
+ }
+ #it = getx(o, "itemsType");
+ @if(it == _){
+  #c = arrc
+ }@else{
+  #c = itemDefx(arrc, classx(it))
+ }
+ @return arrNewx(c, arr) 
+}
+prepareArgsx ->(args Arrx, f Cptx, env Cptx)Arrx{
+ #argsx = &Arrx
+ @if(!inClassx(classx(f), functplc)){ //fill args
+  Arrx#vartypes = getx(f, "funcVarTypes").arr
+  @each i argdef vartypes{
+   @if(Int(i) < args.len()){
+    #t = passx(execx(args[i], env))
+   }@else{
+    t = copyx(argdef)
+   }
+   argsx.push(t)
+  }
+ }@else{
+  @each _ arg args{
+   #x = passx(execx(arg, env))
+   argsx.push(x)
+  }
+ }
+ @return argsx
+}
+prepareArgsRefx ->(args Arrx, f Cptx, env Cptx)Arrx{
+ #argsx = &Arrx
+ @if(!inClassx(classx(f), functplc)){ //fill args
+  Arrx#vartypes = getx(f, "funcVarTypes").arr
+  @each i argdef vartypes{
+   @if(Int(i) < args.len()){
+    #t = execx(args[i], env)
+   }@else{
+    t = argdef
+   }
+   argsx.push(t)
+  }
+ }@else{
+  @each _ arg args{
+   #x = passx(execx(arg, env))
+   argsx.push(x)
+  }
+ }
+ @return argsx
+}
