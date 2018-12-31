@@ -49,7 +49,8 @@ var grammar = {
 			["@true", "return 'TRUE'"],
 			["@false", "return 'FALSE'"],
 			["@error", "return 'ERROR'"],	
-			["@load", "return 'LOAD'"],			
+			["@load", "return 'LOAD'"],
+			["@plugin", "return 'PLUGIN'"],						
 			["@debug", "return 'DEBUG'"],
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
@@ -353,12 +354,12 @@ var grammar = {
 			["ID := Tpl", "$$ = ['def', $1, $3]"],
 			["ID Class", "$$ = ['def', $1, $2]"],
 			["ID Func", "$$ = ['def', $1, $2]"],
-			["ID := Type", "$$ = ['def', $1, $3]"],									
+			["ID := Type", "$$ = ['def', $1, $3]"],
+			["ID FuncProto", "$$ = ['def', $1, $2]"],
 		],
 		Type: [
 			["TYPE ID", "$$= ['alias', $2]"],
 			["TYPE ID ID", "$$= ['itemdef', $2, $3]"],
-			["TYPE FuncProto", "$$= $2"]
 		],
 		Assign: "$$ = ['assign', $1]",
 		ASSIGN: [

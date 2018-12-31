@@ -1,7 +1,7 @@
-=soulserver
-
-=soulmain
-convert func call gen
+# soul def
+method
+plugin net
+soul convert func call gen
 soul method grammar, scope grammar, typepredx
 substr
 make CallId
@@ -13,3 +13,12 @@ pointer, addr
 func type check
 check fdefault
 speed up //ID FUNC BLOCK... !fast enough now
+
+# soul exec 
+
+# soul cmd 
+
+# soul ui
+
+# soul net
+

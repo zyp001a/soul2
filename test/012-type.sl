@@ -1,6 +1,6 @@
 B := @type Str
 C := @type Dic Int
-D := @type -> (Int)Int
+D -> (Int)Int
 B#a = "1"
 a += "2"
 log(a)

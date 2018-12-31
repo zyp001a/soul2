@@ -1,5 +1,5 @@
 T := @enum CPT OBJ CLASS NULL INT FLOAT NUMBIG STR DIC ARR NATIVE CALL FUNC BLOCK ID IF FOR EACH CTRL
-Funcx := @type ->(Arrx, Cptx)Cptx
+Funcx ->(Arrx, Cptx)Cptx
 Cptx => {
  type: T
  ctype: T

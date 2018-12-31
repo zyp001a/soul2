@@ -48,6 +48,7 @@ envc := classDefx(defmain, "Env", _, {
  envBlock: blockmainc
 })
 
+pluginc := classDefx(defmain, "Plugin")
 
 @load "utils-common"
 @load "utils-new"

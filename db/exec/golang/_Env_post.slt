@@ -1,4 +1,5 @@
 ~
+//$fileList["header.go"] = ^_Env_header^
 $fileList["main.go"] = ^_Env_main^
 
 $cmdExec = "go run "+mainDir.path+"main.go"
