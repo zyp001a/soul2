@@ -1,3 +1,40 @@
+## Stream programming
+Handler: Func
+fh ->> {
+ @susp
+ @play
+ @stop
+
+ @ack
+ 
+ @err
+ @ok
+ @redirect
+ @cached
+ @notfound 
+}
+Flow:
+File => Flow
+End => Flow
+
+f := @flow File ->>{}
+f := @flow fh
+f := @flow
+f.bind(fh)
+
+flowset := {
+ "/": f
+}
+@fs := &End
+
+@stdin.use(->>{
+})
+@stdout
+Path => Str
+Msg
+send >>
+"" >> @stdout
+@fs["a"] >> #a
 ## cmd basics
 Context => {
  mindmap: Dic_Cpt

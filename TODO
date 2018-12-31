@@ -1,10 +1,11 @@
 # soul def
+stream handler
 method
-plugin net
-soul convert func call gen
+tobj
 soul method grammar, scope grammar, typepredx
 substr
 make CallId
+soul convert func call gen
 dynamic allow arr length
 setx
 //isdef flag
@@ -13,7 +14,7 @@ pointer, addr
 func type check
 check fdefault
 speed up //ID FUNC BLOCK... !fast enough now
-
+plugin
 # soul exec 
 
 # soul cmd 
