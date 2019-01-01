@@ -152,7 +152,7 @@ dicc.fbitems = @true
 /////8 advanced type init: string, enum, unlimited number...
 bytesc := itemDefx(arrc, bytec)
 bytesc.ctype = T##STR
-
+bytesc.arr.push(valc)
 strc := curryDefx(defmain, "Str", bytesc)
 
 
