@@ -13,6 +13,7 @@ Cptx => {
  fstatic: Bool //cptc cptv nullc nullv emptyc ...
  fast: Bool //defined in ast
  farg: Bool //is arg
+ fbitems: Bool //is basic element?
 
  ast: Astx
  
@@ -54,7 +55,6 @@ cptc := classNewx();
 routex(cptc, defmain, "Cpt");
 cptc.ctype = T##CPT
 cptc.fdefault = @true
-cptc.fstatic = @true
 
 cptv := &Cptx{
  type: T##CPT
@@ -78,7 +78,6 @@ tobjc.ctype = T##TOBJ
 
 emptyclassgetc := classDefx(defmain, "EmptyClassGet")//classGet none means cache
 emptyclassgetv := objNewx(emptyclassgetc)
-emptyclassgetc.fstatic = @true
 emptyclassgetv.fstatic = @true
 
 midc := classDefx(defmain, "Mid")
@@ -141,15 +140,20 @@ itemslimitedc := classDefx(defmain, "ItemsLimited", [itemsc], {
 })
 arrc := curryDefx(defmain, "Arr", itemsc)
 arrc.ctype = T##ARR
-staticarrc := curryDefx(defmain, "StaticArr", arrc)
+arrc.fbitems = @true
 
-arrbytec := itemDefx(arrc, bytec)
+staticarrc := curryDefx(defmain, "StaticArr", arrc)
+staticarrc.fbitems = @true
+
 dicc := curryDefx(defmain, "Dic", itemsc)
 dicc.ctype = T##DIC
+dicc.fbitems = @true
 
 /////8 advanced type init: string, enum, unlimited number...
-strc := curryDefx(defmain, "Str", valc)
-strc.ctype = T##STR
+bytesc := itemDefx(arrc, bytec)
+bytesc.ctype = T##STR
+
+strc := curryDefx(defmain, "Str", bytesc)
 
 
 arrstrc := itemDefx(arrc, strc)
@@ -164,10 +168,12 @@ enumc := classDefx(defmain, "Enum", [uintc], {
  enum: arrstrc
  enumDic: dicuintc
 })
-bufferc := classDefx(defmain, "Buffer", [strc])
+
 jsonc := classDefx(defmain, "Json", [dicc])
 jsonarrc := classDefx(defmain,, "JsonArr", [arrc])
-/////7 def items
+jsonarrc.fbitems = @true
+
+bufferc := classDefx(defmain, "Buffer", [strc])
 pathc := classDefx(defmain, "Path", _, {
  path: strc
 })
@@ -177,7 +183,6 @@ dirc := classDefx(defmain, "Dir", [pathc])
 //init call
 emptyreturnc := classDefx(defmain, "EmptyReturn")//return empty mean no return
 emptyreturnv := objNewx(emptyreturnc)
-emptyreturnc.fstatic = @true
 emptyreturnv.fstatic = @true
 
 funcc := classDefx(defmain, "Func")
@@ -217,6 +222,15 @@ funcclosurec := curryDefx(defmain, "FuncClosure", funcblockc)
 functplc := classDefx(defmain, "FuncTpl", [funcc], {
  funcTplBlock: blockc
  funcTplPath: strc
+})
+
+//elements
+elemc := classDefx(defmain, "Elem")
+routerc := classDefx(defmain, "Router", [elemc])
+msgc := classDefx(defmain, "Msg", _, {
+ msgSrc: elemc
+ msgContent: cptc
+ 
 })
 
 /////10 def mid

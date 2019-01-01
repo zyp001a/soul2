@@ -173,7 +173,7 @@ var grammar = {
 		],
     Dic: [
       ["{ }", "$$ = []"],
-      ["{ Elems }", "$$ = $2"],
+      ["{ Sentences }", "$$ = $2"],
     ],
 		DicX: [
 			["Dic", "$$ = ['dic', $1]"],
@@ -187,7 +187,7 @@ var grammar = {
 		],
     Block: [
       ["{ }", "$$ = []"],
-      ["{ Elems }", "$$ = $2"],
+      ["{ Sentences }", "$$ = $2"],
     ],
 		BlockMain: [
 			["| ID Block", "$$ = ['blockmain', lib.load($3), $2]"],
@@ -214,12 +214,12 @@ var grammar = {
 //			["## ID", "$$ = ['idglobal', $2]"],
 //			["ID ## ID ", "$$ = ['idglobal', $3, $1]"],			
 		],
-		Elem: [
-			["SubElem", "$$ = [$1]"],
-		  ["KeyColon SubElem", "$$ = [$2, $1]"],
-		  ["KeyColon , SubElem", "$$ = [$3, $1]"],			
+		Sentence: [
+			["SubSentence", "$$ = [$1]"],
+		  ["KeyColon SubSentence", "$$ = [$2, $1]"],
+		  ["KeyColon , SubSentence", "$$ = [$3, $1]"],			
 		],
-		SubElem: [
+		SubSentence: [
 			["Expr", "$$ = $1"],
 			["Ctrl", "$$ = $1"],
 			["Load", "$$ = $1"],			
@@ -263,12 +263,12 @@ var grammar = {
 			["STR :", "$$ = $1"],
 			["NUM :", "$$ = $1"],
 		],
-		Elems: [
+		Sentences: [
       [",", "$$ = [];"],			
-      ["Elem", "$$ = [$1];"],
-      [", Elem", "$$ = [$2];"],			
-      ["Elems , Elem", "$$ = $1; $1.push($3);"],
-			["Elems ,", "$$ = $1"],			//allow additional ,;
+      ["Sentence", "$$ = [$1];"],
+      [", Sentence", "$$ = [$2];"],			
+      ["Sentences , Sentence", "$$ = $1; $1.push($3);"],
+			["Sentences ,", "$$ = $1"],			//allow additional ,;
 		],		
 		Exprs: [
       [",", "$$ = [];"],			

@@ -219,6 +219,7 @@ classNewx ->(arr Arrx, dic Dicx)Cptx{
  #r = &Cptx{
   type: T##CLASS
   ctype: T##OBJ
+  fstatic: @true
   id: uidx() 
  }
  r.dic = dicOrx(dic)
@@ -391,9 +392,15 @@ curryDefx ->(scope Cptx, name Str, class Cptx, schema Dicx)Cptx{
 }
 
 itemDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
+ @if(!class.fbitems){
+  die("item def first arg error")
+ }
  @if(type != _ && type.id != cptc.id){
   type = aliasGetx(type)
   Str#n = class.name+"_"+type.name
+  @if(n == "Arr_Byte"){
+   n = "Bytes"
+  }
   Cptx#r = classGetx(defmain, n)
   @if(r == _){
    #r = classDefx(defmain, n, [class], {itemsType: type})  
@@ -808,6 +815,9 @@ copyx ->(o Cptx)Cptx{
   fmid: o.fmid
   fdefault: o.fdefault
   fprop: o.fprop
+  fast: o.fast
+  farg: o.farg
+  fbitems: o.fbitems
 
   name: o.name
   id: uidx()
