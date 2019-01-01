@@ -14,6 +14,7 @@ Cptx => {
  fast: Bool //defined in ast
  farg: Bool //is arg
  fbitems: Bool //is basic element?
+ fbnum: Bool //is basic number? 
 
  ast: Astx
  
@@ -94,25 +95,31 @@ nullv := &Cptx{
 nullc := classDefx(defmain, "Null")
 nullc.ctype = T##NULL
 numc := classDefx(defmain, "Num", [valc])
-intc := classDefx(defmain, "Int", [numc])
+
+intc := bnumDefx("Int", numc)
 intc.ctype = T##INT
-uintc := classDefx(defmain, "Uint", [intc])
-floatc := classDefx(defmain, "Float", [numc])
+uintc := bnumDefx("Uint", intc)
+
+floatc := bnumDefx("Float", numc)
 floatc.ctype = T##FLOAT
 
-boolc := curryDefx(defmain, "Bool", intc)
+
 bytec := curryDefx(defmain, "Byte", intc)
-curryDefx(defmain, "Int16", intc)
-curryDefx(defmain, "Int32", intc)
-curryDefx(defmain, "Int64", intc)
 
-curryDefx(defmain, "Uint8", uintc)
-curryDefx(defmain, "Uint16", uintc)
-curryDefx(defmain, "Uint32", uintc)
-curryDefx(defmain, "Uint64", uintc)
+boolc := bnumDefx("Bool", uintc)
 
-curryDefx(defmain, "Float32", floatc)
-curryDefx(defmain, "Float64", floatc)
+
+bnumDefx("Int16", intc)
+bnumDefx("Int32", intc)
+bnumDefx("Int64", intc)
+
+bnumDefx("Uint8", uintc)
+bnumDefx("Uint16", uintc)
+bnumDefx("Uint32", uintc)
+bnumDefx("Uint64", uintc)
+
+bnumDefx("Float32", floatc)
+bnumDefx("Float64", floatc)
 
 numbigc := curryDefx(defmain, "NumBig", numc)
 //TODO
@@ -168,7 +175,7 @@ enumc := classDefx(defmain, "Enum", [uintc], {
  enum: arrstrc
  enumDic: dicuintc
 })
-
+timec := classDefx(defmain, "Time", [uintc])
 jsonc := classDefx(defmain, "Json", [dicc])
 jsonarrc := classDefx(defmain,, "JsonArr", [arrc])
 jsonarrc.fbitems = @true
@@ -224,14 +231,48 @@ functplc := classDefx(defmain, "FuncTpl", [funcc], {
  funcTplPath: strc
 })
 
-//elements
-elemc := classDefx(defmain, "Elem")
-routerc := classDefx(defmain, "Router", [elemc])
-msgc := classDefx(defmain, "Msg", _, {
- msgSrc: elemc
- msgContent: cptc
- 
+//handlers
+
+handlerc := classDefx(defmain, "Handler")
+routerc := classDefx(defmain, "Router", [itemsc, handlerc], {
+ itemsType: handlerc
 })
+//get
+//set
+//find
+//del
+
+routersubc := classDefx(defmain, "RouterSub", [routerc], {
+ routerParent: routerc
+})
+routerc.fbitems = @true
+routerc.dic["routerRoot"] = defx(routerc)
+handlerstandalonec := classDefx(defmain, "HandlerStandalone", [handlerc])
+handlerembeddedc := classDefx(defmain, "HandlerEmbedded", [handlerc], {
+ handlerRouter: routerc
+})
+msgc := classDefx(defmain, "Msg", _, {
+ msgSrc: handlerc
+ msgContent: cptc
+ msgModTime: timec
+ msgSendTime: timec
+})
+
+filexc := curryDefx(defmain, "Filex", handlerc)
+dirxc := curryDefx(defmain, "Dirx", routersubc)
+
+inetc := curryDefx(defmain, "Inet", routerc)
+nodec := curryDefx(defmain, "Node", routerc)
+fsc := classDefx(defmain, "Fs", [routerc], {
+ itemsType: filexc
+})
+fsremotec := curryDefx(defmain, "FsRemote", fsc)
+dbmsc := curryDefx(defmain, "Dbms", routerc)
+schemac := curryDefx(defmain, "Schema", handlerc)
+
+fslocalv := defx(fsc)
+
+
 
 /////10 def mid
 
@@ -245,7 +286,6 @@ calltypec := curryDefx(defmain, "CallType", callrawc)
 callassignc := curryDefx(defmain, "CallAssign", callrawc)
 
 callmethodc := curryDefx(defmain, "CallMethod", callc)
-callreflectc := curryDefx(defmain, "CallReflect", callc)
 
 
 //init id

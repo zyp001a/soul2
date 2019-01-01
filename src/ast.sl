@@ -235,10 +235,13 @@ enum2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
  }
  @return c
 }
+send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
+ @return _
+}
 obj2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #c = classGetx(def, Str(ast[1]))
  @if(c == _){
-   die("obj2obj: no class "+Str(ast[1])) 
+   die("obj2cpt: no class "+Str(ast[1])) 
  }
  Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);
  @if(schema.fmid){
@@ -590,7 +593,7 @@ convertx ->(from Cptx, to Cptx, val Cptx)Cptx{
   @return _ 
  }
  @if(inClassx(classx(val), midc)){
-  @if(to.ctype == T##INT || to.ctype == T##FLOAT){
+  @if(to.fbnum){
    @return callNewx(defmain.dic["numConvert"], [val, to])
   } 
   @return _
@@ -723,9 +726,6 @@ call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
  //TODO if f is funcproto check type
  @return callNewx(f, arr.arr)
-}
-callreflect2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
- @return nullv
 }
 callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  Cptx#oo = ast2cptx(Astx(ast[1]), def, local, func)
@@ -944,9 +944,7 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  }@elif(t == "call"){
   @return call2cptx(ast, def, local, func)
  }@elif(t == "callmethod"){
-  @return callmethod2cptx(ast, def, local, func)  
- }@elif(t == "callreflect"){
-  @return callreflect2cptx(ast, def, local, func)  
+  @return callmethod2cptx(ast, def, local, func)
  }@elif(t == "assign"){
   @return assign2cptx(ast, def, local, func)  
  }@elif(t == "def"){
@@ -1018,6 +1016,9 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  }@elif(t == "obj"){
   #x = obj2cptx(ast, def, local, func)
   x.fast = @true
+  @return x  
+ }@elif(t == "send"){
+  #x = send2cptx(ast, def, local, func)
   @return x  
  }@else{
   die("ast2cptx: " + t + " is not defined")

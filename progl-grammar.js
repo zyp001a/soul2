@@ -17,7 +17,10 @@ var grammar = {
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\(\\/)/g, '$1'); return 'REGEX';"],
 			["\\@`(\\\\.|[^\\\\`])*`", 
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\([~\\&])/g, '$1'); return 'TPL';"],
-			["@\'(\\\\.|\\.)\'", "yytext = yytext.substr(2, yyleng-3); return 'CHAR'"],
+			["@\'(\\\\.|\\.)*\'",
+			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\u([0-9a-fA-F]{4})/, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; return n;}); return 'BYTE';"],
+			["@\"(\\\\.|\\.)*\"",
+			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\u([0-9a-fA-F]{4})/g, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/g, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; return n;}); return 'BYTES';"],
 			["`(\\\\.|[^\\\\`])*`",
 			 "yytext = yytext.substr(1, yyleng-2).replace(/\\\\`/g, '`'); return 'STR';"], 			
 			["\'(\\\\.|[^\\\\\'])*\'|\"(\\\\.|[^\\\\\"])*\"",
@@ -48,23 +51,57 @@ var grammar = {
 			["@type", "return 'TYPE'"],
 			["@true", "return 'TRUE'"],
 			["@false", "return 'FALSE'"],
-			["@error", "return 'ERROR'"],	
 			["@load", "return 'LOAD'"],
 			["@plugin", "return 'PLUGIN'"],						
 			["@debug", "return 'DEBUG'"],
+
+			["@suspend", "return 'SUSPEND'"],//Ctrl-Z
+			["@resume", "return 'RESUME'"], //fg/bg
+			
+			["@exit", "return 'EXIT'"], //kill
+			["@forceexit", "return 'FORCEEXIT'"],//kill -9
+
+			["@syn", "return 'SYN'"],//for three way handshake
+			["@synack", "return 'SYNACK'"],
+			["@ack", "return 'ACK'"],
+
+			["@ok", "return 'OK'"], //200
+			["@err{int}", "yytext = yytext.substr(4); return 'ERR'"], //500
+			["@err", "yytext=''; return 'ERR'"], //500			
+			
+			["@redirect", "return 'REDIRECT'"],//201
+			["@cached", "return 'CACHED'"], //304
+			["@notfound", "return 'NOTFOUND'"], //404
+
+			["@proc", "return 'PROC'"],			
+			["@fs", "return 'FS'"],
+			["@dir", "return 'DIR'"],
+			["@pwd", "return 'PWD'"],						
+			["@inet", "return 'INET'"],
+			["@stdin", "return 'STDIN'"],
+			["@stdout", "return 'STDOUT'"],
+
+			["@on", "return 'ON'"],
+
+			["@this", "return 'THIS'"],
+			["@in", "return 'IN'"],
+			["@out", "return 'OUT'"],			
+			
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
       ["\\[", "return '['"],
       ["\\]", "return ']'"],
       ["\\{", "return '{'"],
       ["\\}", "return '}'"],
+			["\\-\\-\\>", "return '-->'"],//handler (speical func)
+			["\\=\\=\\>", "return '==>'"],//special class
 			["\\+\\+", "return '++'"],
 			["\\-\\-", "return '--'"],
 			["\\>\\=", "return '>='"],
 			["\\<\\=", "return '<='"],
 			["\\=\\>", "return '=>'"],
-			["\\=\\=\\>", "return '==>'"],			
-			["\\-\\>", "return '->'"],						
+			["\\-\\>", "return '->'"],
+			["\\>\\>", "return '>>'"],
 			["\\=\\=", "return '=='"],
 			["\\!\\=", "return '!='"],
 			["\\+\\=", "return '+='"],
@@ -109,8 +146,9 @@ var grammar = {
     ["left", "+", "-", "^"], //3
     ["left", "*", "/", "%"],//2
     ["right", "!", "?"], //1
-    ["right", "&", "#", "@", "|", "->", "=>", "==>"],
-		["left", "(", ")", "[", "]", "{", "}", "."],
+		["left", ">>"],
+    ["right", "&", "#", "@", "|", "->", "=>", "==>", "-->", "ON"],
+		["left", "(", ")", "[", "]", "{", "}", "."],		
 	],
   "start": "Start",
 	"parseParams": ["lib"],
@@ -122,23 +160,20 @@ var grammar = {
 		Expr: [
 			"Null",
 			"True",
-			"False",						
+			"False",
+			
 			"Char",
 			"Num",
 			"Str",
 //			
 			"Func",			
-//			"Tpl",
+
 			"ArrX",
 			"DicX",
 			"Obj",
 //
-			"Id",
-			"Call",
-			"ObjGet",
-			"ObjGetX",			
-			"ItemsGet",			
-			"Op",
+			"Mid",
+			
 			"Assign",
 			"Def",			
 			"Env",
@@ -146,7 +181,16 @@ var grammar = {
 			"EnumGet",
 			["ADDR ( Expr )", "$$ = ['addr', $3]"],
 			["( Expr )", "$$ = $2"],
-		],		
+		],
+		Mid: [
+			"Id",
+			"Call",
+			"ObjGet",
+			"ItemsGet",			
+			"Op",
+			"Handler",
+			"On"
+		],
 		Null: "$$ = ['null']",
 		True: "$$ = ['true']",
 		False: "$$ = ['false']",		
@@ -210,9 +254,7 @@ var grammar = {
 			["# ID", "$$ = ['idlocal', $2]"],
 			["# INT", "$$ = ['idlocal', $2]"],					
 			["ID # ID ", "$$ = ['idlocal', $3, $1]"],
-			["ID # INT", "$$ = ['idlocal', $3, $1]"],						
-//			["## ID", "$$ = ['idglobal', $2]"],
-//			["ID ## ID ", "$$ = ['idglobal', $3, $1]"],			
+			["ID # INT", "$$ = ['idlocal', $3, $1]"],
 		],
 		Sentence: [
 			["SubSentence", "$$ = [$1]"],
@@ -220,11 +262,13 @@ var grammar = {
 		  ["KeyColon , SubSentence", "$$ = [$3, $1]"],			
 		],
 		SubSentence: [
-			["Expr", "$$ = $1"],
-			["Ctrl", "$$ = $1"],
-			["Load", "$$ = $1"],			
+			"Expr",
+			"Ctrl",
+			"Load",
+			"Send",
+			"Signal",
 		],
-		"Ctrl": [
+		Ctrl: [
 			["If", "$$ = ['if', $1]"],
 			["FOR Expr Block",
 			 "$$ = ['for', [, $2, , $3]]"],
@@ -236,9 +280,15 @@ var grammar = {
 			["RETURN", "$$ = ['return']"],			
 			["BREAK", "$$ = ['break']"],
 			["CONTINUE", "$$ = ['continue']"],
-			["GOTO ID", "$$ = ['goto', $2]"],
-			["ERROR Expr", "$$ = ['error', $2]"],
-			["ERROR Expr NUM", "$$ = ['error', $2, $3]"],	
+			["GOTO ID", "$$ = ['goto', $2]"],			
+		],
+		Signal: [
+			["Err", "$$ = $1"],
+		],
+		Err: [
+			["ERR", "$$ = ['err', $1]"],			
+			["ERR Str", "$$ = ['err', $1, $2]"],
+			["ERR ( Mid )", "$$ = ['err', $1, $3]"],
 		],
 		IdOrNull: [
 			["ID", "$$ = $1"],
@@ -280,11 +330,9 @@ var grammar = {
 		ObjGet: [
 			["Expr . ID", "$$ = ['objget', $1, $3]"],
 		],
-		ObjGetX: [
-			["Expr . ( Expr ) # ID", "$$ = ['objgetx', $1, $4, $7]"],
-		],
 		ItemsGet: [
-			["Expr [ Expr ]", "$$ = ['itemsget', $1, $3]"],			
+			["Expr [ Expr ]", "$$ = ['itemsget', $1, $3]"],
+			["Router [ Expr ]", "$$ = ['itemsget', $1, $3]"],						
 		],
 		Getkey: [
 			["ID", "$$ = ['str', $1]"],
@@ -325,7 +373,6 @@ var grammar = {
 			["ItemsGet CallArgs", "$$ = ['call', $1, $2];"],
 			["Call CallArgs", "$$ = ['call', $1, $2];"],
 			["ObjGet CallArgs", "$$ = ['callmethod', $1[1], $1[2], $2];"],
-			["ObjGetX CallArgs", "$$ = ['callreflect', $1[1], $1[2], $2];"],			
 		],
 		Class:[
 			["=> ID ( Ids ) Dic", "$$ = ['class', $3, $5, $2]"],
@@ -394,6 +441,29 @@ var grammar = {
 		EnumGet: [
 			["ID ## ID", "$$ = ['enumget', $1, $3]"],
 		],
+		On: [
+			["ON Signal", "$$ = ['on', $2]"],
+		],
+		Router: [
+			["FS", "$$ = ['fs']"],
+			["INET", "$$ = ['inet']"],
+			["PROC", "$$ = ['proc']"],			
+		],
+		Handler: [
+			["--> Block", "$$ = ['handler', $2]"],
+		],
+		Send: "$$ = ['send', $1]",
+		Starter: [			
+			["STR >>", "$$ = ['hlbytes', $1]"],
+			["BYTES >>", "$$ = ['hlbytes', $1]"],
+			["BYTE >>", "$$ = ['hlbyte', $1]"],						
+			["Signal >>", "$$ = $1"],
+			["Mid >>", "$$ = $1"],
+		],		
+		SEND: [
+			["Starter Mid", "$$ = [$1, $2]"],
+			["SEND >> Mid", "$$.push($3)"],
+		]
   }
 };
 for(var k in grammar.bnf){

@@ -390,6 +390,11 @@ curryDefx ->(scope Cptx, name Str, class Cptx, schema Dicx)Cptx{
  routex(x, scope, name)
  @return x
 }
+bnumDefx ->(name Str, class Cptx)Cptx{
+ #x = curryDefx(defmain, name, class)
+ x.fbnum = @true
+ @return x
+}
 
 itemDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
  @if(!class.fbitems){
@@ -818,6 +823,7 @@ copyx ->(o Cptx)Cptx{
   fast: o.fast
   farg: o.farg
   fbitems: o.fbitems
+  fbnum: o.fbnum
 
   name: o.name
   id: uidx()
