@@ -268,59 +268,66 @@ methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
  @return aliasGetx(o)
 }, _, classc)
 
-
-methodDefx(pathc, "timeMod", ->(x Arrx, env Cptx)Cptx{
+methodDefx(pathxc, "timeMod", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
 // Str#p = o.dic["path"].str
  //TODO
  @return nullv
 }, _, intc)
-methodDefx(pathc, "exists", ->(x Arrx, env Cptx)Cptx{
+
+
+methodDefx(pathxc, "timeMod", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Str#p = o.dic["path"].str
+ //TODO
+ @return nullv
+}, _, intc)
+methodDefx(pathxc, "exists", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- #p = File(o.dic["path"].str)
+ #p = Filex(o.dic["path"].str)
  @return boolNewx(p.exists())
 }, [strc], boolc)
-methodDefx(pathc, "resolve", ->(x Arrx, env Cptx)Cptx{
+methodDefx(pathxc, "resolve", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- #p = Path(o.dic["path"].str)
+ #p = Pathx(o.dic["path"].str)
  @return strNewx(p.resolve())
 }, [strc], strc)
 
-methodDefx(filec, "write", ->(x Arrx, env Cptx)Cptx{
+methodDefx(filexc, "write", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#d = x[1]
- #p = File(o.dic["path"].str)
+ #p = Filex(o.dic["path"].str)
  p.write(d.str)
  @return nullv
 }, [strc])
-methodDefx(filec, "readAll", ->(x Arrx, env Cptx)Cptx{
+methodDefx(filexc, "readAll", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- #p = File(o.dic["path"].str) 
+ #p = Filex(o.dic["path"].str) 
  @return strNewx(p.readAll())
 }, _, strc)
 
-methodDefx(dirc, "write", ->(x Arrx, env Cptx)Cptx{
+methodDefx(dirxc, "write", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#d = x[1]
  Str#p = o.dic["path"].str
  dirWritex(p, d.dic) 
  @return nullv
 }, [dicc])
-methodDefx(dirc, "writeFile", ->(x Arrx, env Cptx)Cptx{
+methodDefx(dirxc, "writeFile", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#f = x[1]
  Cptx#s = x[2]
- File(o.dic["path"].str + f.str).write(s.str)
+ Filex(o.dic["path"].str + f.str).write(s.str)
  @return nullv
 }, [strc, strc])
-methodDefx(dirc, "makeAll", ->(x Arrx, env Cptx)Cptx{
+methodDefx(dirxc, "makeAll", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#p = x[1]
  #ps = p.str 
  @if(ps == ""){
   #ps = "0777"
  }
- #pp = Dir(o.dic["path"].str)
+ #pp = Dirx(o.dic["path"].str)
  pp.makeAll(ps)
  @return nullv
 }, [strc, strc])
@@ -373,27 +380,27 @@ methodDefx(strc, "replace", ->(x Arrx, env Cptx)Cptx{
  Cptx#to = x[2]
  @return strNewx(o.str.replace(fr.str, to.str))
 },[strc, strc], strc)
-methodDefx(strc, "toPath", ->(x Arrx, env Cptx)Cptx{
+methodDefx(strc, "toPathx", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- #p = Path(o.str)
- @return objNewx(filec, {
+ #p = Pathx(o.str)
+ @return objNewx(filexc, {
   path: strNewx(p.resolve())
  })
-},_, filec)
-methodDefx(strc, "toFile", ->(x Arrx, env Cptx)Cptx{
+},_, filexc)
+methodDefx(strc, "toFilex", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- #p = File(o.str)
- @return objNewx(filec, {
+ #p = Filex(o.str)
+ @return objNewx(filexc, {
   path: strNewx(p.resolve())
  })
-},_, filec)
-methodDefx(strc, "toDir", ->(x Arrx, env Cptx)Cptx{
+},_, filexc)
+methodDefx(strc, "toDirx", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- #p = Dir(o.str) 
- @return objNewx(dirc, {
+ #p = Dirx(o.str) 
+ @return objNewx(dirxc, {
   path: strNewx(p.resolve() + "/")
  })
-},_, dirc)
+},_, dirxc)
 methodDefx(strc, "toJsonArr", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
  //TODO

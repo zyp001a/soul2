@@ -4,7 +4,7 @@
 @if(osargs.len() == 1){
  log("./soul3 [FILE] [EXECFLAG] [DEFFLAG]")
 }@else{
- Str#fc = File(osargs[1]).readAll()
+ Str#fc = Filex(osargs[1]).readAll()
  Str#execsp = "main"
  Str#defsp = "main"
  @if(osargs.len() > 2){

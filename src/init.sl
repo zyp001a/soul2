@@ -77,10 +77,6 @@ routex(tobjc, defmain, "TObj");
 tobjc.ctype = T##TOBJ
 
 
-emptyclassgetc := classDefx(defmain, "EmptyClassGet")//classGet none means cache
-emptyclassgetv := objNewx(emptyclassgetc)
-emptyclassgetv.fstatic = @true
-
 midc := classDefx(defmain, "Mid")
 //midc must defined before itemDefx
 
@@ -181,11 +177,11 @@ jsonarrc := classDefx(defmain,, "JsonArr", [arrc])
 jsonarrc.fbitems = @true
 
 bufferc := classDefx(defmain, "Buffer", [strc])
-pathc := classDefx(defmain, "Path", _, {
+pathxc := classDefx(defmain, "Pathx", _, {
  path: strc
 })
-filec := classDefx(defmain, "File", [pathc])
-dirc := classDefx(defmain, "Dir", [pathc])
+filexc := classDefx(defmain, "Filex", [pathxc])
+dirxc := classDefx(defmain, "Dirx", [pathxc])
 
 //init call
 emptyc := classDefx(defmain, "Empty")//return empty mean no return
@@ -262,8 +258,8 @@ msgc := classDefx(defmain, "Msg", _, {
  msgSendTime: timec
 })
 
-filexc := curryDefx(defmain, "Filex", handlerc)
-dirxc := curryDefx(defmain, "Dirx", routersubc)
+filec := curryDefx(defmain, "File", handlerc)
+dirc := curryDefx(defmain, "Dir", routersubc)
 
 inetc := curryDefx(defmain, "Inet", routerc)
 nodec := curryDefx(defmain, "Node", routerc)

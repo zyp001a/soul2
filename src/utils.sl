@@ -66,7 +66,7 @@ escapex ->(s Str)Str{
 dirWritex ->(d Str, dic Dicx){
  @each k v dic{
   @if(v.type == T##STR){
-   #x = File(d + k)
+   #x = Filex(d + k)
    x.write(v.str)
   }@else{
    log(dic2strx(dic))
@@ -478,7 +478,7 @@ nsGetx ->(ns Cptx, key Str)Cptx{
   @return s;
  }
  #s = scopeNewx(ns, key)
- #f = File(osEnvGet("HOME")+"/soul2/db/"+ns.str+"/"+key+".slp")
+ #f = Filex(osEnvGet("HOME")+"/soul2/db/"+ns.str+"/"+key+".slp")
  @if(f.exists()){
   Str#fc = f.readAll()
   Arr_Str#arr = fc.split(" ")
@@ -490,10 +490,10 @@ nsGetx ->(ns Cptx, key Str)Cptx{
 }
 dbGetx ->(scope Cptx, key Str)Cptx{
  #fstr = osEnvGet("HOME")+"/soul2/db/"+scope.str + "/" + key + ".sl" 
- #f = File(fstr)
- #f2 = File(fstr+"t")
- #fcache = File(fstr+".cache")
- #f2cache = File(fstr+"t.cache")  
+ #f = Filex(fstr)
+ #f2 = Filex(fstr+"t")
+ #fcache = Filex(fstr+".cache")
+ #f2cache = Filex(fstr+"t.cache")  
  
  @if(f.exists()){
   Str#str = f.readAll()
