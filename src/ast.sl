@@ -94,7 +94,7 @@ subFunc2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, isproto Int)Cptx{
  @if(v.len() > 2 && v[2] != _){
   #ret = classGetx(def, Str(v[2]))
  }@else{
-  #ret = emptyreturnc
+  #ret = emptyc
  }
  #fp = fpDefx(funcVarTypes, ret)
  @if(isproto > 0){
@@ -236,7 +236,71 @@ enum2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
  @return c
 }
 send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
- @return _
+ #x = defx(sendc)
+ #arr = Astx(ast[1])
+ #l = arr.len()
+ @for #i=0; i<l-1; i++{
+  #from = ast2cptx(Astx(arr[i]), def, local, func)
+  #to = ast2cptx(Astx(arr[i+1]), def, local, func)
+  #fromt = typepredx(from)
+  #tot = typepredx(to)
+  @if(!fromt){
+   log(arr)
+   log(i)   
+   die("send from type not defined")
+  }
+  @if(!tot){
+   log(arr)
+   log(i)
+   die("send to type not defined")
+  }
+  @if(fromt.name == ""){
+   log(strx(from))
+   log(strx(fromt))   
+   die("send from type no name")  
+  }
+  @if(tot.name == ""){
+   log(strx(to))
+   log(strx(tot))   
+   die("send to type no name")  
+  }
+  @if(!inClassx(fromt, handlerc)){
+   //TODO
+   @continue;
+  }
+  #msgt = classGetx(fromt, "handlerMsgOutType")
+  #tomsgt = classGetx(fromt, "handlerMsgInType")
+  @if(!inClassx(msgt, tomsgt)){
+  //TODO check if can convert or die
+   log(strx(msgt))
+   log(strx(tomsgt))   
+   die("cannot send to");
+  }
+  #f = classGetx(fromt, "pipe" + tot.name)
+  @if(f){
+   x.arr.push(callNewx(f, [from, to]))
+   @continue
+  }
+  #fread = classGetx(fromt, "read")
+  //TODO convertt  
+  #fwrite = classGetx(fromt, "write")
+  @if(fread != _ && fwrite != _){
+   #tmpid = objNewx(idlocalc, {
+    idStr: strNewx("tmp" + uidx())
+    idState: local
+   })
+   x.arr.push(callNewx(classGetx(idlocalc, "assign"), [
+    tmpid,
+    callNewx(fread, [from])   
+   ], callassignc))
+   x.arr.push(callNewx(fwrite, [from, tmpid]))
+   @continue   
+  }
+  log(arr)
+  log(i)
+  die("cannot send, not function matched")
+ }
+ @return x
 }
 obj2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #c = classGetx(def, Str(ast[1]))
@@ -346,12 +410,12 @@ return2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  #ret = getx(func, "funcReturn")
  @if(ast.len() > 1){
   Cptx#arg = ast2cptx(Astx(ast[1]), def, local, func)
-  @if(ret.id == emptyreturnc.id){
+  @if(ret.id == emptyc.id){
    die("func "+func.name+" should not return value")
   }
  }@else{
-  @if(ret.id == emptyreturnc.id){
-   Cptx#arg = emptyreturnv
+  @if(ret.id == emptyc.id){
+   Cptx#arg = emptyv
   }@else{
    Cptx#arg = nullv  
   }
@@ -778,22 +842,25 @@ ast2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  @each _ e ast{
   #ee = Astx(e)
   #idpre = Str(Astx(ee[0])[0])
+  @if(ee.len() == 2){
+   dicl.dic[Str(ee[1])] = uintNewx(i)
+  }
   @if(idpre == "if"){
    Cptx#c = if2cptx(Astx(ee[0]), def, local, func, x)
   }@elif(idpre == "each"){
    Cptx#c = each2cptx(Astx(ee[0]), def, local, func, x)
   }@elif(idpre == "for"){
-   Cptx#c = for2cptx(Astx(ee[0]), def, local, func, x) 
+   Cptx#c = for2cptx(Astx(ee[0]), def, local, func, x)
+  }@elif(idpre == "send"){
+   Cptx#c = send2cptx(Astx(ee[0]), def, local, func)   
   }@else{
-   Cptx#c = ast2cptx(Astx(ee[0]), def, local, func)  
+   Cptx#c = subAst2cptx(Astx(ee[0]), def, local, func)  
   }
+  c.ast = Astx(ee[0])
   @if(c == _){
    @continue
   }
   arr.push(c)
-  @if(ee.len() == 2){
-   dicl.dic[Str(ee[1])] = uintNewx(i)
-  }
   i++  
  }
  x.dic["blockVal"] = arrNewx(arrc, arr)
@@ -1016,10 +1083,9 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  }@elif(t == "obj"){
   #x = obj2cptx(ast, def, local, func)
   x.fast = @true
-  @return x  
- }@elif(t == "send"){
-  #x = send2cptx(ast, def, local, func)
-  @return x  
+  @return x
+ }@elif(t == "fs"){
+  @return fsv
  }@else{
   die("ast2cptx: " + t + " is not defined")
  }

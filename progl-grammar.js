@@ -453,15 +453,8 @@ var grammar = {
 			["--> Block", "$$ = ['handler', $2]"],
 		],
 		Send: "$$ = ['send', $1]",
-		Starter: [			
-			["STR >>", "$$ = ['hlbytes', $1]"],
-			["BYTES >>", "$$ = ['hlbytes', $1]"],
-			["BYTE >>", "$$ = ['hlbyte', $1]"],						
-			["Signal >>", "$$ = $1"],
-			["Mid >>", "$$ = $1"],
-		],		
 		SEND: [
-			["Starter Mid", "$$ = [$1, $2]"],
+			["Expr >> Mid", "$$ = [$1, $2]"],
 			["SEND >> Mid", "$$.push($3)"],
 		]
   }

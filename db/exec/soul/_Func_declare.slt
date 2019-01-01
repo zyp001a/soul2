@@ -15,7 +15,7 @@ Class#ret = #0.funcReturn
  }
 }
 #returnx = ""
-@if(ret != _ && ret != EmptyReturn){
+@if(ret != _ && ret != Empty){
  returnx += typemap(ret)
 }
 

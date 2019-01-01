@@ -188,9 +188,9 @@ filec := classDefx(defmain, "File", [pathc])
 dirc := classDefx(defmain, "Dir", [pathc])
 
 //init call
-emptyreturnc := classDefx(defmain, "EmptyReturn")//return empty mean no return
-emptyreturnv := objNewx(emptyreturnc)
-emptyreturnv.fstatic = @true
+emptyc := classDefx(defmain, "Empty")//return empty mean no return
+emptyv := objNewx(emptyc)
+emptyv.fstatic = @true
 
 funcc := classDefx(defmain, "Func")
 funcprotoc := classDefx(defmain, "FuncProto", [funcc], {
@@ -233,7 +233,10 @@ functplc := classDefx(defmain, "FuncTpl", [funcc], {
 
 //handlers
 
-handlerc := classDefx(defmain, "Handler")
+handlerc := classDefx(defmain, "Handler", _, {
+ handlerOutMsgType: classc
+ handlerInMsgType: classc
+})
 routerc := classDefx(defmain, "Router", [itemsc, handlerc], {
  itemsType: handlerc
 })
@@ -251,6 +254,7 @@ handlerstandalonec := classDefx(defmain, "HandlerStandalone", [handlerc])
 handlerembeddedc := classDefx(defmain, "HandlerEmbedded", [handlerc], {
  handlerRouter: routerc
 })
+
 msgc := classDefx(defmain, "Msg", _, {
  msgSrc: handlerc
  msgContent: cptc
@@ -270,7 +274,7 @@ fsremotec := curryDefx(defmain, "FsRemote", fsc)
 dbmsc := curryDefx(defmain, "Dbms", routerc)
 schemac := curryDefx(defmain, "Schema", handlerc)
 
-fslocalv := defx(fsc)
+fsv := defx(fsc)
 
 
 
@@ -279,6 +283,8 @@ fslocalv := defx(fsc)
 callc := classDefx(defmain, "Call", [midc])
 callc.ctype = T##CALL
 
+arrcallc := itemDefx(arrc, callc)
+
 callpassrefc := curryDefx(defmain, "CallPassRef", callc)
 
 callrawc := curryDefx(defmain, "CallRaw", callc)
@@ -286,6 +292,7 @@ calltypec := curryDefx(defmain, "CallType", callrawc)
 callassignc := curryDefx(defmain, "CallAssign", callrawc)
 
 callmethodc := curryDefx(defmain, "CallMethod", callc)
+sendc := curryDefx(defmain, "Send", arrcallc)
 
 
 //init id

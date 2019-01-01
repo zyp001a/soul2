@@ -345,7 +345,7 @@ callNewx ->(func Cptx, args Arrx, obj Cptx)Cptx{
 }
 funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  @if(return == _){
-  return = emptyreturnc
+  return = emptyc
  }
  Arrx#arr = &Arrx
  @each _ v argtypes{
@@ -555,10 +555,10 @@ classGetx ->(scope Cptx, key Str)Cptx{
  Cptx#r = subClassGetx(scope, key, {})
  @if(r == _){
   @if(scope.str != ""){//if class is scope
-   scope.dic[key] = emptyclassgetv
+   scope.dic[key] = emptyv
   }
   @return _
- }@elif(r.id == emptyclassgetv.id){
+ }@elif(r.id == emptyv.id){
   @return _
  }
  @if(r.fprop){
@@ -979,7 +979,7 @@ typepredx ->(o Cptx)Cptx{
     log(strx(f))
     die("no return")
    }
-   @if(ret.id == emptyreturnc.id){
+   @if(ret.id == emptyc.id){
     @return cptc;
    }
    @return ret

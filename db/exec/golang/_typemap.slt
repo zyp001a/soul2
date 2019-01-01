@@ -13,7 +13,7 @@ Class#c = #0
   #res = ""
   @if(t == "Cpt"){
    res = "interface{}"
-  }@elif(inClass(c, EmptyReturn)){
+  }@elif(inClass(c, Empty)){
    res = "" 
 //  }@elif(inClass(c, Alias)){
 //   res = t
