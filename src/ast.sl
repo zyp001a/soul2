@@ -264,8 +264,34 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    log(strx(tot))   
    die("send to type no name")  
   }
-  @if(!inClassx(fromt, handlerc)){
-   //TODO
+  @if(!inClassx(fromt, handlerc)){ //write to val
+   #tomsgt = classGetx(tot, "handlerMsgInType")
+   @if(!inClassx(fromt, tomsgt)){
+  //TODO check if can convert or die
+    log(strx(fromt))
+    log(strx(tomsgt))   
+    die("cannot send to toVal");
+   }
+   #fwrite = classGetx(tot, "write")
+   x.arr.push(callNewx(fwrite, [tot, from]))   
+   @continue;
+  }
+  @if(!inClassx(tot, handlerc)){ //read from val
+   @if(!inClassx(tot, idc)){
+    die("cannot assign to from handler");
+   }
+   #msgt = classGetx(fromt, "handlerMsgOutType")
+   @if(!inClassx(msgt, tot)){
+  //TODO check if can convert or die
+    log(strx(msgt))
+    log(strx(tot))
+    die("cannot send to fromVal");
+   }
+   #fread = classGetx(fromt, "read")
+   x.arr.push(callNewx(classGetx(tot, "assign"), [
+    to
+    callNewx(fread, [fromt])    
+   ], callassignc))
    @continue;
   }
   #msgt = classGetx(fromt, "handlerMsgOutType")
@@ -283,7 +309,7 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   }
   #fread = classGetx(fromt, "read")
   //TODO convertt  
-  #fwrite = classGetx(fromt, "write")
+  #fwrite = classGetx(tot, "write")
   @if(fread != _ && fwrite != _){
    #tmpid = objNewx(idlocalc, {
     idStr: strNewx("tmp" + uidx())
@@ -293,7 +319,7 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
     tmpid,
     callNewx(fread, [from])   
    ], callassignc))
-   x.arr.push(callNewx(fwrite, [from, tmpid]))
+   x.arr.push(callNewx(fwrite, [to, tmpid]))
    @continue   
   }
   log(arr)
