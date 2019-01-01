@@ -1,0 +1,3 @@
+~
+funcImport("_File_readAll")
+~_File_readAll(^0)

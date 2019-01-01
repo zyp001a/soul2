@@ -1,0 +1,5 @@
+~
+@each _ v Arr_Call(#0){
+ ~~=exec(v)~~
+}
+~

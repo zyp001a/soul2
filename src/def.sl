@@ -268,6 +268,10 @@ methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
  @return aliasGetx(o)
 }, _, classc)
 
+
+
+
+
 methodDefx(pathxc, "timeMod", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
 // Str#p = o.dic["path"].str
@@ -427,6 +431,39 @@ methodDefx(strc, "isInt", ->(x Arrx, env Cptx)Cptx{
  Str#s = x[0].str
  @return boolNewx(s.isInt())
 },[strc], boolc)
+
+
+
+methodDefx(fsc, "get", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#s = x[1]
+ //TODO
+ @return objNewx(filec, {
+  handlerRouter: o
+  handlerPath: s
+ })
+}, [strc], filec)
+methodDefx(filec, "write", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#d = x[1]
+ #p = Filex(o.dic["handlerPath"].str)
+ p.write(d.str)
+ @return nullv
+}, [bytesc])
+methodDefx(filec, "read", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #p = Filex(o.dic["handlerPath"].str) 
+ @return strNewx(p.readAll(), bytesc)
+}, _, bytesc)
+methodDefx(filec, "rm", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #p = o.dic["handlerPath"].str
+ @fs[p].rm()
+ @return nullv
+})
+
+
+
 
 methodDefx(arrc, "push", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -717,6 +754,10 @@ execDefx("Call", ->(x Arrx, env Cptx)Cptx{
  }
  #argsx = prepareArgsx(args, f, env)
  @return callx(f, argsx, env)
+})
+execDefx("Arr_Call", ->(x Arrx, env Cptx)Cptx{
+ Cptx#c = x[0]
+ @return subBlockExecx(c.arr, env)
 })
 execDefx("CallPassRef", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]

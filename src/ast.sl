@@ -265,7 +265,7 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    die("send to type no name")  
   }
   @if(!inClassx(fromt, handlerc)){ //write to val
-   #tomsgt = classGetx(tot, "handlerMsgInType")
+   #tomsgt = classx(classGetx(tot, "handlerMsgInType"))
    @if(!inClassx(fromt, tomsgt)){
   //TODO check if can convert or die
     log(strx(fromt))
@@ -273,29 +273,39 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
     die("cannot send to toVal");
    }
    #fwrite = classGetx(tot, "write")
-   x.arr.push(callNewx(fwrite, [tot, from]))   
+   x.arr.push(callNewx(fwrite, [to, from]))   
    @continue;
   }
   @if(!inClassx(tot, handlerc)){ //read from val
-   @if(!inClassx(tot, idc)){
+   @if(!inClassx(classx(to), idc)){
+    log(strx(to))
+    log(strx(tot))    
     die("cannot assign to from handler");
-   }
-   #msgt = classGetx(fromt, "handlerMsgOutType")
-   @if(!inClassx(msgt, tot)){
-  //TODO check if can convert or die
-    log(strx(msgt))
-    log(strx(tot))
-    die("cannot send to fromVal");
+   }  
+   #msgt = classx(classGetx(fromt, "handlerMsgOutType"))
+   @if(tot.id == nullc.id){
+    tot = msgt
+    to.dic["idState"].dic[to.dic["idStr"].str] = msgt
+   }@else{
+    @if(!inClassx(msgt, tot)){
+   //TODO check if can convert or die
+     log(strx(msgt))
+     log(strx(tot))
+     die("cannot send to fromVal");
+    }
    }
    #fread = classGetx(fromt, "read")
-   x.arr.push(callNewx(classGetx(tot, "assign"), [
-    to
-    callNewx(fread, [fromt])    
-   ], callassignc))
+   #assignf = getx(to, "assign")
+   #ncall = callNewx(assignf, [to, callNewx(fread, [from])], callassignc)
+   x.arr.push(ncall)   
    @continue;
   }
-  #msgt = classGetx(fromt, "handlerMsgOutType")
-  #tomsgt = classGetx(fromt, "handlerMsgInType")
+  @if(!msgt){
+   #msgt = classx(classGetx(fromt, "handlerMsgOutType"))
+  }
+  @if(!tomsgt){
+   #tomsgt = classx(classGetx(fromt, "handlerMsgInType"))
+  }
   @if(!inClassx(msgt, tomsgt)){
   //TODO check if can convert or die
    log(strx(msgt))
@@ -1072,6 +1082,14 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return objNewx(ctrlcontinuec)    
  }@elif(t == "str"){
   #x = strNewx(Str(ast[1]))
+  x.fast = @true
+  @return x
+ }@elif(t == "byte"){
+//  #x = intNewx(Str(ast[1]), bytec)
+//  x.fast = @true
+//  @return x
+ }@elif(t == "bytes"){
+  #x = strNewx(Str(ast[1]), bytesc)
   x.fast = @true
   @return x
  }@elif(t == "float"){

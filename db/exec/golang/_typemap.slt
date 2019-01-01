@@ -29,6 +29,8 @@ Class#c = #0
    res = "float64"
   }@elif(inClass(c, Str)){
    res = "string"
+  }@elif(inClass(c, Bytes)){
+   res = "[]byte"
   }@elif(inClass(c, Pathx)){
    res = "string"
   }@elif(inClass(c, JsonArr)){

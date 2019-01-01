@@ -230,8 +230,8 @@ functplc := classDefx(defmain, "FuncTpl", [funcc], {
 //handlers
 
 handlerc := classDefx(defmain, "Handler", _, {
- handlerOutMsgType: classc
- handlerInMsgType: classc
+ handlerMsgOutType: classc
+ handlerMsgInType: classc
 })
 routerc := classDefx(defmain, "Router", [itemsc, handlerc], {
  itemsType: handlerc
@@ -249,6 +249,7 @@ routerc.dic["routerRoot"] = defx(routerc)
 handlerstandalonec := classDefx(defmain, "HandlerStandalone", [handlerc])
 handlerembeddedc := classDefx(defmain, "HandlerEmbedded", [handlerc], {
  handlerRouter: routerc
+ handlerPath: strc 
 })
 
 msgc := classDefx(defmain, "Msg", _, {
@@ -258,13 +259,16 @@ msgc := classDefx(defmain, "Msg", _, {
  msgSendTime: timec
 })
 
-filec := curryDefx(defmain, "File", handlerc)
+filec := classDefx(defmain, "File", [handlerembeddedc],{
+ handlerMsgInType: bytesc
+ handlerMsgOutType: bytesc
+})
 dirc := curryDefx(defmain, "Dir", routersubc)
 
 inetc := curryDefx(defmain, "Inet", routerc)
 nodec := curryDefx(defmain, "Node", routerc)
 fsc := classDefx(defmain, "Fs", [routerc], {
- itemsType: filexc
+ itemsType: filec
 })
 fsremotec := curryDefx(defmain, "FsRemote", fsc)
 dbmsc := curryDefx(defmain, "Dbms", routerc)

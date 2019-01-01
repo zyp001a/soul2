@@ -19,7 +19,7 @@ var grammar = {
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\([~\\&])/g, '$1'); return 'TPL';"],
 			["@\'(\\\\.|\\.)*\'",
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\u([0-9a-fA-F]{4})/, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; return n;}); return 'BYTE';"],
-			["@\"(\\\\.|\\.)*\"",
+			["@\"(\\\\.|[^\\\\\"])*\"",
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\u([0-9a-fA-F]{4})/g, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/g, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; return n;}); return 'BYTES';"],
 			["`(\\\\.|[^\\\\`])*`",
 			 "yytext = yytext.substr(1, yyleng-2).replace(/\\\\`/g, '`'); return 'STR';"], 			
@@ -165,6 +165,8 @@ var grammar = {
 			"Char",
 			"Num",
 			"Str",
+			"Byte",
+			"Bytes",			
 //			
 			"Func",			
 
@@ -202,6 +204,8 @@ var grammar = {
 			["HEX", "$$ = ['hex', $1]"],
 		],
 		Str: "$$ = ['str', $1]",
+		Byte: "$$ = ['byte', $1]",
+		Bytes: "$$ = ['bytes', $1]",		
 		Tpl: [
 			["TPL", "$$ = ['tpl', JSON.stringify(lib.proglparse(lib.tplparse($1)))]"],
 			["TPL STR", "$$ = ['tpl', JSON.stringify(lib.proglparse(lib.tplparse($1))), $2]"],
@@ -454,7 +458,7 @@ var grammar = {
 		],
 		Send: "$$ = ['send', $1]",
 		SEND: [
-			["Expr >> Mid", "$$ = [$1, $2]"],
+			["Expr >> Mid", "$$ = [$1, $3]"],
 			["SEND >> Mid", "$$.push($3)"],
 		]
   }

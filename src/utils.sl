@@ -227,15 +227,17 @@ classNewx ->(arr Arrx, dic Dicx)Cptx{
  @return r;
 }
 
-strNewx ->(x Str)Cptx{
+strNewx ->(x Str, c Cptx)Cptx{
  @return &Cptx{
   type: T##STR
+  obj: c
   str: x
  }
 }
-intNewx ->(x Int)Cptx{
+intNewx ->(x Int, c Cptx)Cptx{
  @return &Cptx{
   type: T##INT
+  obj: c
   int: x
  }
 }
@@ -410,6 +412,7 @@ itemDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
   @if(r == _){
    #r = classDefx(defmain, n, [class], {itemsType: type})  
   }
+
  }@else{
   r = class
  }
@@ -997,13 +1000,19 @@ typepredx ->(o Cptx)Cptx{
     @return cptc
    }
    Cptx#s = o.dic["idState"]
-   #r = getx(s, id)
+   #r = s.dic[id]
    @if(r == _){
     log(strx(s)) 
     log(id)
     die("not defined in idstate, may use #1 #2 like")
     @return r
    }
+   /*
+   @if(r.id == nullv.id){
+    s.dic[id] = cptv
+    @return cptc
+   }
+   */
    @return typepredx(r)
   }
    //if is idscope
@@ -1238,8 +1247,10 @@ execGetx ->(c Cptx, execsp Cptx)Cptx{
  @return _
 }
 blockExecx ->(o Cptx, env Cptx, stt Uint)Cptx{
- Cptx#b = o.dic["blockVal"]
- @each i v b.arr{
+ @return subBlockExecx(o.dic["blockVal"].arr, env, stt)
+}
+subBlockExecx ->(arr Arrx, env Cptx, stt Uint)Cptx{
+ @each i v arr{
   @if(stt != 0 && stt < i){
    @continue
   }

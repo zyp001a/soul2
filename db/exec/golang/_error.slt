@@ -1,4 +1,5 @@
 ~
 goImport("log")
 goImport("os")
-~log.Fatal(~=#0~);os.Exit(1)
+goImport("runtime/debug")
+~debug.PrintStack();log.Fatal(~=#0~);os.Exit(1)
