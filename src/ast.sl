@@ -244,12 +244,12 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   #to = ast2cptx(Astx(arr[i+1]), def, local, func)
   #fromt = typepredx(from)
   #tot = typepredx(to)
-  @if(!fromt){
+  @if(fromt.id != unknownc.id){
    log(arr)
    log(i)   
    die("send from type not defined")
   }
-  @if(!tot){
+  @if(tot.id != unknownc.id){
    log(arr)
    log(i)
    die("send to type not defined")
@@ -359,7 +359,7 @@ op2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  Cptx#arg0 = ast2cptx(Astx(args[0]), def, local, func)
  #t0 = typepredx(arg0)
 
- @if(t0 == _){
+ @if(t0.id == unknownc.id){
   t0 = cptc
  }
  #f = getx(t0, op);
@@ -386,7 +386,7 @@ op2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
 itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  Cptx#items = ast2cptx(Astx(ast[1]), def, local, func)
  #itemstc = typepredx(items)
- @if(itemstc == _){
+ @if(itemstc.id == unknownc.id){
   log(strx(items))
   die("don't known dic or arr")
  }
@@ -418,7 +418,7 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
    @return lefto
   }
   #it = getx(itemst, "itemsType")
-  @if(predt != _ && predt.id != cptc.id){ 
+  @if(predt.id != unknownc.id && predt.id != cptc.id){ 
    @if(it.id == cptv.id){
 //    @if(itemstt.name != "Dic" && itemstt.name != "Arr"){
  //    die("error, itemsType defined but name not changed "+itemst.obj.name)
@@ -479,7 +479,7 @@ if2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  Int#l = args.len()
  @for Int#i=0;i<l-1;i+=2{
   #t = typepredx(args[i])
-  @if(t == _){
+  @if(t.id == unknownc.id){
    log(strx(args[i]))
    die("if: typepred error")
   }
@@ -502,7 +502,7 @@ each2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  #val = Str(v[1])
  Cptx#expr = ast2cptx(Astx(v[2]), def, local, func)
  #et = typepredx(expr)
- @if(et == _){
+ @if(et.id == unknownc.id){
   die("no type for each")
  }
  @if(key != ""){
@@ -666,7 +666,7 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
  Cptx#r = ast2cptx(v, def, local, func, id)
  @if(r.name == ""){
   #t = typepredx(r)
-  @if(t == _){
+  @if(t.id == unknownc.id){
    log(id)
    log(v)
    die("global var must know type")
@@ -786,7 +786,7 @@ call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
 callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  Cptx#oo = ast2cptx(Astx(ast[1]), def, local, func)
  Cptx#to = typepredx(oo)
- @if(to == _){
+ @if(to.id == unknownc.id){
   log(strx(oo))
   die("cannot typepred obj")
  }
@@ -882,8 +882,7 @@ ast2arrx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
   }
  }
  
-
- @if(it != _ || callable){
+ @if((it != _ && it.id != unknownc.id) || callable){
   #c = itemDefx(arrc, it, callable)
   #r = arrNewx(c, arrx)
   @if(callable){
@@ -921,7 +920,7 @@ ast2dicx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
   }
  }
  
- @if(it != _ || callable){
+ @if((it != _ && it.id != unknownc.id) || callable){
   #c = itemDefx(dicc, it, callable)
   #r = dicNewx(c, dicx, arrx)
   @if(callable){

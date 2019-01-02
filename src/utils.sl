@@ -735,7 +735,7 @@ defx ->(class Cptx, dic Dicx)Cptx{
      die("defx: dic val null")     
     }
     Cptx#pt = typepredx(v);
-    @if(pt == _ || pt.id == cptc.id){
+    @if(pt.id == unknownc.id || pt.id == cptc.id){
      @continue;
     }
     @if(!inClassx(pt, classx(t))){
@@ -914,6 +914,7 @@ typepredx ->(o Cptx)Cptx{
  }
  #x = subTypepredx(o)
  @if(x == _){
+  x = unknownc
  }
  o.pred = x
  @return x
@@ -947,7 +948,7 @@ subTypepredx ->(o Cptx)Cptx{
    Cptx#arg0 = args[0]     
    Cptx#arg1 = args[1]
    Cptx#at0 = typepredx(arg0)
-   @if(at0 == _ || at0.id == cptv.id){
+   @if(at0.id == unknownc.id || at0.id == cptv.id){
     @return _
    }
    #cg = getx(at0, arg1.str)
@@ -1021,12 +1022,6 @@ subTypepredx ->(o Cptx)Cptx{
     die("not defined in idstate, may use #1 #2 like")
     @return r
    }
-   /*
-   @if(r.id == nullv.id){
-    s.dic[id] = cptv
-    @return cptc
-   }
-   */
    @return typepredx(r)
   }
    //if is idscope
@@ -1322,7 +1317,7 @@ convertx ->(val Cptx, to Cptx)Cptx{
   @return val
  }
  #from = typepredx(val)
- @if(from == _){
+ @if(from.id == unknownc.id){
   @return val
  }
  #from = aliasGetx(from) 

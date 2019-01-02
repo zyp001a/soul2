@@ -138,7 +138,7 @@ funcDefx(defmain, "class", ->(x Arrx, env Cptx)Cptx{
 }, [cptc], cptc)
 funcDefx(defmain, "typepred", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
- @return nullOrx(typepredx(l))
+ @return typepredx(l)
 }, [cptc], classc)
 funcDefx(defmain, "isCpt", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
