@@ -19,7 +19,7 @@ Cptx => {
  ast: Astx
  
  name: Str
- id: Str
+ id: Uint
  class: Cptx 
 
  obj: Cptx
@@ -38,7 +38,7 @@ Astx := @type JsonArr
 
 version := 100
 
-uidi := Uint(0);
+uidi := Uint(1);
 _indentx := " "
 
 inClassCache := {}Int

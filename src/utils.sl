@@ -1,7 +1,7 @@
-uidx ->()Str{
- Str#r = Str(uidi)
- uidi += 1
- @return r;
+uidx ->()Uint{
+// Str#r = Str(uidi)
+ uidi ++
+ @return uidi;
 }
 dicOrx ->(x Dicx)Dicx{
  @if(!x){
@@ -96,7 +96,7 @@ parentMakex ->(o Cptx, parentarr Arrx){
   T#ctype = o.ctype
   @each _ e parentarr{
    //TODO reduce
-   @if(e.id == ""){
+   @if(!e.id){
     die("no id")
    }
    @if(e.ctype > ctype){
@@ -532,7 +532,7 @@ subClassGetx ->(scope Cptx, key Str, cache Dic)Cptx{
  }
 
  @each _ v scope.arr {
-  Str#k = v.id
+  #k = Str(v.id)
   @if(cache[k] != _){ @continue };
   cache[k] = 1;
   r = subClassGetx(v, key, cache)
@@ -650,10 +650,10 @@ inClassx ->(c Cptx, t Cptx, cache Dic)Bool{
  @if(t.id == objc.id && c.ctype == T##OBJ){
   @return @true
  }
- @if(c.id != "" && c.id == t.id){
+ @if(c.id != 0 && c.id == t.id){
   @return @true
  }
- #key = c.id + "_" + t.id
+ #key = Str(c.id) + "_" + t.id
  #r = inClassCache[key]
  @if(r == 1){
   @return @true
@@ -665,10 +665,11 @@ inClassx ->(c Cptx, t Cptx, cache Dic)Bool{
   cache = {}
  }
  @each _ v c.arr{
-  @if(cache[v.id] != _){
+  #k = Str(v.id)
+  @if(cache[k] != _){
    @continue
   }
-  cache[v.id] = 1
+  cache[k] = 1
   @if(inClassx(v, t, cache)){
    inClassCache[key] = 1
    @return @true
@@ -742,7 +743,7 @@ defx ->(class Cptx, dic Dicx)Cptx{
      log(k)
      log(strx(v))
      log(strx(pt))     
-     log(strx(t))
+     log(strx(classx(t)))
      die("defx: type error")
     }
    }
@@ -1077,7 +1078,7 @@ parent2strx ->(d Arrx)Str{
 }
 
 strx ->(o Cptx, i Int)Str{
- @if(i > 3 && o.id != ""){
+ @if(i > 3 && o.id > 0){
   @return "~"+o.id
  }
  T#t = o.type
@@ -1210,25 +1211,27 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
  @return nullv;
 }
 classExecGetx ->(c Cptx, execsp Cptx, cache Dic)Cptx{
- @if(c.id == ""){
+ @if(!c.id){
   log(strx(c))
   die("no id")
  }
- #r = execsp.dic[c.id]
+ #key = Str(c.id)
+ #r = execsp.dic[key]
  @if(r != _){
   @return r;
  }
  @if(c.name != ""){
   #exect = classGetx(execsp, c.name)
   @if(exect != _){
-   execsp.dic[c.id] = exect;  
+   execsp.dic[key] = exect;  
    @return exect
   }
  }
  @if(c.arr != _){
   @each _ v c.arr{
-   @if(cache[v.id] != _){ @return; }
-   cache[v.id] = 1;
+   #k = Str(v.id)
+   @if(cache[k] != _){ @return; }
+   cache[k] = 1;
    Cptx#exect = classExecGetx(v, execsp, cache);
    @if(exect != _){
     @return exect;

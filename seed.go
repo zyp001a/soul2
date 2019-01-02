@@ -1,5 +1,4 @@
 package main
-import "strconv"
 import "strings"
 import "io/ioutil"
 import "log"
@@ -9,6 +8,7 @@ import "fmt"
 import "sort"
 import "os/exec"
 import "encoding/json"
+import "strconv"
 import "path/filepath"
 const (
   TCPT = 0
@@ -48,7 +48,7 @@ type Cptx struct {
   _fmid bool
   _fprop bool
   _fstatic bool
-  _id string
+  _id uint
   _int int
   _name string
   _obj *Cptx
@@ -190,11 +190,9 @@ var _ctrlgotoc *Cptx
 var _ctrlreturnc *Cptx
 var _ctrlerrorc *Cptx
 var _envc *Cptx
-func uidx() string{
-  var _r string
-  _r = strconv.FormatUint(uint64(_uidi), 10)
+func uidx() uint{
   _uidi = _uidi + 1
-  return _r
+  return _uidi
 }
 func dicOrx(_x map[string]*Cptx) map[string]*Cptx{
   if(_x == nil){
@@ -218,9 +216,9 @@ func arrCopyx(_o *[]*Cptx) *[]*Cptx{
     return nil
   }
   _n = &[]*Cptx{}
-  _tmp40764 := _o;
-  for _tmp40771 := uint(0); _tmp40771 < uint(len((*_tmp40764))); _tmp40771 ++ {
-    _e = (*_tmp40764)[_tmp40771]
+  _tmp40718 := _o;
+  for _tmp40725 := uint(0); _tmp40725 < uint(len((*_tmp40718))); _tmp40725 ++ {
+    _e = (*_tmp40718)[_tmp40725]
     (*_n) = append((*_n), _e)
   }
   return _n
@@ -256,9 +254,9 @@ func indx(_s string, _first int) string{
   if(_first == 0){
     _r += __indentx
   }
-  _tmp41646 := _arr;
-  for _i = uint(0); _i < uint(len((*_tmp41646))); _i ++ {
-    _x = (*_tmp41646)[_i]
+  _tmp41600 := _arr;
+  for _i = uint(0); _i < uint(len((*_tmp41600))); _i ++ {
+    _x = (*_tmp41600)[_i]
     if(_i != 0 && _x != ""){
       _r += "\n"
       _r += __indentx
@@ -315,17 +313,17 @@ func _keys(dic map[string]*Cptx)*[]string{
 func appendClassx(_o *Cptx, _c *Cptx) {
   var _k string
   var _v *Cptx
-  _tmp43360 := _Arr_Str_sort(_keys(_c._dic));
-  for _tmp43367 := uint(0); _tmp43367 < uint(len((*_tmp43360))); _tmp43367 ++ {
-    _k = (*_tmp43360)[_tmp43367]
+  _tmp43314 := _Arr_Str_sort(_keys(_c._dic));
+  for _tmp43321 := uint(0); _tmp43321 < uint(len((*_tmp43314))); _tmp43321 ++ {
+    _k = (*_tmp43314)[_tmp43321]
     if(_o._dic[_k] == nil){
       (*_o._arr) = append((*_o._arr), strNewx(_k, nil))
       _o._dic[_k] = _c._dic[_k]
     }
   }
-  _tmp43850 := _c._arr;
-  for _tmp43857 := uint(0); _tmp43857 < uint(len((*_tmp43850))); _tmp43857 ++ {
-    _v = (*_tmp43850)[_tmp43857]
+  _tmp43804 := _c._arr;
+  for _tmp43811 := uint(0); _tmp43811 < uint(len((*_tmp43804))); _tmp43811 ++ {
+    _v = (*_tmp43804)[_tmp43811]
     appendClassx(_o, _v)
   }
 }
@@ -340,10 +338,10 @@ func parentMakex(_o *Cptx, _parentarr *[]*Cptx) {
   var _e *Cptx
   if(_parentarr != nil){
     _ctype = _o._ctype
-    _tmp44471 := _parentarr;
-    for _tmp44478 := uint(0); _tmp44478 < uint(len((*_tmp44471))); _tmp44478 ++ {
-      _e = (*_tmp44471)[_tmp44478]
-      if(_e._id == ""){
+    _tmp44425 := _parentarr;
+    for _tmp44432 := uint(0); _tmp44432 < uint(len((*_tmp44425))); _tmp44432 ++ {
+      _e = (*_tmp44425)[_tmp44432]
+      if(_e._id == 0){
         fmt.Println("no id");debug.PrintStack();os.Exit(1)
       }
       if(_e._ctype > _ctype){
@@ -415,9 +413,9 @@ func valuesx(_o *Cptx) *Cptx{
   var _k *Cptx
   var _v *Cptx
   _arr = &[]*Cptx{}
-  _tmp47297 := _o._arr;
-  for _tmp47304 := uint(0); _tmp47304 < uint(len((*_tmp47297))); _tmp47304 ++ {
-    _k = (*_tmp47297)[_tmp47304]
+  _tmp47250 := _o._arr;
+  for _tmp47257 := uint(0); _tmp47257 < uint(len((*_tmp47250))); _tmp47257 ++ {
+    _k = (*_tmp47250)[_tmp47257]
     _v = _o._dic[_k._str]
     (*_arr) = append((*_arr), _v)
   }
@@ -440,9 +438,9 @@ func prepareArgsx(_args *[]*Cptx, _f *Cptx, _env *Cptx) *[]*Cptx{
   _argsx = &[]*Cptx{}
   if(!inClassx(classx(_f), _functplc, nil)){
     _vartypes = getx(_f, "funcVarTypes")._arr
-    _tmp48158 := _vartypes;
-    for _i = uint(0); _i < uint(len((*_tmp48158))); _i ++ {
-      _argdef = (*_tmp48158)[_i]
+    _tmp48111 := _vartypes;
+    for _i = uint(0); _i < uint(len((*_tmp48111))); _i ++ {
+      _argdef = (*_tmp48111)[_i]
       if(int(_i) < len((*_args))){
         _t = passx(execx((*_args)[_i], _env, 0))
       }else{
@@ -451,9 +449,9 @@ func prepareArgsx(_args *[]*Cptx, _f *Cptx, _env *Cptx) *[]*Cptx{
       (*_argsx) = append((*_argsx), _t)
     }
   }else{
-    _tmp48614 := _args;
-    for _tmp48621 := uint(0); _tmp48621 < uint(len((*_tmp48614))); _tmp48621 ++ {
-      _arg = (*_tmp48614)[_tmp48621]
+    _tmp48567 := _args;
+    for _tmp48574 := uint(0); _tmp48574 < uint(len((*_tmp48567))); _tmp48574 ++ {
+      _arg = (*_tmp48567)[_tmp48574]
       _x = passx(execx(_arg, _env, 0))
       (*_argsx) = append((*_argsx), _x)
     }
@@ -471,9 +469,9 @@ func prepareArgsRefx(_args *[]*Cptx, _f *Cptx, _env *Cptx) *[]*Cptx{
   _argsx = &[]*Cptx{}
   if(!inClassx(classx(_f), _functplc, nil)){
     _vartypes = getx(_f, "funcVarTypes")._arr
-    _tmp49282 := _vartypes;
-    for _i = uint(0); _i < uint(len((*_tmp49282))); _i ++ {
-      _argdef = (*_tmp49282)[_i]
+    _tmp49235 := _vartypes;
+    for _i = uint(0); _i < uint(len((*_tmp49235))); _i ++ {
+      _argdef = (*_tmp49235)[_i]
       if(int(_i) < len((*_args))){
         _t = execx((*_args)[_i], _env, 0)
       }else{
@@ -482,9 +480,9 @@ func prepareArgsRefx(_args *[]*Cptx, _f *Cptx, _env *Cptx) *[]*Cptx{
       (*_argsx) = append((*_argsx), _t)
     }
   }else{
-    _tmp49642 := _args;
-    for _tmp49649 := uint(0); _tmp49649 < uint(len((*_tmp49642))); _tmp49649 ++ {
-      _arg = (*_tmp49642)[_tmp49649]
+    _tmp49595 := _args;
+    for _tmp49602 := uint(0); _tmp49602 < uint(len((*_tmp49595))); _tmp49602 ++ {
+      _arg = (*_tmp49595)[_tmp49602]
       _x = passx(execx(_arg, _env, 0))
       (*_argsx) = append((*_argsx), _x)
     }
@@ -527,7 +525,7 @@ func strNewx(_x string, _c *Cptx) *Cptx{
     _fmid: false,  
     _fprop: false,  
     _fstatic: false,  
-    _id: "",  
+    _id: 0,  
     _int: 0,  
     _name: "",  
   }
@@ -546,7 +544,7 @@ func intNewx(_x int, _c *Cptx) *Cptx{
     _fmid: false,  
     _fprop: false,  
     _fstatic: false,  
-    _id: "",  
+    _id: 0,  
     _name: "",  
     _str: "",  
   }
@@ -700,7 +698,7 @@ func floatNewx(_x float64, _c *Cptx) *Cptx{
     _fmid: false,  
     _fprop: false,  
     _fstatic: false,  
-    _id: "",  
+    _id: 0,  
     _int: 0,  
     _name: "",  
     _str: "",  
@@ -755,9 +753,9 @@ func funcNewx(_val func(*[]*Cptx, *Cptx) *Cptx, _argtypes *[]*Cptx, _return *Cpt
     _return = _emptyc
   }
   _arr = &[]*Cptx{}
-  _tmp56248 := _argtypes;
-  for _tmp56255 := uint(0); _tmp56255 < uint(len((*_tmp56248))); _tmp56255 ++ {
-    _v = (*_tmp56248)[_tmp56255]
+  _tmp56198 := _argtypes;
+  for _tmp56205 := uint(0); _tmp56205 < uint(len((*_tmp56198))); _tmp56205 ++ {
+    _v = (*_tmp56198)[_tmp56205]
     (*_arr) = append((*_arr), defx(_v, nil))
   }
   _fp = fpDefx(_arr, _return)
@@ -833,9 +831,9 @@ func fpDefx(_types *[]*Cptx, _return *Cptx) *Cptx{
   var _v *Cptx
   var _x *Cptx
   _n = "FuncProto"
-  _tmp59219 := _types;
-  for _tmp59226 := uint(0); _tmp59226 < uint(len((*_tmp59219))); _tmp59226 ++ {
-    _v = (*_tmp59219)[_tmp59226]
+  _tmp59169 := _types;
+  for _tmp59176 := uint(0); _tmp59176 < uint(len((*_tmp59169))); _tmp59176 ++ {
+    _v = (*_tmp59169)[_tmp59176]
     _n += "_" + aliasGetx(classx(_v))._name
   }
   _n += "__" + _return._name
@@ -918,9 +916,9 @@ func nsGetx(_ns *Cptx, _key string) *Cptx{
   if(_Path_exists(_f)){
     _fc = _Filex_readAll(_f)
     _arr = _Str_split(_fc, " ")
-    _tmp62477 := _arr;
-    for _tmp62484 := uint(0); _tmp62484 < uint(len((*_tmp62477))); _tmp62484 ++ {
-      _v = (*_tmp62477)[_tmp62484]
+    _tmp62427 := _arr;
+    for _tmp62434 := uint(0); _tmp62434 < uint(len((*_tmp62427))); _tmp62434 ++ {
+      _v = (*_tmp62427)[_tmp62434]
       (*_s._arr) = append((*_s._arr), nsGetx(_ns, _v))
     }
   }
@@ -1008,10 +1006,10 @@ func subClassGetx(_scope *Cptx, _key string, _cache map[string]interface{}) *Cpt
       return _r
     }
   }
-  _tmp65139 := _scope._arr;
-  for _tmp65146 := uint(0); _tmp65146 < uint(len((*_tmp65139))); _tmp65146 ++ {
-    _v = (*_tmp65139)[_tmp65146]
-    _k = _v._id
+  _tmp65089 := _scope._arr;
+  for _tmp65096 := uint(0); _tmp65096 < uint(len((*_tmp65089))); _tmp65096 ++ {
+    _v = (*_tmp65089)[_tmp65096]
+    _k = strconv.FormatUint(uint64(_v._id), 10)
     if(_cache[_k] != nil){
       continue
     }
@@ -1054,9 +1052,9 @@ func subMethodGetx(_scope *Cptx, _v *Cptx, _key string) *Cptx{
   if(_r != nil){
     return _r
   }
-  _tmp66783 := _v._arr;
-  for _tmp66790 := uint(0); _tmp66790 < uint(len((*_tmp66783))); _tmp66790 ++ {
-    _vv = (*_tmp66783)[_tmp66790]
+  _tmp66774 := _v._arr;
+  for _tmp66781 := uint(0); _tmp66781 < uint(len((*_tmp66774))); _tmp66781 ++ {
+    _vv = (*_tmp66774)[_tmp66781]
     _r = subMethodGetx(_scope, _vv, _key)
     if(_r != nil){
       return _r
@@ -1075,9 +1073,9 @@ func methodGetx(_scope *Cptx, _func *Cptx) *Cptx{
   }
   _o = _func._class
   _p = _o._arr
-  _tmp67405 := _p;
-  for _tmp67412 := uint(0); _tmp67412 < uint(len((*_tmp67405))); _tmp67412 ++ {
-    _v = (*_tmp67405)[_tmp67412]
+  _tmp67396 := _p;
+  for _tmp67403 := uint(0); _tmp67403 < uint(len((*_tmp67396))); _tmp67403 ++ {
+    _v = (*_tmp67396)[_tmp67403]
     _r = subMethodGetx(_scope, _v, _func._str)
     if(_r != nil){
       return _r
@@ -1126,6 +1124,7 @@ func classRawx(_t uint) *Cptx{
   return nil
 }
 func inClassx(_c *Cptx, _t *Cptx, _cache map[string]interface{}) bool{
+  var _k string
   var _key string
   var _r int
   var _v *Cptx
@@ -1143,10 +1142,10 @@ func inClassx(_c *Cptx, _t *Cptx, _cache map[string]interface{}) bool{
   if(_t._id == _objc._id && _c._ctype == TOBJ){
     return true
   }
-  if(_c._id != "" && _c._id == _t._id){
+  if(_c._id != 0 && _c._id == _t._id){
     return true
   }
-  _key = _c._id + "_" + _t._id
+  _key = strconv.FormatUint(uint64(_c._id), 10) + "_" + strconv.FormatUint(uint64(_t._id), 10)
   _r = _inClassCache[_key]
   if(_r == 1){
     return true
@@ -1158,13 +1157,14 @@ func inClassx(_c *Cptx, _t *Cptx, _cache map[string]interface{}) bool{
     _cache = map[string]interface{}{
     }
   }
-  _tmp70114 := _c._arr;
-  for _tmp70121 := uint(0); _tmp70121 < uint(len((*_tmp70114))); _tmp70121 ++ {
-    _v = (*_tmp70114)[_tmp70121]
-    if(_cache[_v._id] != nil){
+  _tmp70133 := _c._arr;
+  for _tmp70140 := uint(0); _tmp70140 < uint(len((*_tmp70133))); _tmp70140 ++ {
+    _v = (*_tmp70133)[_tmp70140]
+    _k = strconv.FormatUint(uint64(_v._id), 10)
+    if(_cache[_k] != nil){
       continue
     }
-    _cache[_v._id] = 1
+    _cache[_k] = 1
     if(inClassx(_v, _t, _cache)){
       _inClassCache[_key] = 1
       return true
@@ -1180,9 +1180,9 @@ func parentClassGetx(_o *Cptx, _key string) *Cptx{
   if(_o._arr == nil){
     return nil
   }
-  _tmp70771 := _o._arr;
-  for _tmp70778 := uint(0); _tmp70778 < uint(len((*_tmp70771))); _tmp70778 ++ {
-    _v = (*_tmp70771)[_tmp70778]
+  _tmp70839 := _o._arr;
+  for _tmp70846 := uint(0); _tmp70846 < uint(len((*_tmp70839))); _tmp70846 ++ {
+    _v = (*_tmp70839)[_tmp70846]
     _d = _v._dic
     _r = _d[_key]
     if(_r != nil){
@@ -1250,7 +1250,7 @@ func defx(_class *Cptx, _dic map[string]*Cptx) *Cptx{
           fmt.Println(_k)
           fmt.Println(strx(_v, 0))
           fmt.Println(strx(_pt, 0))
-          fmt.Println(strx(_t, 0))
+          fmt.Println(strx(classx(_t), 0))
           fmt.Println("defx: type error");debug.PrintStack();os.Exit(1)
         }
       }
@@ -1560,15 +1560,15 @@ func arr2strx(_a *[]*Cptx, _i int) string{
   _s = ""
   if(len((*_a)) > 1){
     _s += "\n"
-    _tmp84699 := _a;
-    for _tmp84706 := uint(0); _tmp84706 < uint(len((*_tmp84699))); _tmp84706 ++ {
-      _v = (*_tmp84699)[_tmp84706]
+    _tmp84785 := _a;
+    for _tmp84792 := uint(0); _tmp84792 < uint(len((*_tmp84785))); _tmp84792 ++ {
+      _v = (*_tmp84785)[_tmp84792]
       _s += indx(strx(_v, _i + 1), 0) + "\n"
     }
   }else{
-    _tmp84914 := _a;
-    for _tmp84921 := uint(0); _tmp84921 < uint(len((*_tmp84914))); _tmp84921 ++ {
-      _v = (*_tmp84914)[_tmp84921]
+    _tmp85000 := _a;
+    for _tmp85007 := uint(0); _tmp85007 < uint(len((*_tmp85000))); _tmp85007 ++ {
+      _v = (*_tmp85000)[_tmp85007]
       _s += strx(_v, _i + 1)
     }
   }
@@ -1578,13 +1578,13 @@ func parent2strx(_d *[]*Cptx) string{
   var _s string
   var _v *Cptx
   _s = ""
-  _tmp85250 := _d;
-  for _tmp85257 := uint(0); _tmp85257 < uint(len((*_tmp85250))); _tmp85257 ++ {
-    _v = (*_tmp85250)[_tmp85257]
+  _tmp85336 := _d;
+  for _tmp85343 := uint(0); _tmp85343 < uint(len((*_tmp85336))); _tmp85343 ++ {
+    _v = (*_tmp85336)[_tmp85343]
     if(_v._name != ""){
       _s += _v._name + " "
     }else{
-      _s += "~" + _v._id + " "
+      _s += "~" + strconv.FormatUint(uint64(_v._id), 10) + " "
     }
   }
   return _s
@@ -1592,8 +1592,8 @@ func parent2strx(_d *[]*Cptx) string{
 func strx(_o *Cptx, _i int) string{
   var _s string
   var _t uint
-  if(_i > 3 && _o._id != ""){
-    return "~" + _o._id
+  if(_i > 3 && _o._id > 0){
+    return "~" + strconv.FormatUint(uint64(_o._id), 10)
   }
   _t = _o._type
   if(_t == TCPT){
@@ -1603,12 +1603,12 @@ func strx(_o *Cptx, _i int) string{
     if(_o._name != ""){
       _s += _o._name + " = "
     }else{
-      _s += "~" + _o._id + " = "
+      _s += "~" + strconv.FormatUint(uint64(_o._id), 10) + " = "
     }
     if(_o._obj._name != ""){
       _s += "&" + _o._obj._name
     }else{
-      _s += "&~" + _o._obj._id
+      _s += "&~" + strconv.FormatUint(uint64(_o._obj._id), 10)
     }
     _s += dic2strx(_o._dic, _i)
     return _s
@@ -1617,7 +1617,7 @@ func strx(_o *Cptx, _i int) string{
     if(_o._name != ""){
       _s += _o._name + " = "
     }else{
-      _s += "~" + _o._id + " = "
+      _s += "~" + strconv.FormatUint(uint64(_o._id), 10) + " = "
     }
     _s += "@class " + parent2strx(_o._arr) + " " + dic2strx(_o._dic, _i)
     return _s
@@ -1662,9 +1662,9 @@ func tplCallx(_func *Cptx, _args *[]*Cptx, _env *Cptx) *Cptx{
   _nstate = objNewx(_localx, nil)
   _nstate._fdefault = false
   _nstate._int = 2
-  _tmp88524 := _args;
-  for _i = uint(0); _i < uint(len((*_tmp88524))); _i ++ {
-    _v = (*_tmp88524)[_i]
+  _tmp88680 := _args;
+  for _i = uint(0); _i < uint(len((*_tmp88680))); _i ++ {
+    _v = (*_tmp88680)[_i]
     _nstate._dic[strconv.FormatUint(uint64(_i), 10)] = _v
   }
   _stack = _env._dic["envStack"]._arr
@@ -1706,9 +1706,9 @@ func callx(_func *Cptx, _args *[]*Cptx, _env *Cptx) *Cptx{
     (*_stack) = append((*_stack), _ostate)
     _env._dic["envLocal"] = _nstate
     _vars = _func._dic["funcVars"]._arr
-    _tmp90568 := _args;
-    for _i = uint(0); _i < uint(len((*_tmp90568))); _i ++ {
-      _arg = (*_tmp90568)[_i]
+    _tmp90724 := _args;
+    for _i = uint(0); _i < uint(len((*_tmp90724))); _i ++ {
+      _arg = (*_tmp90724)[_i]
       _nstate._dic[(*_vars)[_i]._str] = _arg
     }
     _r = blockExecx(_block, _env, 0)
@@ -1735,31 +1735,35 @@ func callx(_func *Cptx, _args *[]*Cptx, _env *Cptx) *Cptx{
 }
 func classExecGetx(_c *Cptx, _execsp *Cptx, _cache map[string]interface{}) *Cptx{
   var _exect *Cptx
+  var _k string
+  var _key string
   var _r *Cptx
   var _v *Cptx
-  if(_c._id == ""){
+  if(_c._id == 0){
     fmt.Println(strx(_c, 0))
     fmt.Println("no id");debug.PrintStack();os.Exit(1)
   }
-  _r = _execsp._dic[_c._id]
+  _key = strconv.FormatUint(uint64(_c._id), 10)
+  _r = _execsp._dic[_key]
   if(_r != nil){
     return _r
   }
   if(_c._name != ""){
     _exect = classGetx(_execsp, _c._name)
     if(_exect != nil){
-      _execsp._dic[_c._id] = _exect
+      _execsp._dic[_key] = _exect
       return _exect
     }
   }
   if(_c._arr != nil){
-    _tmp92581 := _c._arr;
-    for _tmp92588 := uint(0); _tmp92588 < uint(len((*_tmp92581))); _tmp92588 ++ {
-      _v = (*_tmp92581)[_tmp92588]
-      if(_cache[_v._id] != nil){
+    _tmp92765 := _c._arr;
+    for _tmp92772 := uint(0); _tmp92772 < uint(len((*_tmp92765))); _tmp92772 ++ {
+      _v = (*_tmp92765)[_tmp92772]
+      _k = strconv.FormatUint(uint64(_v._id), 10)
+      if(_cache[_k] != nil){
         return nil
       }
-      _cache[_v._id] = 1
+      _cache[_k] = 1
       _exect = classExecGetx(_v, _execsp, _cache)
       if(_exect != nil){
         return _exect
@@ -1801,9 +1805,9 @@ func subBlockExecx(_arr *[]*Cptx, _env *Cptx, _stt uint) *Cptx{
   var _i uint
   var _r *Cptx
   var _v *Cptx
-  _tmp94135 := _arr;
-  for _i = uint(0); _i < uint(len((*_tmp94135))); _i ++ {
-    _v = (*_tmp94135)[_i]
+  _tmp94388 := _arr;
+  for _i = uint(0); _i < uint(len((*_tmp94388))); _i ++ {
+    _v = (*_tmp94388)[_i]
     if(_stt != 0 && _stt < _i){
       continue
     }
@@ -1997,9 +2001,9 @@ func subFunc2cptx(_ast []interface{}, _def *Cptx, _local *Cptx, _func *Cptx, _is
     _nlocal._dic["$self"] = _x
   }
   _args = _v[1].([]interface{})
-  _tmp101242 := _args;
-  for _tmp101249 := uint(0); _tmp101249 < uint(len(_tmp101242)); _tmp101249 ++ {
-    _arg = _tmp101242[_tmp101249]
+  _tmp101495 := _args;
+  for _tmp101502 := uint(0); _tmp101502 < uint(len(_tmp101495)); _tmp101502 ++ {
+    _arg = _tmp101495[_tmp101502]
     _argdef = _arg.([]interface{})
     _varid = _argdef[0].(string)
     (*_funcVars) = append((*_funcVars), strNewx(_varid, nil))
@@ -2074,9 +2078,9 @@ func class2cptx(_ast []interface{}, _def *Cptx, _local *Cptx, _func *Cptx, _name
   if(_pre == 1 || _pre == 0){
     _parents = _ast[1].([]interface{})
     _arr = &[]*Cptx{}
-    _tmp104697 := _parents;
-    for _tmp104704 := uint(0); _tmp104704 < uint(len(_tmp104697)); _tmp104704 ++ {
-      _e = _tmp104697[_tmp104704]
+    _tmp104950 := _parents;
+    for _tmp104957 := uint(0); _tmp104957 < uint(len(_tmp104950)); _tmp104957 ++ {
+      _e = _tmp104950[_tmp104957]
       _s = _e.(string)
       _r = classGetx(_def, _s)
       if(_r == nil){
@@ -2176,9 +2180,9 @@ func enum2cptx(_ast []interface{}, _def *Cptx, _local *Cptx, _name string) *Cptx
     "enumDic": dicNewx(_dicuintc, _d, nil),
   })
   _arr = _ast[1].([]interface{})
-  _tmp108844 := _arr;
-  for _i = uint(0); _i < uint(len(_tmp108844)); _i ++ {
-    _v = _tmp108844[_i]
+  _tmp109097 := _arr;
+  for _i = uint(0); _i < uint(len(_tmp109097)); _i ++ {
+    _v = _tmp109097[_i]
     (*_a) = append((*_a), strNewx(_v.(string), nil))
     _ii = intNewx(int(_i), nil)
     _ii._obj = _c
@@ -2286,7 +2290,7 @@ func send2cptx(_ast []interface{}, _def *Cptx, _local *Cptx, _func *Cptx) *Cptx{
     _fwrite = classGetx(_tot, "write")
     if(_fread != nil && _fwrite != nil){
       _tmpid = objNewx(_idlocalc, map[string]*Cptx{
-        "idStr": strNewx("tmp" + uidx(), nil),
+        "idStr": strNewx("tmp" + strconv.FormatUint(uint64(uidx()), 10), nil),
         "idState": _local,
       })
       (*_x._arr) = append((*_x._arr), callNewx(classGetx(_idlocalc, "assign"), &[]*Cptx{_tmpid, callNewx(_fread, &[]*Cptx{_from}, nil)}, _callassignc))
@@ -2775,9 +2779,9 @@ func call2cptx(_ast []interface{}, _def *Cptx, _local *Cptx, _func *Cptx) *Cptx{
   }
   _vt = getx(_f, "funcVarTypes")
   _arrx = &[]*Cptx{}
-  _tmp136419 := _astarr;
-  for _i = uint(0); _i < uint(len(_tmp136419)); _i ++ {
-    _e = _tmp136419[_i]
+  _tmp136686 := _astarr;
+  for _i = uint(0); _i < uint(len(_tmp136686)); _i ++ {
+    _e = _tmp136686[_i]
     _ee = ast2cptx(_e.([]interface{}), _def, _local, _func, "")
     if(_vt != nil){
       _ee = convertx(_ee, classx((*_vt._arr)[_i]))
@@ -2815,9 +2819,9 @@ func preAst2blockx(_ast []interface{}, _def *Cptx, _local *Cptx, _func *Cptx) {
   var _eee []interface{}
   var _i uint
   var _idpre string
-  _tmp138322 := _ast;
-  for _i = uint(0); _i < uint(len(_tmp138322)); _i ++ {
-    _e = _tmp138322[_i]
+  _tmp138589 := _ast;
+  for _i = uint(0); _i < uint(len(_tmp138589)); _i ++ {
+    _e = _tmp138589[_i]
     _ee = _e.([]interface{})
     _eee = _ee[0].([]interface{})
     _idpre = _eee[0].(string)
@@ -2825,9 +2829,9 @@ func preAst2blockx(_ast []interface{}, _def *Cptx, _local *Cptx, _func *Cptx) {
       def2cptx(_eee, _def, _local, _func, 1)
     }
   }
-  _tmp138683 := _ast;
-  for _i = uint(0); _i < uint(len(_tmp138683)); _i ++ {
-    _e = _tmp138683[_i]
+  _tmp138950 := _ast;
+  for _i = uint(0); _i < uint(len(_tmp138950)); _i ++ {
+    _e = _tmp138950[_i]
     _ee = _e.([]interface{})
     _eee = _ee[0].([]interface{})
     _idpre = _eee[0].(string)
@@ -2855,9 +2859,9 @@ func ast2blockx(_ast []interface{}, _def *Cptx, _local *Cptx, _func *Cptx, _bloc
   _dicl = dicNewx(_dicuintc, map[string]*Cptx{
   }, nil)
   _i = 0
-  _tmp139600 := _ast;
-  for _tmp139607 := uint(0); _tmp139607 < uint(len(_tmp139600)); _tmp139607 ++ {
-    _e = _tmp139600[_tmp139607]
+  _tmp139867 := _ast;
+  for _tmp139874 := uint(0); _tmp139874 < uint(len(_tmp139867)); _tmp139874 ++ {
+    _e = _tmp139867[_tmp139874]
     _ee = _e.([]interface{})
     _idpre = _ee[0].([]interface{})[0].(string)
     if(len(_ee) == 2){
@@ -2898,9 +2902,9 @@ func ast2arrx(_asts []interface{}, _def *Cptx, _local *Cptx, _func *Cptx, _it *C
   var _v *Cptx
   _arrx = &[]*Cptx{}
   _callable = false
-  _tmp141597 := _asts;
-  for _tmp141604 := uint(0); _tmp141604 < uint(len(_tmp141597)); _tmp141604 ++ {
-    _e = _tmp141597[_tmp141604]
+  _tmp141864 := _asts;
+  for _tmp141871 := uint(0); _tmp141871 < uint(len(_tmp141864)); _tmp141871 ++ {
+    _e = _tmp141864[_tmp141871]
     _ee = ast2cptx(_e.([]interface{}), _def, _local, _func, "")
     if(_ee._fmid){
       _callable = true
@@ -2911,9 +2915,9 @@ func ast2arrx(_asts []interface{}, _def *Cptx, _local *Cptx, _func *Cptx, _it *C
     (*_arrx) = append((*_arrx), _ee)
   }
   if(!_callable){
-    _tmp142027 := _arrx;
-    for _i = uint(0); _i < uint(len((*_tmp142027))); _i ++ {
-      _v = (*_tmp142027)[_i]
+    _tmp142294 := _arrx;
+    for _i = uint(0); _i < uint(len((*_tmp142294))); _i ++ {
+      _v = (*_tmp142294)[_i]
       (*_arrx)[_i] = preExecx(_v)
     }
   }
@@ -2946,9 +2950,9 @@ func ast2dicx(_asts []interface{}, _def *Cptx, _local *Cptx, _func *Cptx, _it *C
   }
   _arrx = &[]*Cptx{}
   _callable = false
-  _tmp143040 := _asts;
-  for _tmp143047 := uint(0); _tmp143047 < uint(len(_tmp143040)); _tmp143047 ++ {
-    _eo = _tmp143040[_tmp143047]
+  _tmp143307 := _asts;
+  for _tmp143314 := uint(0); _tmp143314 < uint(len(_tmp143307)); _tmp143314 ++ {
+    _eo = _tmp143307[_tmp143314]
     _e = _eo.([]interface{})
     _k = _e[1].(string)
     _ee = ast2cptx(_e[0].([]interface{}), _def, _local, _func, "")
@@ -3167,7 +3171,7 @@ func main(){
   var _main *Cptx
   var _osargs *[]string
   _version = 100
-  _uidi = 0
+  _uidi = 1
   __indentx = " "
   _inClassCache = map[string]int{
   }
@@ -3508,9 +3512,9 @@ func main(){
     if(__osArgs == nil){
       _x = &[]*Cptx{}
       _aa = &os.Args
-      _tmp153285 := _aa;
-      for _i = uint(0); _i < uint(len((*_tmp153285))); _i ++ {
-        _v = (*_tmp153285)[_i]
+      _tmp153552 := _aa;
+      for _i = uint(0); _i < uint(len((*_tmp153552))); _i ++ {
+        _v = (*_tmp153552)[_i]
         if(_i == 0){
           continue
         }
@@ -3553,7 +3557,7 @@ func main(){
   funcDefx(_defmain, "getId", func(_x *[]*Cptx, _env *Cptx) *Cptx{
     var _o *Cptx
     _o = (*_x)[0]
-    return strNewx(_o._id, nil)
+    return strNewx(strconv.FormatUint(uint64(_o._id), 10), nil)
   }, &[]*Cptx{_cptc}, _strc)
   funcDefx(_defmain, "getNote", func(_x *[]*Cptx, _env *Cptx) *Cptx{
     var _o *Cptx
@@ -3707,7 +3711,7 @@ func main(){
     return boolNewx(_l._type == TDIC)
   }, &[]*Cptx{_cptc}, _boolc)
   funcDefx(_defmain, "uid", func(_x *[]*Cptx, _env *Cptx) *Cptx{
-    return strNewx(uidx(), nil)
+    return strNewx(strconv.FormatUint(uint64(uidx()), 10), nil)
   }, nil, _strc)
   funcDefx(_defmain, "log", func(_x *[]*Cptx, _env *Cptx) *Cptx{
     var _o *Cptx
@@ -3907,9 +3911,9 @@ func main(){
     var _o *Cptx
     _o = (*_x)[0]
     _arrx = &[]*Cptx{}
-    _tmp173861 := _Arr_Str_sort(_keys(_o._dic));
-    for _tmp173868 := uint(0); _tmp173868 < uint(len((*_tmp173861))); _tmp173868 ++ {
-      _k = (*_tmp173861)[_tmp173868]
+    _tmp174156 := _Arr_Str_sort(_keys(_o._dic));
+    for _tmp174163 := uint(0); _tmp174163 < uint(len((*_tmp174156))); _tmp174163 ++ {
+      _k = (*_tmp174156)[_tmp174163]
       (*_arrx) = append((*_arrx), strNewx(_k, nil))
     }
     return dicNewx(_dicc, _o._dic, _arrx)
@@ -3920,9 +3924,9 @@ func main(){
     var _o *Cptx
     _o = (*_x)[0]
     _arrx = &[]*Cptx{}
-    _tmp174408 := _Arr_Str_sort(_keys(_o._dic));
-    for _tmp174415 := uint(0); _tmp174415 < uint(len((*_tmp174408))); _tmp174415 ++ {
-      _k = (*_tmp174408)[_tmp174415]
+    _tmp174703 := _Arr_Str_sort(_keys(_o._dic));
+    for _tmp174710 := uint(0); _tmp174710 < uint(len((*_tmp174703))); _tmp174710 ++ {
+      _k = (*_tmp174703)[_tmp174710]
       (*_arrx) = append((*_arrx), strNewx(_k, nil))
     }
     return dicNewx(_dicc, _o._dic, _arrx)
@@ -3952,9 +3956,9 @@ func main(){
     _sep = (*_x)[1]
     _xx = _Str_split(_o._str, _sep._str)
     _y = &[]*Cptx{}
-    _tmp176002 := _xx;
-    for _tmp176009 := uint(0); _tmp176009 < uint(len((*_tmp176002))); _tmp176009 ++ {
-      _v = (*_tmp176002)[_tmp176009]
+    _tmp176297 := _xx;
+    for _tmp176304 := uint(0); _tmp176304 < uint(len((*_tmp176297))); _tmp176304 ++ {
+      _v = (*_tmp176297)[_tmp176304]
       (*_y) = append((*_y), strNewx(_v, nil))
     }
     return arrNewx(_arrstrc, _y)
@@ -4111,9 +4115,9 @@ func main(){
     _o = (*_x)[0]
     _sep = (*_x)[1]
     _s = ""
-    _tmp183713 := _o._arr;
-    for _i = uint(0); _i < uint(len((*_tmp183713))); _i ++ {
-      _v = (*_tmp183713)[_i]
+    _tmp184008 := _o._arr;
+    for _i = uint(0); _i < uint(len((*_tmp184008))); _i ++ {
+      _v = (*_tmp184008)[_i]
       if(_i != 0){
         _s += _sep._str
       }
@@ -4485,9 +4489,9 @@ func main(){
         _it = _cptv
       }
       _a = &[]*Cptx{}
-      _tmp201989 := _o._arr;
-      for _i = uint(0); _i < uint(len((*_tmp201989))); _i ++ {
-        _v = (*_tmp201989)[_i]
+      _tmp202284 := _o._arr;
+      for _i = uint(0); _i < uint(len((*_tmp202284))); _i ++ {
+        _v = (*_tmp202284)[_i]
         (*_a) = append((*_a), execx(_v, _env, 0))
       }
       _c = itemDefx(_arrc, classx(_it), false)
@@ -4575,9 +4579,9 @@ func main(){
     _val = (*_args)[1]._str
     _local = _env._dic["envLocal"]._dic
     if(_da._type == TDIC){
-      _tmp205813 := _da._arr;
-      for _tmp205820 := uint(0); _tmp205820 < uint(len((*_tmp205813))); _tmp205820 ++ {
-        _kc = (*_tmp205813)[_tmp205820]
+      _tmp206108 := _da._arr;
+      for _tmp206115 := uint(0); _tmp206115 < uint(len((*_tmp206108))); _tmp206115 ++ {
+        _kc = (*_tmp206108)[_tmp206115]
         _k = _kc._str
         _v = _da._dic[_k]
         if(_key != ""){
@@ -4598,9 +4602,9 @@ func main(){
         }
       }
     }else if(_da._type == TARR){
-      _tmp206691 := _da._arr;
-      for _i = uint(0); _i < uint(len((*_tmp206691))); _i ++ {
-        _v = (*_tmp206691)[_i]
+      _tmp206986 := _da._arr;
+      for _i = uint(0); _i < uint(len((*_tmp206986))); _i ++ {
+        _v = (*_tmp206986)[_i]
         if(_key != ""){
           _local[_key] = intNewx(int(_i), _uintc)
         }
