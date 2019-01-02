@@ -152,10 +152,6 @@ funcDefx(defmain, "isClass", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return boolNewx(l.type == T##CLASS)
 }, [cptc], boolc)
-funcDefx(defmain, "isNull", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- @return boolNewx(l.type == T##NULL)
-}, [cptc], boolc)
 funcDefx(defmain, "isInt", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return boolNewx(l.type == T##INT)
@@ -926,7 +922,8 @@ execDefx("CtrlEach", ->(x Arrx, env Cptx)Cptx{
     @return r    
    }
   }
- }@elif(da.type == T##NULL){
+ //TODO str...
+ }@elif(da.id == nullv.id){
   @return nullv
  }@else{
   log(strx(da))

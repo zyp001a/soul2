@@ -1,4 +1,4 @@
-T := @enum CPT OBJ CLASS TOBJ NULL \
+T := @enum CPT OBJ CLASS TOBJ \
  INT FLOAT NUMBIG STR DIC ARR \
  NATIVE CALL ID FUNC BLOCK \
  IF FOR SIGNAL
@@ -23,6 +23,8 @@ Cptx => {
  class: Cptx 
 
  obj: Cptx
+ pred: Cptx //cache type pred
+ 
  dic: Dicx
  arr: Arrx
  str: Str
@@ -56,13 +58,32 @@ cptc := classNewx();
 routex(cptc, defmain, "Cpt");
 cptc.ctype = T##CPT
 cptc.fdefault = @true
-
 cptv := &Cptx{
  type: T##CPT
  fdefault: @true
  fstatic: @true
  id: uidx()
 }
+emptyc := classDefx(defmain, "Empty")//return empty mean no return
+emptyv := objNewx(emptyc)
+emptyv.fstatic = @true
+unknownc := classDefx(defmain, "Unknown")//return empty mean no return
+unknownv := objNewx(unknownc)
+unknownv.fstatic = @true
+nullc := classDefx(defmain, "Null")
+nullv := objNewx(nullc)
+nullv.fstatic = @true
+//cpt: all (anything, everything)
+//empty: no (no return, not exist
+//unknown: unknown(js-undefined)
+//null: null(obj not init)
+//val: pass by val
+//items: set, collection of same type
+//mid: runtime obj
+//call, func, block, arrcall: for exec
+
+
+
 
 objc := classNewx();
 routex(objc, defmain, "Obj");
@@ -82,14 +103,6 @@ midc := classDefx(defmain, "Mid")
 
 //init val
 valc := classDefx(defmain, "Val")
-nullv := &Cptx{
- type: T##NULL
- fdefault: @true
- fstatic: @true 
- id: uidx()
-}
-nullc := classDefx(defmain, "Null")
-nullc.ctype = T##NULL
 numc := classDefx(defmain, "Num", [valc])
 
 intc := bnumDefx("Int", numc)
@@ -184,9 +197,6 @@ filexc := classDefx(defmain, "Filex", [pathxc])
 dirxc := classDefx(defmain, "Dirx", [pathxc])
 
 //init call
-emptyc := classDefx(defmain, "Empty")//return empty mean no return
-emptyv := objNewx(emptyc)
-emptyv.fstatic = @true
 
 funcc := classDefx(defmain, "Func")
 funcprotoc := classDefx(defmain, "FuncProto", [funcc], {

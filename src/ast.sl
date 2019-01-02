@@ -756,14 +756,14 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  @if(lpredt == _){
   lpredt = typepredx(lefto)
  }
- 
+/*
  @if(predt != _ && lpredt != _){ //for exp: Uint#a = 1
   #cvt = convertx(predt, lpredt, righto)
   @if(cvt != _){
    righto = cvt
   }
  }
-
+*/
  #f = getx(lefto, "assign")
  @return callNewx(f, [lefto, righto], callassignc)
 }

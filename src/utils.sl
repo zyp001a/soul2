@@ -89,7 +89,7 @@ ifcheckx ->(r Cptx)Bool{
  @if(r.type == T##INT){
   @return r.int != 0
  }
- @return r.type != T##NULL
+ @return r.id != nullv.id
 }
 parentMakex ->(o Cptx, parentarr Arrx){
  @if parentarr != _ {
@@ -617,8 +617,6 @@ classRawx ->(t T)Cptx{
   @return objc
  }@elif(t == T##CLASS){
   @return classc
- }@elif(t == T##NULL){
-  @return nullc
  }@elif(t == T##INT){
   @return intc
  }@elif(t == T##FLOAT){
@@ -729,6 +727,9 @@ defx ->(class Cptx, dic Dicx)Cptx{
  @if(class.ctype == T##CPT){
   @return cptv
  }@elif(class.ctype == T##OBJ){
+  @if(class.obj != _ && class.obj.fstatic){
+   @return class.obj
+  }
   @if(dic != _){
    @each k v dic{
     Cptx#t = classGetx(class, k)
@@ -767,8 +768,6 @@ defx ->(class Cptx, dic Dicx)Cptx{
   @return r
  }@elif(class.ctype == T##CLASS){
   @return cptc
- }@elif(class.ctype == T##NULL){
-  @return nullv
  }@elif(class.ctype == T##INT){
   Cptx#x = intNewx(0)
   @if(class.name != "Int"){
@@ -809,10 +808,7 @@ defx ->(class Cptx, dic Dicx)Cptx{
 }
 
 copyx ->(o Cptx)Cptx{
- @if(o.type == T##CPT){
-  @return o
- }
- @if(o.type == T##NULL){
+ @if(o.fstatic){
   @return o
  }
  @if(o.type == T##CLASS){
@@ -834,6 +830,7 @@ copyx ->(o Cptx)Cptx{
   class: o.class
   
   obj: o.obj
+  pred: o.pred
   
   dic: dicCopyx(o.dic)
   arr: arrCopyx(o.arr)
@@ -851,8 +848,6 @@ eqx ->(l Cptx, r Cptx)Bool{
  #t = l.type
  @if(t == T##CPT){
   @return @true
- }@elif(t == T##NULL){
-  @return @true  
  }@elif(t == T##OBJ){
   @return l.id == r.id  
  }@elif(t == T##CLASS){
@@ -920,6 +915,13 @@ setx ->(o Cptx, key Str, val Cptx)Cptx{
 }
 
 typepredx ->(o Cptx)Cptx{
+ #x = subTypepredx(o)
+ @if(x == _){
+  @return _
+ }
+ @return x
+}
+subTypepredx ->(o Cptx)Cptx{
  #t = o.type
  @if(t == T##CALL){
   Cptx#f = o.class
@@ -1095,8 +1097,6 @@ strx ->(o Cptx, i Int)Str{
   }
   s+="@class "+ parent2strx(o.arr)+" "+dic2strx(o.dic, i)  
   @return s
- }@elif(t == T##NULL){
-  @return "_"
  }@elif(t == T##INT){
   @return Str(o.int)
  }@elif(t == T##FLOAT){
