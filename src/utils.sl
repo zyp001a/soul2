@@ -322,9 +322,10 @@ scopeObjNewx ->(class Cptx)Cptx{
  }
  @return objNewx(class)
 }
-floatNewx ->(x Float)Cptx{
+floatNewx ->(x Float, c Cptx)Cptx{
  @return &Cptx{
   type: T##FLOAT
+  obj: c
   val: x
  }
 }
@@ -1291,4 +1292,31 @@ execx ->(o Cptx, env Cptx, flag Int)Cptx{
 
 tobj2objx ->(to Cptx)Cptx{
  @return objNewx(to.obj)
+}
+
+
+
+convertx ->(from Cptx, to Cptx, val Cptx)Cptx{
+ @if(to.id == from.id){
+  @return _
+ }
+ @if(from.id == cptc.id){
+  @return callNewx(defmain.dic["as"], [val, to])
+ }
+ @if(inClassx(classx(val), midc)){
+  @if(from.fbnum && to.fbnum){
+   @return callNewx(defmain.dic["numConvert"], [val, to])
+  }
+  @return _
+ }
+ @if(to.ctype != from.ctype){
+  @return _
+ } 
+// @if(inClassx(to, from)){//specify eg. Arr to ArrStatic
+    //convert val
+ val.obj = to
+ to.obj = val
+ @return val
+// }
+// @return _
 }

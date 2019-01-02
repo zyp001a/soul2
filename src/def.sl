@@ -82,13 +82,25 @@ funcDefx(defmain, "type", ->(x Arrx, env Cptx)Cptx{//Cpt to any
 },[cptc], cptc)
 funcDefx(defmain, "numConvert", ->(x Arrx, env Cptx)Cptx{//int/ convertion
  Cptx#o = x[0]
- Cptx#c = x[0]
- @if(o.type != c.ctype){//int to int
+ Cptx#c = x[1]
+ @if((o.type != T##INT && o.type != T##FLOAT) || (c.ctype != T##INT && c.ctype != T##FLOAT)){//int float
+  log(strx(o))
+  log(strx(c))  
   die("numConvert between float int big")
  }
- o.obj = c
- @return o
-},[cptc, cptc], cptc)
+ @if(o.type == c.ctype){
+  o.obj = c
+  @return o
+ }
+
+ @if(o.type == T##INT){
+  @return floatNewx(Float(o.int), c)
+ }
+ @if(o.type == T##FLOAT){
+  @return intNewx(Int(Float(o.val)), c)
+ }
+ @return nullv
+},[cptc, classc], cptc)
 funcDefx(defmain, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]

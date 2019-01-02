@@ -336,7 +336,10 @@ var grammar = {
 		],
 		ItemsGet: [
 			["Expr [ Expr ]", "$$ = ['itemsget', $1, $3]"],
-			["Router [ Expr ]", "$$ = ['itemsget', $1, $3]"],						
+			["Router [ Expr ]", "$$ = ['itemsget', $1, $3]"],
+			["Expr [ Expr : Expr ]", "$$ = ['itemsrange', $1, $3, $5]"],
+			["Expr [ : Expr ]", "$$ = ['itemsrange', $1, , $4]"],
+			["Expr [ Expr : ]", "$$ = ['itemsrange', $1, $3, ,]"],									
 		],
 		Getkey: [
 			["ID", "$$ = ['str', $1]"],
@@ -460,6 +463,8 @@ var grammar = {
 		SEND: [
 			["Expr >> Mid", "$$ = [$1, $3]"],
 			["SEND >> Mid", "$$.push($3)"],
+			["Expr +>> Mid", "$$ = [['reply', $1], $3]"],
+			["SEND +>> Mid", "$$ = $1; $1[$1.length()-1] = ['reply', $1[$1.length()-1]]; $1.push($3)"],
 		]
   }
 };

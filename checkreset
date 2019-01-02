@@ -1,4 +1,4 @@
 #!/bin/bash
 rm db/exec/*/*cache -f
-mkdir soul.cache
+mkdir -p soul.cache
 time go run seed.go main.sl golang

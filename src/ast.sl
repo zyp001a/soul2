@@ -682,30 +682,6 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
  }
  @return r
 }
-convertx ->(from Cptx, to Cptx, val Cptx)Cptx{
- @if(to.id == from.id){
-  @return _
- }
- @if(from.id == cptc.id){
-  @return callNewx(defmain.dic["as"], [val, to])
- }
- @if(to.ctype != from.ctype){
-  @return _ 
- }
- @if(inClassx(classx(val), midc)){
-  @if(to.fbnum){
-   @return callNewx(defmain.dic["numConvert"], [val, to])
-  } 
-  @return _
- }
-// @if(inClassx(to, from)){//specify eg. Arr to ArrStatic
-    //convert val
- val.obj = to
- to.obj = val
- @return val
-// }
-// @return _
-}
 assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #v = Astx(ast[1])
  #left = Astx(v[0])
@@ -760,7 +736,6 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   Cptx#lefto = ast2cptx(left, def, local, func)
  }
 
-
  @if(inClassx(classx(lefto), idstatec)){ //#a = 1  set a type Int
   Cptx#s = lefto.dic["idState"]
   Str#idstr = lefto.dic["idStr"].str
@@ -778,13 +753,16 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    }
   }
  }
-
-// @if(predt != _ && lpredt != _){ //for exp: Uint#a = 1
-//  #cvt = convertx(predt, lpredt, righto)
-//  @if(cvt != _){
-//   righto = cvt
-//  }
-// }
+ @if(lpredt == _){
+  lpredt = typepredx(lefto)
+ }
+ 
+ @if(predt != _ && lpredt != _){ //for exp: Uint#a = 1
+  #cvt = convertx(predt, lpredt, righto)
+  @if(cvt != _){
+   righto = cvt
+  }
+ }
 
  #f = getx(lefto, "assign")
  @return callNewx(f, [lefto, righto], callassignc)
