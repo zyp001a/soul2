@@ -298,6 +298,7 @@ arrcallc := itemsDefx(arrc, callc)
 
 callpassrefc := curryDefx(defmain, "CallPassRef", callc)
 
+
 callrawc := curryDefx(defmain, "CallRaw", callc)
 calltypec := curryDefx(defmain, "CallType", callrawc)
 callassignc := curryDefx(defmain, "CallAssign", callrawc)
@@ -308,6 +309,8 @@ sendc := curryDefx(defmain, "Send", arrcallc)
 
 //init id
 idc := classDefx(defmain, "Id")
+
+callidc := classDefx(defmain, "CallId", [callc, idc])
 idstrc :=  classDefx(defmain, "IdStr", [idc], {
  idStr: strc,
 })

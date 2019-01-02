@@ -398,7 +398,7 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
    log(strx(itemstc))
    die("no getf")
   }
-  @return callNewx(getf, [items, key])
+  @return callNewx(getf, [items, key], callidc)
  }
  #setf = getx(itemstc, "set")
   //TODO check/convert v type
@@ -460,9 +460,9 @@ objget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  Cptx#obj = ast2cptx(Astx(ast[1]), def, local, func)
  @if(obj.type == T##OBJ || obj.type == T##CALL){
   @if(v == _){
-   @return callNewx(defmain.dic["get"], [obj, strNewx(Str(ast[2]))])
+   @return callNewx(defmain.dic["get"], [obj, strNewx(Str(ast[2]))], callidc)
   }@else{
-   @return callNewx(defmain.dic["set"], [obj, strNewx(Str(ast[2])), v])
+   @return callNewx(defmain.dic["set"], [obj, strNewx(Str(ast[2])), v], callidc)
   }
  }@else{
  //TODO objget for other type

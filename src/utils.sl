@@ -346,6 +346,7 @@ callNewx ->(func Cptx, args Arrx, obj Cptx)Cptx{
   arr: arrOrx(args)
  }
 }
+
 funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  @if(return == _){
   return = emptyc

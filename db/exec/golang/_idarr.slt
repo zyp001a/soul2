@@ -7,12 +7,7 @@
 }
 @if(inClass(t, StaticArr) || inClass(t, JsonArr)){
 }@else{
- @if(inClass(class(#0), Call)){
-//  @if(getName(Call(#0).func()) != "keys"){
-  @if(getName(callFunc(#0)) != "keys"){  
-   res = "(*"+res+")"
-  }
- }@else{
-  res = "(*"+res+")"   
+ @if(inClass(class(#0), Id)){
+  res = "(*"+res+")" 
  }
 }~~=res~
