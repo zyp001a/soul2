@@ -802,7 +802,7 @@ execDefx("Dic", ->(x Arrx, env Cptx)Cptx{
   @each k v o.dic{
    d[k] = execx(v, env)
   }
-  #c = itemDefx(dicc, classx(it))
+  #c = itemsDefx(dicc, classx(it))
   @return dicNewx(c, d, arrCopyx(o.arr))
  }
  @return o
@@ -818,7 +818,7 @@ execDefx("Arr", ->(x Arrx, env Cptx)Cptx{
   @each i v o.arr{
    a.push(execx(v, env))
   }
-  #c = itemDefx(arrc, classx(it))
+  #c = itemsDefx(arrc, classx(it))
   @return arrNewx(c, a)
  }
  @return o

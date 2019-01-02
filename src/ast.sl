@@ -420,10 +420,7 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
   #it = getx(itemst, "itemsType")
   @if(predt.id != unknownc.id && predt.id != cptc.id){ 
    @if(it.id == cptv.id){
-//    @if(itemstt.name != "Dic" && itemstt.name != "Arr"){
- //    die("error, itemsType defined but name not changed "+itemst.obj.name)
-  //  }
-    itemst.obj = itemDefx(itemstt, predt)
+    itemst.obj = itemsDefx(itemstt, predt)
     itemst.pred = itemst.obj
     @if(itemst.val != _){
      //cached init right expr a = {}/[]
@@ -605,7 +602,7 @@ itemdef2cptx ->(ast Astx, def Cptx, name Str)Cptx{
  @if(it == _){
   die("itemdef error, itemsType "+Str(ast[2]));
  }
- @return aliasDefx(def, name, itemDefx(x, it))
+ @return aliasDefx(def, name, itemsDefx(x, it))
 }
 funcproto2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  #x = subFunc2cptx(ast, def, local, func, 1)  
@@ -883,7 +880,7 @@ ast2arrx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
  }
  
  @if((it != _ && it.id != unknownc.id) || callable){
-  #c = itemDefx(arrc, it, callable)
+  #c = itemsDefx(arrc, it, callable)
   #r = arrNewx(c, arrx)
   @if(callable){
    r.fmid = @true
@@ -921,7 +918,7 @@ ast2dicx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
  }
  
  @if((it != _ && it.id != unknownc.id) || callable){
-  #c = itemDefx(dicc, it, callable)
+  #c = itemsDefx(dicc, it, callable)
   #r = dicNewx(c, dicx, arrx)
   @if(callable){
    r.fmid = @true

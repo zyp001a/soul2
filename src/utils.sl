@@ -134,7 +134,7 @@ nullOrx ->(x Cptx)Cptx{
 aliasGetx ->(c Cptx)Cptx{
  @if(c.arr == _){
   log(strx(c))
-  die("wrong cpt")
+  die("alias wrong cpt")
  }
  @if(c.arr.len() > 1){
   @if(c.arr[0].id == aliasc.id){  
@@ -171,7 +171,7 @@ valuesx ->(o Cptx)Cptx{
  @if(it == _){
   #c = arrc
  }@else{
-  #c = itemDefx(arrc, classx(it))
+  #c = itemsDefx(arrc, classx(it))
  }
  @return arrNewx(c, arr) 
 }
@@ -391,8 +391,30 @@ bnumDefx ->(name Str, class Cptx)Cptx{
  x.fbnum = @true
  @return x
 }
-
-itemDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
+itemsChangeBasicx ->(v Cptx, nb Cptx)Cptx{
+ @if(v.fmid){
+  die("cannot change basic for mid")
+ }
+ @if(v.type != nb.ctype){
+  die("cannot change between ARR DIC JSON")
+ }
+ #ob = itemsGetBasicx(classx(v))
+ v.obj = itemsDefx(ob, classx(getx(v, "itemsType")))
+ @return v
+}
+itemsGetBasicx ->(c Cptx)Cptx{
+ @if(c.fbitems){
+  @return c
+ }
+ @each _ v c.arr{
+  #r = itemsGetBasicx(v)
+  @if(r){
+   @return r
+  }
+ }
+ @return _;
+}
+itemsDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
  @if(!class.fbitems){
   die("item def first arg error")
  }
@@ -406,7 +428,6 @@ itemDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
   @if(r == _){
    #r = classDefx(defmain, n, [class], {itemsType: type})  
   }
-
  }@else{
   r = class
  }
@@ -1329,7 +1350,7 @@ convertx ->(val Cptx, to Cptx)Cptx{
   @return callNewx(defmain.dic["as"], [val, to])
  }
  @if(from.fbnum && to.fbnum){
-  @if(inClassx(classx(val), midc)){
+  @if(val.fmid){
    @return callNewx(defmain.dic["numConvert"], [val, to])
   }
   val.obj = to
@@ -1342,12 +1363,16 @@ convertx ->(val Cptx, to Cptx)Cptx{
   @return val
  } 
  @if(to.ctype == from.ctype){
-  @if(inClassx(to, from)){//specify eg. Arr to ArrStatic
-   @if(!inClassx(classx(val), midc)){
+  @if(!val.fmid){ 
+   @if(inClassx(to, from)){//specify eg. Arr to ArrStatic
     val.obj = to
     val.pred = to    
     to.obj = val
     @return val  
+   }@elif(val.type == T##ARR || val.type == T##DIC){
+    @if(to.fbitems){
+     @return itemsChangeBasicx(val, to)
+    }
    }
   }
  }

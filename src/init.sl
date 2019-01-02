@@ -1,5 +1,6 @@
 T := @enum CPT OBJ CLASS TOBJ \
- INT FLOAT NUMBIG STR DIC ARR \
+ INT FLOAT NUMBIG STR \
+ ARR DIC JSON \
  NATIVE CALL ID FUNC BLOCK \
  IF FOR SIGNAL
 Funcx ->(Arrx, Cptx)Cptx
@@ -99,7 +100,7 @@ tobjc.ctype = T##TOBJ
 
 
 midc := classDefx(defmain, "Mid")
-//midc must defined before itemDefx
+//midc must defined before itemsDefx
 
 //init val
 valc := classDefx(defmain, "Val")
@@ -166,17 +167,17 @@ dicc.ctype = T##DIC
 dicc.fbitems = @true
 
 /////8 advanced type init: string, enum, unlimited number...
-bytesc := itemDefx(arrc, bytec)
+bytesc := itemsDefx(arrc, bytec)
 bytesc.ctype = T##STR
 bytesc.arr.push(valc)
 strc := curryDefx(defmain, "Str", bytesc)
 
 
-arrstrc := itemDefx(arrc, strc)
-dicstrc := itemDefx(dicc, strc)
-dicuintc := itemDefx(dicc, uintc)
-dicclassc := itemDefx(dicc, classc)
-arrclassc := itemDefx(arrc, classc)
+arrstrc := itemsDefx(arrc, strc)
+dicstrc := itemsDefx(dicc, strc)
+dicuintc := itemsDefx(dicc, uintc)
+dicclassc := itemsDefx(dicc, classc)
+arrclassc := itemsDefx(arrc, classc)
 
 
 //init misc type
@@ -293,7 +294,7 @@ fsv := defx(fsc)
 callc := classDefx(defmain, "Call", [midc])
 callc.ctype = T##CALL
 
-arrcallc := itemDefx(arrc, callc)
+arrcallc := itemsDefx(arrc, callc)
 
 callpassrefc := curryDefx(defmain, "CallPassRef", callc)
 
