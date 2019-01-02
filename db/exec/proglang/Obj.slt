@@ -3,7 +3,7 @@ Obj#o = #0;
 #n = getName(o);
 
 #r = get(getExec(), getName(class(o)))
-@if(r){
+@if(r != _){
  #res = call(r, [#0])
 }@else{
  #res = ^new class(o), Dic(o)^

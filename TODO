@@ -1,10 +1,10 @@
 # soul def
-StaticArr([1])
+
 stream handler
 functpl to real func not macro
 method
+grammar! method, scope grammar, typepredx
 tobj
-soul method grammar, scope grammar, typepredx
 substr
 make CallId
 soul convert func call gen
@@ -14,8 +14,10 @@ setx
 auto gen soul "def" func to go func
 pointer, addr
 check fdefault
+verbose
 speed up //ID FUNC BLOCK... !fast enough now
-plugin
+plugin ==
+
 # soul exec 
 
 # soul cmd 

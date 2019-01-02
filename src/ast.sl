@@ -244,12 +244,12 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   #to = ast2cptx(Astx(arr[i+1]), def, local, func)
   #fromt = typepredx(from)
   #tot = typepredx(to)
-  @if(fromt.id != unknownc.id){
+  @if(fromt.id == unknownc.id){
    log(arr)
    log(i)   
    die("send from type not defined")
   }
-  @if(tot.id != unknownc.id){
+  @if(tot.id == unknownc.id){
    log(arr)
    log(i)
    die("send to type not defined")
