@@ -906,7 +906,7 @@ execDefx("CtrlEach", ->(x Arrx, env Cptx)Cptx{
  }@elif(da.type == T##ARR){
   @each i v da.arr{
    @if(key != ""){
-    local[key] = uintNewx(Int(i))
+    local[key] = intNewx(Int(i), uintc)
    }
    @if(val != ""){
     local[val] = v   

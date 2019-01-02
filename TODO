@@ -1,4 +1,6 @@
 # soul def
+float to Str
+StaticArr([1])
 stream handler
 functpl to real func not macro
 method
@@ -12,7 +14,6 @@ setx
 //isdef flag
 auto gen soul "def" func to go func
 pointer, addr
-func type check
 check fdefault
 speed up //ID FUNC BLOCK... !fast enough now
 plugin

@@ -12,9 +12,9 @@ Arr#a = #0.ctrlArgs
   #colon = ":"
  }
  ~~=tmp~ := ~=exec(a[2])~;
-for ~=a0~ ~=colon~= uint(0); ~=a0~ < uint(len(~=^_idarr pp,tmp^~)); ~=a0~ ++ {~
+for ~=a0~ ~=colon~= uint(0); ~=a0~ < uint(len(~=^_idarr a[2],tmp^~)); ~=a0~ ++ {~
  @if(a[1] != ""){~
-~=ind(a1)~ = ~=^_idarr pp, tmp^~[~=a0~]~
+~=ind(a1)~ = ~=^_idarr a[2], tmp^~[~=a0~]~
  }~
 ~:ind(^_Block_genContent a[3]^)~
 }~

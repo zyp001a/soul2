@@ -330,6 +330,7 @@ opc := classDefx(defmain, "Op", [funcc], {
 })
 op1c := classDefx(defmain, "Op1", [opc])
 op2c := classDefx(defmain, "Op2", [opc])
+opcmpc := classDefx(defmain, "OpCmp", [op2c])
 //https://en.cppreference.com/w/c/language/operator_precedence
 //remove unused
 opgetc := curryDefx(defmain, "OpGet", op2c, {
@@ -354,22 +355,22 @@ opaddc := curryDefx(defmain, "OpAdd", op2c, {
 opsubtractc := curryDefx(defmain, "OpSubtract", op2c, {
  opPrecedence: intNewx(30)
 })
-opgec := curryDefx(defmain, "OpGe", op2c, {
+opgec := curryDefx(defmain, "OpGe", opcmpc, {
  opPrecedence: intNewx(40)
 })
-oplec := curryDefx(defmain, "OpLe", op2c, {
+oplec := curryDefx(defmain, "OpLe", opcmpc, {
  opPrecedence: intNewx(40)
 })
-opgtc := curryDefx(defmain, "OpGt", op2c, {
+opgtc := curryDefx(defmain, "OpGt", opcmpc, {
  opPrecedence: intNewx(40)
 })
-opltc := curryDefx(defmain, "OpLt", op2c, {
+opltc := curryDefx(defmain, "OpLt", opcmpc, {
  opPrecedence: intNewx(40)
 })
-opeqc := curryDefx(defmain, "OpEq", op2c, {
+opeqc := curryDefx(defmain, "OpEq", opcmpc, {
  opPrecedence: intNewx(50)
 })
-opnec := curryDefx(defmain, "OpNe", op2c, {
+opnec := curryDefx(defmain, "OpNe", opcmpc, {
  opPrecedence: intNewx(50)
 })
 opandc := curryDefx(defmain, "OpAnd", op2c, {

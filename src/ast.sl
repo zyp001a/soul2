@@ -69,7 +69,7 @@ subFunc2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, isproto Int)Cptx{
   funcVarTypes.push(x)
   nlocal.dic["$self"] = x
  }
- #args = Astx(v[1])
+ #args = JsonArr(v[1])
  @each _ arg args{
   #argdef = Astx(arg)
   #varid = Str(argdef[0])
@@ -229,7 +229,7 @@ enum2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
  @each i v arr{
   a.push(strNewx(Str(v)))
   #ii = intNewx(Int(i))
-  ii.obj = c;
+  ii.obj = c;  
   c.obj = ii
   d[Str(v)] = ii
  }
@@ -369,17 +369,15 @@ op2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   die("Op not find "+op)
  }
  @if(args.len() == 1){
-  //TODO not
   @if(op == "not"){
    @if(!inClassx(t0, boolc)){
     @return callNewx(getx(t0, "eq"), [arg0, defaultx(t0)])
    }
   }
-  
   @return callNewx(f, [arg0])
  }@else{
   Cptx#arg1 = ast2cptx(Astx(args[1]), def, local, func)
-  //TODO convert arg1
+  arg1 = convertx(arg1, t0)
   @return callNewx(f, [arg0, arg1])
  }
  @return _
@@ -426,10 +424,11 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  //    die("error, itemsType defined but name not changed "+itemst.obj.name)
   //  }
     itemst.obj = itemDefx(itemstt, predt)
+    itemst.pred = itemst.obj
     @if(itemst.val != _){
      //cached init right expr a = {}/[]
      #oo = Cptx(itemst.val)
-     convertx(itemstt, itemst.obj, oo)
+     convertx(oo, itemst.obj)
     }
    }@elif(!inClassx(predt, classx(it))){
     die("TODO convert items assign: "+predt.name + " is not "+classx(it).name);
@@ -522,7 +521,7 @@ each2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
      die("each key id defined "+key)
     }
    }@else{
-    local.dic[key] = uintNewx(0)
+    local.dic[key] = intNewx(0, uintc)
    }
   }@else{
    log(strx(et))
@@ -753,57 +752,36 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    }
   }
  }
- @if(lpredt == _){
-  lpredt = typepredx(lefto)
- }
-/*
- @if(predt != _ && lpredt != _){ //for exp: Uint#a = 1
-  #cvt = convertx(predt, lpredt, righto)
-  @if(cvt != _){
-   righto = cvt
-  }
- }
-*/
+ //for exp: Uint#a = 1
+ #righto = convertx(righto, lpredt)
+ 
  #f = getx(lefto, "assign")
  @return callNewx(f, [lefto, righto], callassignc)
 }
 call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #v = Astx(ast[1])
  Cptx#f = ast2cptx(v, def, local, func)
- @if(classx(f).id == idclassc.id){
-  #f = f.dic["idVal"]
- }
- Cptx#arr = ast2arrx(Astx(ast[2]), def, local, func) 
- @if(f.type == T##CLASS){
-  f = aliasGetx(f)   
-  @if(arr.arr.len() == 0){
-   @return callNewx(defmain.dic["type"], [f], calltypec)
-  }  
-  Cptx#a0 = arr.arr[0]
-  #t = typepredx(a0)
-  @if(t == _){
-   log(a0)
-   die("convert from type not defined")
-  }
-  #aa0 = convertx(t, f, a0)
-  @if(aa0 != _){
-   @return aa0
-  }
 
-  @if(f.name == ""){
-   die("class with no name")
+ #f = preExecx(f)
+ #astarr = Astx(ast[2])
+ @if(f.type == T##CLASS){
+  @if(astarr.len() == 0){
+   @return callNewx(defmain.dic["type"], [f], calltypec)
   }
-  #r = getx(t, "to"+f.name)
-  @if(r == _){
-   log(strx(t))
-   log(strx(a0)) 
-   log("to"+f.name)
-   die("convert func not defined")
+  @return convertx(ast2cptx(Astx(astarr[0]), def, local, func), f)
+ }
+ #vt = getx(f, "funcVarTypes")
+ #arrx = &Arrx
+ @each i e astarr{
+  Cptx#ee = ast2cptx(Astx(e), def, local, func)
+  @if(vt){
+   ee = convertx(ee, classx(vt.arr[i]))
   }
-  @return callNewx(r, arr.arr)
+  ee = preExecx(ee)  
+  arrx.push(ee)
  }
  //TODO if f is funcproto check type
- @return callNewx(f, arr.arr)
+ @return callNewx(f, arrx)
 }
 callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  Cptx#oo = ast2cptx(Astx(ast[1]), def, local, func)
@@ -812,7 +790,6 @@ callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   log(strx(oo))
   die("cannot typepred obj")
  }
- //TODO CLASS get CALL
  Cptx#arr = ast2arrx(Astx(ast[3]), def, local, func)
  #f = getx(to, Str(ast[2]))
  @if(f == _){
@@ -857,7 +834,7 @@ ast2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
   #ee = Astx(e)
   #idpre = Str(Astx(ee[0])[0])
   @if(ee.len() == 2){
-   dicl.dic[Str(ee[1])] = uintNewx(i)
+   dicl.dic[Str(ee[1])] = intNewx(i, uintc)
   }
   @if(idpre == "if"){
    Cptx#c = if2cptx(Astx(ee[0]), def, local, func, x)
@@ -870,10 +847,10 @@ ast2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
   }@else{
    Cptx#c = subAst2cptx(Astx(ee[0]), def, local, func)  
   }
-  c.ast = Astx(ee[0])
   @if(c == _){
    @continue
   }
+  c.ast = Astx(ee[0])  
   arr.push(c)
   i++  
  }

@@ -1,1 +1,2 @@
-~Float#i = #0~~=Str(i)~
+~Float#i = #0//TODO printf
+~~=Str(i)~

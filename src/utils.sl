@@ -363,13 +363,6 @@ funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  }
  @return objNewx(x)
 }
-uintNewx ->(x Int)Cptx{
- @return &Cptx{
-  type: T##INT
-  obj: uintc
-  int: x
- }
-}
 boolNewx ->(x Bool)Cptx{
  @if(x){
   @return truev
@@ -418,7 +411,7 @@ itemDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
   r = class
  }
  @if(mid){
-  @return classDefx(defmain, n, [r, midc])
+  @return classNewx([r, midc])
  }
  @return r;
 }
@@ -915,10 +908,13 @@ setx ->(o Cptx, key Str, val Cptx)Cptx{
 }
 
 typepredx ->(o Cptx)Cptx{
+ @if(o.pred){
+  @return o.pred
+ }
  #x = subTypepredx(o)
  @if(x == _){
-  @return _
  }
+ o.pred = x
  @return x
 }
 subTypepredx ->(o Cptx)Cptx{
@@ -973,7 +969,21 @@ subTypepredx ->(o Cptx)Cptx{
     @return cptc
    }
   }
-    
+     //if is opassign
+  @if(inClassx(f.obj, opassignc)){
+   Cptx#arg1 = args[1]
+   @return typepredx(arg1)
+  }
+   //is ne eq gt ge nt ne
+  @if(inClassx(f.obj, opcmpc)){
+   @return boolc
+  }
+   //if is other op2
+  @if(inClassx(f.obj, op2c)){
+   Cptx#arg0 = args[0]
+   @return typepredx(arg0)
+  }
+
   @if(inClassx(f.obj, functplc)){
    @return strc
   }
@@ -1021,9 +1031,11 @@ subTypepredx ->(o Cptx)Cptx{
    //if is idscope
   @if(inClassx(o.obj, idclassc)){
    Cptx#s = o.dic["idVal"]
-   @return typepredx(s)
+   @return classx(s)
   }
   @return o.obj
+ }@elif(t == T##CLASS){
+  @return classc
  }@else{
   @return classx(o) 
  }
@@ -1037,7 +1049,7 @@ dic2strx ->(d Dicx, i Int)Str{
 }
 
 arr2strx ->(a Arrx, i Int)Str{
- #s = "["
+ #s = ""
  @if(a.len() > 1){
   s+="\n"
   @each _ v a{
@@ -1048,7 +1060,7 @@ arr2strx ->(a Arrx, i Int)Str{
    s += strx(v, i+1)
   }
  }
- @return s + "]"
+ @return s
 }
 
 
@@ -1106,7 +1118,7 @@ strx ->(o Cptx, i Int)Str{
  }@elif(t == T##NATIVE){
   @return "&Native"
  }@elif(t == T##CALL){
-  @return "CALL"
+  @return strx(o.class) + "(" + arr2strx(o.arr, i) +")"
  }@elif(t == T##FUNC){
   @return "&ValFunc"
  }@elif(t == T##BLOCK){
@@ -1114,7 +1126,7 @@ strx ->(o Cptx, i Int)Str{
  }@elif(t == T##DIC){
   @return dic2strx(o.dic, i)
  }@elif(t == T##ARR){
-  @return arr2strx(o.arr, i)
+  @return "[" + arr2strx(o.arr, i) +"]"
  }@else{
   log(o.obj)
   log(o)
@@ -1263,7 +1275,7 @@ subBlockExecx ->(arr Arrx, env Cptx, stt Uint)Cptx{
  @return nullv
 }
 preExecx ->(o Cptx)Cptx{
-//TODO pre exec 1+1 =2 like
+//TODO pre exec 1+1 =2 like??
 //pre exec idClass.idVal
  @if(inClassx(classx(o), idclassc)){
   @return o.dic["idVal"]
@@ -1296,27 +1308,61 @@ tobj2objx ->(to Cptx)Cptx{
 
 
 
-convertx ->(from Cptx, to Cptx, val Cptx)Cptx{
- @if(to.id == from.id){
-  @return _
+convertx ->(val Cptx, to Cptx)Cptx{
+ @if(!val){
+  die("convertx val null")
+ }
+ @if(val.id == nullv.id){
+  @return val
+ } 
+ @if(!to || to.id == cptc.id){
+  @return val
+ }
+ #from = typepredx(val)
+ @if(from == _){
+  @return val
+ }
+ #from = aliasGetx(from) 
+ to = aliasGetx(to)
+ @if(from.id == to.id){
+  @return val
  }
  @if(from.id == cptc.id){
   @return callNewx(defmain.dic["as"], [val, to])
  }
- @if(inClassx(classx(val), midc)){
-  @if(from.fbnum && to.fbnum){
+ @if(from.fbnum && to.fbnum){
+  @if(inClassx(classx(val), midc)){
    @return callNewx(defmain.dic["numConvert"], [val, to])
   }
-  @return _
+  val.obj = to
+  val.pred = to
+  to.obj = val
+  @return val  
  }
- @if(to.ctype != from.ctype){
-  @return _
+ @if(inClassx(from, to)){
+ //TODO convert struct
+  @return val
  } 
-// @if(inClassx(to, from)){//specify eg. Arr to ArrStatic
-    //convert val
- val.obj = to
- to.obj = val
- @return val
-// }
-// @return _
+ @if(to.ctype == from.ctype){
+  @if(inClassx(to, from)){//specify eg. Arr to ArrStatic
+   @if(!inClassx(classx(val), midc)){
+    val.obj = to
+    val.pred = to    
+    to.obj = val
+    @return val  
+   }
+  }
+ }
+ @if(to.name == ""){
+  die("class with no name")
+ }
+ #r = getx(from, "to"+to.name)
+ @if(r == _){
+  log(strx(val))
+  log(strx(from))   
+  log(strx(to))
+  log("to"+to.name)
+  die("convert func not defined")
+ }
+ @return callNewx(r, [val])
 }

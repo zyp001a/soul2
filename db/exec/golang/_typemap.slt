@@ -1,6 +1,6 @@
 ~
 Class#c = #0
-@if(!c){
+@if(c == _){
  ~interface{}~
 }@else{
  #typemap = getExec()._typemap
