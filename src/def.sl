@@ -263,6 +263,7 @@ funcDefx(defmain, "keys", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return copyx(arrNewx(arrstrc, o.arr))
 }, [dicc], arrstrc)
+
 funcDefx(defmain, "callFunc", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return o.class
@@ -271,6 +272,20 @@ funcDefx(defmain, "callArgs", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return arrNewx(arrc, o.arr)
 }, [callc], arrc)
+
+funcDefx(defmain, "idStr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return strNewx(o.str)
+}, [callc], strc)
+funcDefx(defmain, "idState", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return o.class
+}, [callc], cptc)
+funcDefx(defmain, "idVal", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return o.class
+}, [callc], cptc)
+
 methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return aliasGetx(o)
@@ -286,7 +301,6 @@ methodDefx(pathxc, "timeMod", ->(x Arrx, env Cptx)Cptx{
  //TODO
  @return nullv
 }, _, intc)
-
 
 methodDefx(pathxc, "timeMod", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
@@ -304,7 +318,6 @@ methodDefx(pathxc, "resolve", ->(x Arrx, env Cptx)Cptx{
  #p = Pathx(o.dic["path"].str)
  @return strNewx(p.resolve())
 }, [strc], strc)
-
 methodDefx(filexc, "write", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#d = x[1]
@@ -317,7 +330,6 @@ methodDefx(filexc, "readAll", ->(x Arrx, env Cptx)Cptx{
  #p = Filex(o.dic["path"].str) 
  @return strNewx(p.readAll())
 }, _, strc)
-
 methodDefx(dirxc, "write", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#d = x[1]

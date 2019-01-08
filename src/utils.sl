@@ -347,6 +347,17 @@ callNewx ->(func Cptx, args Arrx, obj Cptx)Cptx{
  }
 }
 
+idNewx ->(def Cptx, key Str, obj Cptx)Cptx{
+ @return &Cptx{
+  type: T##ID
+  id: uidx()
+  fmid: @true
+  obj: obj
+  class: def
+  str: key
+ }
+}
+
 funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  @if(return == _){
   return = emptyc

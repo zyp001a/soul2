@@ -13,6 +13,9 @@
 //scope.str: store pure name
 //call.class: func
 //env.int: active
+//calls.class: func
+//idstate.class: def
+//idclass.class: val
 @load "init"
 
 @load "utils"
