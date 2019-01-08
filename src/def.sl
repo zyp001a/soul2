@@ -68,6 +68,12 @@ funcDefx(defmain, "methodGet", ->(x Arrx, env Cptx)Cptx{
  @return nullOrx(methodGetx(o, f))
 },[classc, funcc], cptc)
 
+funcDefx(defmain, "send", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #arr = sendx(o.arr)
+ subBlockExecx(arr, env) 
+ @return nullv
+},[arrc])
 funcDefx(defmain, "new", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
@@ -209,6 +215,10 @@ funcDefx(defmain, "ind", ->(x Arrx, env Cptx)Cptx{
  @return strNewx(indx(o.str, f.int))
 }, [strc, intc], strc)
 funcDefx(defmain, "exec", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return execx(l, env, 1)
+}, [cptc], cptc)
+funcDefx(defmain, "parseSend", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return execx(l, env, 1)
 }, [cptc], cptc)

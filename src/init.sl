@@ -335,7 +335,6 @@ calltypec := curryDefx(defmain, "CallType", callrawc)
 callassignc := curryDefx(defmain, "CallAssign", callrawc)
 
 callmethodc := curryDefx(defmain, "CallMethod", callc)
-sendc := curryDefx(defmain, "Send", arrcallc)
 
 
 //init id

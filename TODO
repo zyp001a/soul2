@@ -1,11 +1,14 @@
 # stream model
-&A -> &B -> &C -> &D
+&A >> &B >> &C >> &D
+B_request
+  ==>B_request(&B, &C, &A, &D)
+
 B_bridge?
  A_to{B_MsgInType}?
  C_to{B_MsgOutType}?
   ==>B_bridge(&B, &A, &C)
 
-A_pipe(B)?
+A_pipe{B}?
   ==>A_pipe{B}(&A, &B)
 A_pipe?
  B_to{A_MsgOutType} || A_to{B_MsgInType}?
