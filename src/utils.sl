@@ -348,14 +348,17 @@ callNewx ->(func Cptx, args Arrx, obj Cptx)Cptx{
 }
 
 idNewx ->(def Cptx, key Str, obj Cptx)Cptx{
- @return &Cptx{
+ #x = &Cptx{
   type: T##ID
   id: uidx()
-  fmid: @true
   obj: obj
   class: def
   str: key
  }
+ @if(obj != _ && !inClassx(obj, idclassc)){
+  x.fmid = @true
+ }
+ @return x
 }
 
 funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
@@ -659,6 +662,8 @@ classRawx ->(t T)Cptx{
   @return nativec
  }@elif(t == T##CALL){
   @return callc
+ }@elif(t == T##ID){
+  @return callc
  }@elif(t == T##FUNC){
   @return funcc
  }@elif(t == T##BLOCK){
@@ -816,7 +821,12 @@ defx ->(class Cptx, dic Dicx)Cptx{
   Cptx#x = nativeNewx()
  }@elif(class.ctype == T##CALL){
   Cptx#x = callNewx()
+  x.obj = class
   x.fdefault = @true     
+ }@elif(class.ctype == T##ID){
+  Cptx#x = idNewx()
+  x.obj = class
+  x.fdefault = @true
  }@elif(class.ctype == T##FUNC){
   Cptx#x = nullv//TODO
  }@elif(class.ctype == T##BLOCK){
@@ -886,6 +896,8 @@ eqx ->(l Cptx, r Cptx)Bool{
  }@elif(t == T##NATIVE){
   @return l.id == r.id  
  }@elif(t == T##CALL){
+  @return l.id == r.id  
+ }@elif(t == T##ID){
   @return l.id == r.id  
  }@elif(t == T##FUNC){
   @return l.id == r.id
@@ -1040,14 +1052,14 @@ subTypepredx ->(o Cptx)Cptx{
    @return _
   }
   @return _
- }@elif(t == T##OBJ){
+ }@elif(t == T##ID){
   //if is idstate
   @if(inClassx(o.obj, idstatec)){
-   Str#id = o.dic["idStr"].str
+   Str#id = o.str
    @if(id.isInt()){
     @return cptc
    }
-   Cptx#s = o.dic["idState"]
+   Cptx#s = o.class
    #r = s.dic[id]
    @if(r == _){
     log(strx(s)) 
@@ -1059,9 +1071,12 @@ subTypepredx ->(o Cptx)Cptx{
   }
    //if is idscope
   @if(inClassx(o.obj, idclassc)){
-   Cptx#s = o.dic["idVal"]
+   Cptx#s = o.class
    @return classx(s)
   }
+  die("wrong id: "+o.str)
+  @return _
+ }@elif(t == T##OBJ){
   @return o.obj
  }@elif(t == T##CLASS){
   @return classc
@@ -1148,6 +1163,8 @@ strx ->(o Cptx, i Int)Str{
   @return "&Native"
  }@elif(t == T##CALL){
   @return strx(o.class) + "(" + arr2strx(o.arr, i) +")"
+ }@elif(t == T##ID){  
+  @return "&ID "+o.str
  }@elif(t == T##FUNC){
   @return "&ValFunc"
  }@elif(t == T##BLOCK){
@@ -1308,8 +1325,8 @@ subBlockExecx ->(arr Arrx, env Cptx, stt Uint)Cptx{
 preExecx ->(o Cptx)Cptx{
 //TODO pre exec 1+1 =2 like??
 //pre exec idClass.idVal
- @if(inClassx(classx(o), idclassc)){
-  @return o.dic["idVal"]
+ @if(o.type == T##ID && inClassx(classx(o), idclassc)){
+  @return o.class
  }
  @return o
 }

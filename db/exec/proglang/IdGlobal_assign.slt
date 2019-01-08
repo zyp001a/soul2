@@ -1,7 +1,7 @@
 ~
-#n = #0.idStr
+#n = idStr(#0)
 #nn = ^_varname n^
-$globals[n] = ^_var nn, get(#0.idState, n)^
+$globals[n] = ^_var nn, get(idState(#0), n)^
 Str#x = exec(#1)
 @if(x){
  ~^0 = ~=x~~

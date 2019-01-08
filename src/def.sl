@@ -607,8 +607,8 @@ opDefx(idlocalc, "assign", ->(x Arrx, env Cptx)Cptx{
 
  #v = execx(r, env)
  Cptx#local = env.dic["envLocal"]
- #str = l.dic["idStr"]
- local.dic[str.str] = copyCptFromAstx(v)
+ #str = l.str
+ local.dic[str] = copyCptFromAstx(v)
  @return v
 }, cptc, cptc, opassignc)
 
@@ -616,8 +616,8 @@ opDefx(idstatec, "assign", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
  #v = execx(r, env)
- Str#k = l.dic["idStr"].str
- Cptx#o = l.dic["idState"].obj
+ Str#k = l.str
+ Cptx#o = l.class.obj
  o.dic[k] = copyCptFromAstx(v)
  @return v
 }, cptc, cptc, opassignc)
@@ -947,12 +947,12 @@ execDefx("CtrlEach", ->(x Arrx, env Cptx)Cptx{
 })
 execDefx("IdClass", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
- @return getx(c, "idVal")
+ @return c.class
 })
 execDefx("IdLocal", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
  Cptx#l = env.dic["envLocal"]
- Str#k = c.dic["idStr"].str
+ Str#k = c.str
  #r = getx(l, k)
  @if(r == _){
   @return nullv
@@ -961,8 +961,8 @@ execDefx("IdLocal", ->(x Arrx, env Cptx)Cptx{
 })
 execDefx("IdState", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
- Str#k = c.dic["idStr"].str
- Cptx#o = c.dic["idState"].obj
+ Str#k = c.str
+ Cptx#o = c.class.obj
  #r = o.dic[k]
  @if(r == _){
   @return nullv

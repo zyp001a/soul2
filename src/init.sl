@@ -1,9 +1,11 @@
 T := @enum CPT OBJ CLASS TOBJ \
  INT FLOAT NUMBIG STR \
  ARR DIC JSON \
- NATIVE CALL ID \
+ NATIVE \
+ ID CALL \
  FUNC BLOCK \
  IF FOR SIGNAL
+//ID is superior than call becasue CallId exists
 Funcx ->(Arrx, Cptx)Cptx
 Cptx => {
  type: T
@@ -310,8 +312,9 @@ sendc := curryDefx(defmain, "Send", arrcallc)
 
 //init id
 idc := classDefx(defmain, "Id")
-
 callidc := classDefx(defmain, "CallId", [callc, idc])
+idc.ctype = T##ID
+
 idstrc :=  classDefx(defmain, "IdStr", [idc], {
  idStr: strc,
 })

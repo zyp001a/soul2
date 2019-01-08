@@ -3,10 +3,7 @@ id2cptx ->(id Str, def Cptx, local Cptx, func Cptx)Cptx{
  @if(r != _){
   #r = local.dic[id]
   @if(r != _){
-   @return defx(idlocalc, {
-    idStr: strNewx(id),
-    idState: local
-   })
+   @return idNewx(local, id, idlocalc)
   }@else{
    @if(func != _){ //null if func tpl
     funcSetClosurex(func)   
@@ -17,24 +14,15 @@ id2cptx ->(id Str, def Cptx, local Cptx, func Cptx)Cptx{
     log(id)
     die("no parent")
    }
-   @return defx(idparentc, {
-    idStr: strNewx(id),
-    idState: p
-   })  
+   @return idNewx(p, id, idparentc)
   }
  }
  #r = classGetx(def, id)
  @if(r != _){
   @if(r.name == ""){
-   @return defx(idglobalc, {
-    idStr: strNewx(id),
-    idState: def
-   })   
+   @return idNewx(def, id, idglobalc)
   }@else{
-   @return defx(idclassc, {
-    idStr: strNewx(id),
-    idVal: r
-   })
+   @return idNewx(r, id, idclassc)
   }
  }
  @return _
@@ -277,7 +265,8 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    @continue;
   }
   @if(!inClassx(tot, handlerc)){ //read from val
-   @if(!inClassx(classx(to), idc)){
+    //TODO allow handler def  
+   @if(to.type != T##ID){
     log(strx(to))
     log(strx(tot))    
     die("cannot assign to from handler");
@@ -285,7 +274,7 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    #msgt = classx(classGetx(fromt, "handlerMsgOutType"))
    @if(tot.id == nullc.id){
     tot = msgt
-    to.dic["idState"].dic[to.dic["idStr"].str] = msgt
+    to.class.dic[to.str] = msgt
    }@else{
     @if(!inClassx(msgt, tot)){
    //TODO check if can convert or die
@@ -321,10 +310,7 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   //TODO convertt  
   #fwrite = classGetx(tot, "write")
   @if(fread != _ && fwrite != _){
-   #tmpid = objNewx(idlocalc, {
-    idStr: strNewx("tmp" + uidx())
-    idState: local
-   })
+   #tmpid = idNewx(local, "tmp" + uidx(), idlocalc)
    x.arr.push(callNewx(classGetx(idlocalc, "assign"), [
     tmpid,
     callNewx(fread, [from])   
@@ -410,8 +396,8 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  #predt = typepredx(v)  
   
  @if(inClassx(classx(items), idstatec)){//a[1] = 1->change Arr#a to Arr_Int#a
-  Cptx#s = items.dic["idState"]
-  Str#str = items.dic["idStr"].str
+  Cptx#s = items.class
+  Str#str = items.str
   Cptx#itemst = s.dic[str]
   Cptx#itemstt = aliasGetx(itemst.obj)
   @if(itemst.farg){
@@ -458,7 +444,7 @@ return2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
 }
 objget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  Cptx#obj = ast2cptx(Astx(ast[1]), def, local, func)
- @if(obj.type == T##OBJ || obj.type == T##CALL){
+ @if(obj.type == T##OBJ || obj.type == T##CALL || obj.type == T##ID){
   @if(v == _){
    @return callNewx(defmain.dic["get"], [obj, strNewx(Str(ast[2]))], callidc)
   }@else{
@@ -669,10 +655,7 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
    die("global var must know type")
   }
   def.dic[id] = defx(t);
-  #ip = defx(idglobalc, {
-   idStr: strNewx(id),
-   idState: def
-  })
+  #ip = idNewx(def, id, idglobalc)
   #af = classGetx(idglobalc, "assign")
   @return callNewx(af, [ip, r], callassignc)
  }
@@ -721,10 +704,7 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    @if(getx(def.obj, name) == _){
     left[0] = "idlocal"//if assign to id, id is idlocal
    }@else{
-    Cptx#lefto = defx(idglobalc, {
-     idStr: strNewx(name)
-     idState: def
-    })
+    Cptx#lefto = idNewx(def, name, idglobalc)
    }
   }
  }
@@ -733,8 +713,8 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
 
  @if(inClassx(classx(lefto), idstatec)){ //#a = 1  set a type Int
-  Cptx#s = lefto.dic["idState"]
-  Str#idstr = lefto.dic["idStr"].str
+  Cptx#s = lefto.class
+  Str#idstr = lefto.str
   #type = s.dic[idstr]
   @if(type == _ || type.id == nullv.id){//only set in not like Str#a
    @if(predt == _){
@@ -982,10 +962,7 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
    }
    local.dic[id] = defx(type)   
   }
-  @return defx(idlocalc, {
-   idStr: strNewx(id),
-   idState: local
-  })  
+  @return idNewx(local, id, idlocalc)
  }@elif(t == "id"){
   #id = Str(ast[1])
   #x = id2cptx(id, def, local, func)
