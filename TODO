@@ -1,3 +1,27 @@
+# stream model
+&A -> &B -> &C -> &D
+B_bridge?
+ A_to{B_MsgInType}?
+ C_to{B_MsgOutType}?
+  ==>B_bridge(&B, &A, &C)
+
+A_pipe(B)?
+  ==>A_pipe{B}(&A, &B)
+A_pipe?
+ B_to{A_MsgOutType} || A_to{B_MsgInType}?
+  ==>A_pipe(&A, &B)
+	
+A_to{B_MsgInType}?
+ B_write?
+  ==>B_write(&B, &A)
+B_to{A_MsgOutType}?
+ A_read?
+  ==>A_read(&A, &B) //assign
+A_read?
+ B_write?
+ B_to{A_MsgOutType} || A_to{B_MsgInType}? 
+  ==>A_read(&A, tmp) && B_write(&B, tmp)
+
 # soul def
 rm filex
 stream handler
@@ -13,7 +37,6 @@ setx
 auto gen soul "def" func to go func
 check fdefault
 verbose
-speed up //ID FUNC BLOCK... !fast enough now
 plugin ==
 
 # soul exec 

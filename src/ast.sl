@@ -252,6 +252,22 @@ send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    log(strx(tot))   
    die("send to type no name")  
   }
+
+  #f = classGetx(tot, "bridge")
+  @if(f){
+   #toto = ast2cptx(Astx(arr[i+2]), def, local, func)
+   #totot = typepredx(toto)
+   @if(tot.id == unknownc.id){
+    log(arr)
+    log(i)
+    die("send to type not defined")
+   }
+   
+   x.arr.push(callNewx(f, [to, from, toto]))
+   i++;
+   @continue
+  }  
+  
   @if(!inClassx(fromt, handlerc)){ //write to val
    #tomsgt = classx(classGetx(tot, "handlerMsgInType"))
    @if(!inClassx(fromt, tomsgt)){

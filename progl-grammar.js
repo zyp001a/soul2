@@ -72,6 +72,8 @@ var grammar = {
 			["@redirect", "return 'REDIRECT'"],//201
 			["@cached", "return 'CACHED'"], //304
 			["@notfound", "return 'NOTFOUND'"], //404
+			
+			["@timeout", "return 'TIMEOUT'"], 
 
 			["@proc", "return 'PROC'"],			
 			["@fs", "return 'FS'"],
@@ -177,7 +179,8 @@ var grammar = {
 			"Mid",
 			
 			"Assign",
-			"Def",			
+			"Handler",			
+			"Def",	
 			"Env",
 			"BlockMain",
 			"EnumGet",
@@ -190,7 +193,6 @@ var grammar = {
 			"ObjGet",
 			"ItemsGet",			
 			"Op",
-			"Handler",
 			"On"
 		],
 		Null: "$$ = ['null']",
@@ -410,6 +412,7 @@ var grammar = {
 			["ID Func", "$$ = ['def', $1, $2]"],
 			["ID := Type", "$$ = ['def', $1, $3]"],
 			["ID FuncProto", "$$ = ['def', $1, $2]"],
+			["ID Handler", "$$ = ['def', $1, $2]"],			
 		],
 		Type: [
 			["TYPE ID", "$$= ['alias', $2]"],
@@ -463,8 +466,6 @@ var grammar = {
 		SEND: [
 			["Expr >> Mid", "$$ = [$1, $3]"],
 			["SEND >> Mid", "$$.push($3)"],
-			["Expr +>> Mid", "$$ = [['reply', $1], $3]"],
-			["SEND +>> Mid", "$$ = $1; $1[$1.length()-1] = ['reply', $1[$1.length()-1]]; $1.push($3)"],
 		]
   }
 };

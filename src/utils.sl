@@ -663,11 +663,7 @@ classRawx ->(t T)Cptx{
  }@elif(t == T##CALL){
   @return callc
  }@elif(t == T##ID){
-  @return callc
- }@elif(t == T##FUNC){
-  @return funcc
- }@elif(t == T##BLOCK){
-  @return blockc
+  @return idc
  }@else{
   die("NOTYPE")
  }
@@ -827,10 +823,6 @@ defx ->(class Cptx, dic Dicx)Cptx{
   Cptx#x = idNewx()
   x.obj = class
   x.fdefault = @true
- }@elif(class.ctype == T##FUNC){
-  Cptx#x = nullv//TODO
- }@elif(class.ctype == T##BLOCK){
-  Cptx#x = nullv//TODO
  }@elif(class.ctype == T##DIC){
   #x = dicNewx(class)
   x.fdefault = @true     
@@ -899,10 +891,6 @@ eqx ->(l Cptx, r Cptx)Bool{
   @return l.id == r.id  
  }@elif(t == T##ID){
   @return l.id == r.id  
- }@elif(t == T##FUNC){
-  @return l.id == r.id
- }@elif(t == T##BLOCK){
-  @return l.id == r.id    
  }@elif(t == T##INT){
   @return l.int == r.int
  }@elif(t == T##FLOAT){
@@ -1165,10 +1153,6 @@ strx ->(o Cptx, i Int)Str{
   @return strx(o.class) + "(" + arr2strx(o.arr, i) +")"
  }@elif(t == T##ID){  
   @return "&ID "+o.str
- }@elif(t == T##FUNC){
-  @return "&ValFunc"
- }@elif(t == T##BLOCK){
-  @return "&ValFunc"
  }@elif(t == T##DIC){
   @return dic2strx(o.dic, i)
  }@elif(t == T##ARR){

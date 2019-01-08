@@ -2,9 +2,7 @@ T := @enum CPT OBJ CLASS TOBJ \
  INT FLOAT NUMBIG STR \
  ARR DIC JSON \
  NATIVE \
- ID CALL \
- FUNC BLOCK \
- IF FOR SIGNAL
+ ID CALL
 //ID is superior than call becasue CallId exists
 Funcx ->(Arrx, Cptx)Cptx
 Cptx => {
@@ -241,7 +239,7 @@ functplc := classDefx(defmain, "FuncTpl", [funcc], {
  funcTplPath: strc
 })
 
-//handlers
+////////////def handlers
 
 handlerc := classDefx(defmain, "Handler", _, {
  handlerMsgOutType: classc
@@ -257,7 +255,9 @@ routerc := classDefx(defmain, "Router", [itemsc, handlerc], {
 
 routersubc := classDefx(defmain, "RouterSub", [routerc], {
  routerParent: routerc
+ routerPathPrefix: strc 
 })
+
 routerc.fbitems = @true
 routerc.dic["routerRoot"] = defx(routerc)
 handlerstandalonec := classDefx(defmain, "HandlerStandalone", [handlerc])
@@ -273,22 +273,50 @@ msgc := classDefx(defmain, "Msg", _, {
  msgSendTime: timec
 })
 
+
+///////def internet and file system
+nodec := classDefx(defmain, "Node", [routerc])
+inetc := classDefx(defmain, "Inet", [routerc], {
+ itemsType: nodec
+})
+inetv := defx(inetc)
+
+
+serverc := classDefx(defmain, "Server", [nodec], {
+ serverPort: intc
+})
+serverhttpc := curryDefx(defmain, "ServerHttp", serverc, {
+ serverPort: intNewx(80)
+})
+serverhttpsc := curryDefx(defmain, "ServerHttps", serverhttpc, {
+ serverPort: intNewx(443)
+})
+
+clientc := classDefx(defmain, "Client", [nodec])
+clienthttpc := curryDefx(defmain, "ClientHttp", clientc)
+clienthttpsc := curryDefx(defmain, "ClientHttps", clienthttpc)
+
+
 filec := classDefx(defmain, "File", [handlerembeddedc],{
  handlerMsgInType: bytesc
  handlerMsgOutType: bytesc
 })
-dirc := curryDefx(defmain, "Dir", routersubc)
-
-inetc := curryDefx(defmain, "Inet", routerc)
-nodec := curryDefx(defmain, "Node", routerc)
-fsc := classDefx(defmain, "Fs", [routerc], {
+fsc := classDefx(defmain, "Fs", [nodec], {
  itemsType: filec
 })
-fsremotec := curryDefx(defmain, "FsRemote", fsc)
-dbmsc := curryDefx(defmain, "Dbms", routerc)
-schemac := curryDefx(defmain, "Schema", handlerc)
-
 fsv := defx(fsc)
+dirc := classDefx(defmain, "Dir", [routersubc], {
+ routerParent: fsc
+})
+
+schemac := curryDefx(defmain, "Schema", handlerc)
+dbmsc := classDefx(defmain, "Dbms", [nodec], {
+ itemsType: schemac
+})
+
+
+
+
 
 
 
