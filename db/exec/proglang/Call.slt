@@ -8,11 +8,12 @@ Arr#a = callArgs(#0)
 }@elif(inClass(c, Func)){//TODO func tmp
  #n = getName(f)
  @if(getPropFlag(f)){ 
-  #r = methodGet(getExec(), f)
+  #r = propGet(getExec(), getClass(f), getPropName(f))
+//  #r = methodGet(getExec(), f)
  }@else{
   #r = get(getExec(), n)
  }
- @if(r){
+ @if(r != _){
   ~~=call(r, a)~~
  }@else{
   Arr#vt = f.funcVarTypes

@@ -598,20 +598,28 @@ classGetx ->(scope Cptx, key Str)Cptx{
  @return r;
 }
 
-subMethodGetx ->(scope Cptx, v Cptx, key Str)Cptx{
+subPropGetx ->(scope Cptx, v Cptx, key Str)Cptx{
  #r = classGetx(scope, v.name + "_" + key);
  @if(r != _){
   @return r
  }
  @each _ vv v.arr{
-  r = subMethodGetx(scope, vv, key)
+  r = subPropGetx(scope, vv, key)
   @if(r != _){
    @return r
   }
  }
  @return r
 }
-methodGetx ->(scope Cptx, o Cptx, key Str)Cptx{
+mustPropGetx ->(scope Cptx, o Cptx, key Str)Cptx{
+ #r = propGetx(scope, o, key)
+ @if(!r){
+  log(scope)
+  die("no method "+o.name + "_"+ key)
+ }
+ @return r
+}
+propGetx ->(scope Cptx, o Cptx, key Str)Cptx{
  Cptx#r = classGetx(scope, o.name + "_" + key);
  @if(r != _){
   @return r  
@@ -619,18 +627,18 @@ methodGetx ->(scope Cptx, o Cptx, key Str)Cptx{
 
  Arrx#p = o.arr
  @each _ v p{
-  r = subMethodGetx(scope, v, key)
+  r = subPropGetx(scope, v, key)
   @if(r != _){
    @return r
   }
  }
 
- r = subMethodGetx(scope, classc, key)
+ r = subPropGetx(scope, classc, key)
  @if(r != _){
   @return r
  }  
 
- r = subMethodGetx(scope, cptc, key)
+ r = subPropGetx(scope, cptc, key)
  @if(r != _){
   @return r
  }   
@@ -844,6 +852,7 @@ copyx ->(o Cptx)Cptx{
   fbnum: o.fbnum
   fscope: o.fscope  
   fraw: o.fraw
+  fdefmain: o.fdefmain
 
   name: o.name
   id: uidx()
@@ -896,6 +905,13 @@ eqx ->(l Cptx, r Cptx)Bool{
   @return @false
  } 
 }
+mustGetx ->(o Cptx, key Str)Cptx{
+ #r = getx(o, key)
+ @if(r == _){
+  die(key + " not found!")
+ }
+ @return r
+}
 getx ->(o Cptx, key Str)Cptx{
  @if(o.type == T##CLASS){
   #r = classGetx(o, key)
@@ -932,6 +948,20 @@ setx ->(o Cptx, key Str, val Cptx)Cptx{
  @return copyCptFromAstx(val)
 }
 
+mustTypepredx ->(o Cptx)Cptx{
+ #r = typepredx(o)
+ @if(r.id == unknownc.id){
+  log(strx(o)) 
+  log(strx(r))
+  die("unknown type")
+ }
+ @if(r.name == ""){
+  log(strx(o)) 
+  log(strx(r))  
+  die("typepredx: type with no name")
+ }
+ @return r
+}
 typepredx ->(o Cptx)Cptx{
  @if(o.pred){
   @return o.pred
@@ -987,7 +1017,7 @@ subTypepredx ->(o Cptx)Cptx{
     //if is opGet
   @if(inClassx(f.obj, opgetc)){
    Cptx#arg0 = args[0]
-   Cptx#at0 = typepredx(arg0)     
+   Cptx#at0 = mustTypepredx(arg0)     
    #r = getx(at0, "itemsType")
    @if(r != _){
     @return classx(r)
@@ -1165,19 +1195,19 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  #localx = b.dic["blockStateDef"]
  #nstate = objNewx(localx)
  nstate.fdefault = @false
- nstate.int = 2
+ nstate.fdefmain = @true
  @each i v args{
   nstate.dic[Str(i)] = v;
  }
  
  Arrx#stack = env.dic["envStack"].arr;
  #ostate = env.dic["envLocal"]
- @if(func.dic["funcTplPath"]){
-  ostate.str = func.dic["funcTplPath"].str
- }@else{
-  ostate.str = "Tpl: "+func.name
- }
  stack.push(ostate)
+ @if(func.dic["funcTplPath"]){
+  nstate.str = func.dic["funcTplPath"].str
+ }@else{
+  nstate.str = "Tpl: "+func.name
+ } 
  env.dic["envLocal"]  = nstate
  blockExecx(b, env)
  env.dic["envLocal"] = stack[stack.len()-1]
@@ -1201,13 +1231,13 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
  @if(inClassx(func.obj, funcblockc)){
   Cptx#block = func.dic["funcBlock"]
   #nstate = objNewx(block.dic["blockStateDef"])
-  nstate.fdefault = @false  
-  nstate.int = 2  
+  nstate.fdefault = @false
+  nstate.fdefmain = @true  
   Arrx#stack = env.dic["envStack"].arr;
   #ostate = env.dic["envLocal"]
   //TODO func def path
-  ostate.str = "Block:" + func.name   
   stack.push(ostate)
+  nstate.str = "Block:" + func.name  
   env.dic["envLocal"]  = nstate
   Arrx#vars = func.dic["funcVars"].arr
   @each i arg args{
@@ -1293,10 +1323,13 @@ blockExecx ->(o Cptx, env Cptx, stt Uint)Cptx{
  @return subBlockExecx(o.dic["blockVal"].arr, env, stt)
 }
 subBlockExecx ->(arr Arrx, env Cptx, stt Uint)Cptx{
+ #l = env.dic["envLocal"]
  @each i v arr{
   @if(stt != 0 && stt < i){
    @continue
   }
+  l.int = Int(i)
+  l.ast = v.ast
   Cptx#r = execx(v, env)
   @if(inClassx(classx(r), signalc)){
    @return r
@@ -1318,9 +1351,7 @@ execx ->(o Cptx, env Cptx, flag Int)Cptx{
   #sp = env.dic["envExec"]
  }@elif(flag == 2){
   #sp = execmain
- }@elif(l.int == 1){
-  #sp = env.dic["envExec"]
- }@elif(l.int == 2){
+ }@elif(l.fdefmain){
   #sp = execmain
  }@else{
   #sp = env.dic["envExec"]
@@ -1404,27 +1435,28 @@ sendx ->(scope Cptx, arr Arrx)Arrx{
  @for #i=0; i<l-1; i++{
   #from = arr[i]
   #to = arr[i+1]
-  #fromt = typepredx(from)
-  #tot = typepredx(to)
-  @if(fromt.id == unknownc.id){
-   log(arr)
-   log(i)   
-   die("send from type not defined")
-  }
-  @if(tot.id == unknownc.id){
-   log(arr)
-   log(i)
-   die("send to type not defined")
-  }
-  @if(fromt.name == ""){
-   log(strx(from))
-   log(strx(fromt))   
-   die("send from type no name")  
-  }
-  @if(tot.name == ""){
-   log(strx(to))
-   log(strx(tot))   
-   die("send to type no name")  
+  #fromt = mustTypepredx(from)
+  #tot = mustTypepredx(to)
+  @if(!inClassx(tot, handlerc)){ //read from val
+    //TODO allow handler def  
+   @if(to.type != T##ID){
+    log(strx(to))
+    log(strx(tot))    
+    die("cannot assign to from handler");
+   }
+   #fread = mustPropGetx(scope, fromt, "read")
+   #cread = callNewx(fread, [from])
+   #msgt = classx(classGetx(fromt, "handlerMsgOutType"))
+   @if(tot.id == nullc.id){
+    tot = msgt
+    to.class.dic[to.str] = msgt
+   }@else{
+    cread = convertx(cread, tot)
+   }
+   #assignf = getx(to, "assign")
+   #ncall = callNewx(assignf, [to, cread], callrawc)
+   arrx.push(ncall)
+   @continue;
   }
   /*
   @if(i<l-3){
@@ -1434,7 +1466,7 @@ sendx ->(scope Cptx, arr Arrx)Arrx{
   @if(i<l-2){
    #to2 = arr[i+2]
    #to2t = typepredx(to2)
-   #f = methodGetx(scope, tot, "bridge")
+   #f = propGetx(scope, tot, "bridge")
    @if(f){
     @if(tot.id == unknownc.id){
      log(arr)
@@ -1450,39 +1482,13 @@ sendx ->(scope Cptx, arr Arrx)Arrx{
   */
   @if(!inClassx(fromt, handlerc)){ //write to val
    #tomsgt = classx(classGetx(tot, "handlerMsgInType"))
-   @if(!inClassx(fromt, tomsgt)){
-  //TODO check if can convert or die
-    log(strx(fromt))
-    log(strx(tomsgt))   
-    die("cannot send to toVal");
+   #fwrite = propGetx(scope, tot, "write")
+   @if(!fwrite){
+    log(tot)
+    die("no write")
    }
-   #fwrite = methodGetx(scope, tot, "write")
+   from = convertx(from, tomsgt)
    arrx.push(callNewx(fwrite, [to, from]))   
-   @continue;
-  }
-  @if(!inClassx(tot, handlerc)){ //read from val
-    //TODO allow handler def  
-   @if(to.type != T##ID){
-    log(strx(to))
-    log(strx(tot))    
-    die("cannot assign to from handler");
-   }  
-   #msgt = classx(classGetx(fromt, "handlerMsgOutType"))
-   @if(tot.id == nullc.id){
-    tot = msgt
-    to.class.dic[to.str] = msgt
-   }@else{
-    @if(!inClassx(msgt, tot)){
-   //TODO check if can convert or die
-     log(strx(msgt))
-     log(strx(tot))
-     die("cannot send to fromVal");
-    }
-   }
-   #fread = methodGetx(scope, fromt, "read")
-   #assignf = getx(to, "assign")
-   #ncall = callNewx(assignf, [to, callNewx(fread, [from])], callrawc)
-   arrx.push(ncall)   
    @continue;
   }
   @if(!msgt){
@@ -1497,15 +1503,15 @@ sendx ->(scope Cptx, arr Arrx)Arrx{
    log(strx(tomsgt))   
    die("cannot send to");
   }
-  #f = methodGetx(scope, fromt, "pipe" + tot.name)
+  #f = propGetx(scope, fromt, "pipe" + tot.name)
   @if(f){
    arrx.push(callNewx(f, [from, to]))
    @continue
   }
   /*
-  #fread = methodGetx(scope, fromt, "read")
+  #fread = propGetx(scope, fromt, "read")
   //TODO convertt  
-  #fwrite = methodGetx(scope, tot, "write")
+  #fwrite = propGetx(scope, tot, "write")
   @if(fread != _ && fwrite != _){
    #tmpid = idNewx(local, "tmp" + uidx(), idlocalc)
    arrx.push(callNewx(classGetx(idlocalc, "assign"), [
@@ -1524,7 +1530,10 @@ sendx ->(scope Cptx, arr Arrx)Arrx{
 }
 diex ->(str Str, env Cptx){
  @each _ v env.dic["envStack"].arr{
-  log(v.str)
+  log(v.str + ":" + v.int)
  }
+ #l = env.dic["envLocal"]
+ log(l.str + ":" + l.int)
+ log(l.ast)  
  die(str)
 }

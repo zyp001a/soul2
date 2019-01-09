@@ -1,29 +1,43 @@
 # stream model
 &A >> &B >> &C >> &D
+
+B -> !Handler?
+ B -> Id?
+ B_to{A_MsgOutType}?
+ A_read?
+  ==>&B = A_read(&A) //assign
+
+B_request{C}{A}
+  ==>&D = B_request(&B, &C, &A)
+B_request{C}
+  ==>&D = B_request(&B, &C, &A)
 B_request
-  ==>B_request(&B, &C, &A, &D)
+  ==>&D = B_request(&B, &C, &A)
 
-B_bridge?
+B_exchange{A}?
+ {B_MsgOutType}_to{C}?
+  ==>&C = B_exchange{A}(&B, &A) 
+B_exchange?
+ {A}_to{B_MsgInType}?
+ {B_MsgOutType}_to{C}?
+  ==>&C = B_exchange(&B, &A)
+
+A -> !Handler?
+ A -> Id?
  A_to{B_MsgInType}?
- C_to{B_MsgOutType}?
-  ==>B_bridge(&B, &A, &C)
-
+ B_write?
+  ==>B_write(&B, &A)
+	
 A_pipe{B}?
   ==>A_pipe{B}(&A, &B)
 A_pipe?
  B_to{A_MsgOutType} || A_to{B_MsgInType}?
   ==>A_pipe(&A, &B)
 	
-A_to{B_MsgInType}?
- B_write?
-  ==>B_write(&B, &A)
-B_to{A_MsgOutType}?
- A_read?
-  ==>A_read(&A, &B) //assign
 A_read?
  B_write?
  B_to{A_MsgOutType} || A_to{B_MsgInType}? 
-  ==>A_read(&A, tmp) && B_write(&B, tmp)
+  ==>B_write(&B, A_read(&A))
 
 # soul def
 rm filex

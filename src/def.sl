@@ -44,6 +44,14 @@ funcDefx(defmain, "getMidFlag", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return boolNewx(o.fmid)
 }, [cptc], boolc)
+funcDefx(defmain, "getClass", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return o.class
+}, [cptc], classc)
+funcDefx(defmain, "getPropName", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return strNewx(o.str)
+}, [cptc], strc)
 funcDefx(defmain, "getName", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return strNewx(o.name)
@@ -68,16 +76,22 @@ funcDefx(defmain, "sendImpl", ->(x Arrx, env Cptx)Cptx{
  #arr = sendx(s, o.arr)
  @return arrNewx(arr)
 },[classc, arrc], arrc)
-funcDefx(defmain, "methodGet", ->(x Arrx, env Cptx)Cptx{
+funcDefx(defmain, "propGet", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- Cptx#f = x[1]
- @return nullOrx(methodGetx(o, f.class, f.str))//TODO modify
-},[classc, funcc], cptc)
+ Cptx#c = x[1]
+ Cptx#s = x[2] 
+ @return nullOrx(propGetx(o, c, s.str))//TODO modify
+},[classc, classc, strc], cptc)
 
 funcDefx(defmain, "send", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #arr = sendx(defmain, o.arr)
- subBlockExecx(arr, env) 
+ @each _ v arr{
+  Cptx#r = execx(v, env)
+  @if(inClassx(classx(r), signalc)){
+   @return r
+  }
+ }
  @return nullv
 },[arrc])
 funcDefx(defmain, "new", ->(x Arrx, env Cptx)Cptx{
@@ -121,10 +135,7 @@ funcDefx(defmain, "get", ->(x Arrx, env Cptx)Cptx{
 funcDefx(defmain, "mustGet", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
- #r = getx(o, e.str)
- @if(r == _){
-  die(e.str + " not found!")
- }
+ #r = mustGetx(o, e.str)
  @return r
 },[cptc, strc], cptc)
 funcDefx(defmain, "set", ->(x Arrx, env Cptx)Cptx{
@@ -260,9 +271,9 @@ funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
   log(strx(a))
   die("call() error");
  }
- @if(!inClassx(classx(f), funcc)){
+ @if(!inClassx(classx(f), funcc)){ 
   log(strx(f))
-  die("not func")
+  diex("not func", env)
  }
  @return callx(f, a.arr, env)
 }, [funcc, arrc], cptc)
@@ -794,7 +805,13 @@ execDefx("Call", ->(x Arrx, env Cptx)Cptx{
 })
 execDefx("Arr_Call", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
- @return subBlockExecx(c.arr, env)
+ @each _ v c.arr{
+  Cptx#r = execx(v, env)
+  @if(inClassx(classx(r), signalc)){
+   @return r
+  }
+ }
+ @return nullv 
 })
 execDefx("CallPassRef", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]

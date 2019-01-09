@@ -9,7 +9,6 @@ b["/"] = a
 b.open()
 
 c = &ClientHttp
-
 "026" >> c >> b >> #d
 //c.bridge(026, tmp)
 //b.bridge(tmp, d)

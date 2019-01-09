@@ -27,7 +27,8 @@ Cptx => {
 
  //for func
  fraw: Bool //is raw func?(callraw, not eval args)
- 
+
+ fdefmain: Bool //is force exec with defmain
 
  ast: Astx
  

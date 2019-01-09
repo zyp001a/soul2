@@ -34,8 +34,10 @@ env2cptx ->(ast Astx, def Cptx, local Cptx)Cptx{
  @if(execsp == _){
   die("no execsp")
  }
+ #l = scopeObjNewx(b.dic["blockStateDef"])
+ l.str = "Env " + execsp.str
  #x = defx(envc, {
-  envLocal: scopeObjNewx(b.dic["blockStateDef"])
+  envLocal: l
   envStack: arrNewx() 
   envExec: execsp
   envBlock: b
