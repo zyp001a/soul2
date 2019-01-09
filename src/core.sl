@@ -11,6 +11,7 @@
 //method.str: store pure name
 //ns.str: store pure name
 //scope.str: store pure name
+//state.str: store path
 //call.class: func
 //env.int: active
 //calls.class: func

@@ -36,7 +36,7 @@ env2cptx ->(ast Astx, def Cptx, local Cptx)Cptx{
  }
  #x = defx(envc, {
   envLocal: scopeObjNewx(b.dic["blockStateDef"])
-  envStack: arrNewx(arrc, &Arrx) 
+  envStack: arrNewx() 
   envExec: execsp
   envBlock: b
  })
@@ -90,7 +90,7 @@ subFunc2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, isproto Int)Cptx{
  }
  #cx = classNewx([fp, funcblockc])
  Cptx#x = objNewx(cx);
- x.dic["funcVars"] = arrNewx(arrstrc, funcVars)
+ x.dic["funcVars"] = arrNewx(funcVars, arrstrc)
  x.val = nlocal
  @return x
 }
@@ -209,8 +209,8 @@ enum2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
  #a = &Arrx
  #d = &Dicx 
  #c = curryDefx(def, name, enumc, {
-  enum: arrNewx(arrstrc, a)
-  enumDic: dicNewx(dicuintc, d)
+  enum: arrNewx(a, arrstrc)
+  enumDic: dicNewx(d, _, dicuintc)
  })
  
  #arr = Astx(ast[1])
@@ -225,7 +225,7 @@ enum2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
 }
 send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #arr = ast2arrx(Astx(ast[1]), def, local, func)
- @return callNewx(defmain.dic["send"], [arr])
+ @return callNewx(defmain.dic["send"], [arr], callrawc)
 }
 obj2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #c = classGetx(def, Str(ast[1]))
@@ -433,7 +433,7 @@ each2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  Cptx#bl = ast2blockx(Astx(v[3]), def, local, func)
  bl.dic["blockParent"] = block
  @return defx(ctrleachc, {
-  ctrlArgs: arrNewx(arrc, [
+  ctrlArgs: arrNewx([
    strNewx(key)
    strNewx(val)
    expr
@@ -462,7 +462,7 @@ for2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
  Cptx#bl = ast2blockx(Astx(v[3]), def, local, func)
  
  @return defx(ctrlforc, {
-  ctrlArgs: arrNewx(arrc, [
+  ctrlArgs: arrNewx([
    start
    check
    inc
@@ -560,7 +560,7 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
   def.dic[id] = defx(t);
   #ip = idNewx(def, id, idglobalc)
   #af = classGetx(idglobalc, "assign")
-  @return callNewx(af, [ip, r], callassignc)
+  @return callNewx(af, [ip, r], callrawc)
  }
  @return r
 }
@@ -636,7 +636,7 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #righto = convertx(righto, lpredt)
  
  #f = getx(lefto, "assign")
- @return callNewx(f, [lefto, righto], callassignc)
+ @return callNewx(f, [lefto, righto], callrawc)
 }
 call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #v = Astx(ast[1])
@@ -646,7 +646,7 @@ call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #astarr = Astx(ast[2])
  @if(f.type == T##CLASS){
   @if(astarr.len() == 0){
-   @return callNewx(defmain.dic["type"], [f], calltypec)
+   @return callNewx(defmain.dic["type"], [f], callrawc)
   }
   @return convertx(ast2cptx(Astx(astarr[0]), def, local, func), f)
  }
@@ -661,7 +661,11 @@ call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   arrx.push(ee)
  }
  //TODO if f is funcproto check type
+ @if(f.fraw){
+  @return callNewx(f, arrx, callrawc) 
+ }
  @return callNewx(f, arrx)
+ 
 }
 callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  Cptx#oo = ast2cptx(Astx(ast[1]), def, local, func)
@@ -679,7 +683,7 @@ callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   die("no method")
  }
  arr.arr.unshift(oo)
- @return callNewx(f, arr.arr, callmethodc)
+ @return callNewx(f, arr.arr)
 }
 preAst2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx){
  @each i e ast{
@@ -707,7 +711,7 @@ ast2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
   #x = objNewx(blockc)
   x.fdefault = @false  
  }
- #dicl = dicNewx(dicuintc, &Dicx)
+ #dicl = dicNewx(&Dicx, _, dicuintc)
  //TODO read def function and breakpoints first
  Int#i = 0;
  @each _ e ast{
@@ -734,7 +738,7 @@ ast2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
   arr.push(c)
   i++  
  }
- x.dic["blockVal"] = arrNewx(arrc, arr)
+ x.dic["blockVal"] = arrNewx(arr)
  x.dic["blockStateDef"] = local
  x.dic["blockLabels"] = dicl
  
@@ -764,12 +768,12 @@ ast2arrx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
  
  @if((it != _ && it.id != unknownc.id) || callable){
   #c = itemsDefx(arrc, it, callable)
-  #r = arrNewx(c, arrx)
+  #r = arrNewx(arrx, c)
   @if(callable){
    r.fmid = @true
   }
  }@else{
-  #r = arrNewx(arrc, arrx)  
+  #r = arrNewx(arrx)  
  }
  @if(il != 0){
   r.int = il
@@ -802,12 +806,12 @@ ast2dicx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
  
  @if((it != _ && it.id != unknownc.id) || callable){
   #c = itemsDefx(dicc, it, callable)
-  #r = dicNewx(c, dicx, arrx)
+  #r = dicNewx(dicx, arrx, c)
   @if(callable){
    r.fmid = @true
   }
  }@else{
-  #r = dicNewx(dicc, dicx, arrx)  
+  #r = dicNewx(dicx, arrx)  
  }
  @if(il != 0){
   r.int = il

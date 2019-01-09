@@ -11,12 +11,23 @@ Cptx => {
  
  fmid: Bool//is mid?
  fdefault: Bool//is default?
+ //for class and func
  fprop: Bool //is method?
+ 
  fstatic: Bool //cptc cptv nullc nullv emptyc ...
+ //for any
  fast: Bool //defined in ast
+ //for tobj
  farg: Bool //is arg
- fbitems: Bool //is basic element?
- fbnum: Bool //is basic number? 
+
+ //for class
+ fbitems: Bool //is basic items like Arr Dic Json? 
+ fbnum: Bool //is basic number?
+ fscope: Bool //is scope?
+
+ //for func
+ fraw: Bool //is raw func?(callraw, not eval args)
+ 
 
  ast: Astx
  
@@ -329,12 +340,7 @@ arrcallc := itemsDefx(arrc, callc)
 
 callpassrefc := curryDefx(defmain, "CallPassRef", callc)
 
-
 callrawc := curryDefx(defmain, "CallRaw", callc)
-calltypec := curryDefx(defmain, "CallType", callrawc)
-callassignc := curryDefx(defmain, "CallAssign", callrawc)
-
-callmethodc := curryDefx(defmain, "CallMethod", callc)
 
 
 //init id

@@ -20,7 +20,7 @@ funcDefx(defmain, "osArgs", ->(x Arrx, env Cptx)Cptx{
    }
    x.push(strNewx(v))
   }
-  _osArgs = arrNewx(arrstrc, x)
+  _osArgs = arrNewx(x, arrstrc)
  }
  @return _osArgs
 }, _, arrstrc)
@@ -62,15 +62,21 @@ funcDefx(defmain, "setIndent", ->(x Arrx, env Cptx)Cptx{
  @return nullv
 },[strc])
 
+funcDefx(defmain, "sendImpl", ->(x Arrx, env Cptx)Cptx{
+ Cptx#s = x[0]
+ Cptx#o = x[1] 
+ #arr = sendx(s, o.arr)
+ @return arrNewx(arr)
+},[classc, arrc], arrc)
 funcDefx(defmain, "methodGet", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#f = x[1]
- @return nullOrx(methodGetx(o, f))
+ @return nullOrx(methodGetx(o, f.class, f.str))//TODO modify
 },[classc, funcc], cptc)
 
 funcDefx(defmain, "send", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- #arr = sendx(o.arr)
+ #arr = sendx(defmain, o.arr)
  subBlockExecx(arr, env) 
  @return nullv
 },[arrc])
@@ -192,7 +198,7 @@ funcDefx(defmain, "log", ->(x Arrx, env Cptx)Cptx{
 }, [cptc])
 funcDefx(defmain, "die", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
- die(o.str)
+ diex(o.str, env)
  @return nullv
 }, [strc])
 funcDefx(defmain, "print", ->(x Arrx, env Cptx)Cptx{
@@ -271,7 +277,7 @@ funcDefx(defmain, "tplCall", ->(x Arrx, env Cptx)Cptx{
 }, [functplc, arrc, envc], cptc)
 funcDefx(defmain, "keys", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- @return copyx(arrNewx(arrstrc, o.arr))
+ @return copyx(arrNewx(o.arr, arrstrc))
 }, [dicc], arrstrc)
 
 funcDefx(defmain, "callFunc", ->(x Arrx, env Cptx)Cptx{
@@ -280,7 +286,7 @@ funcDefx(defmain, "callFunc", ->(x Arrx, env Cptx)Cptx{
 }, [callc], funcc)
 funcDefx(defmain, "callArgs", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- @return arrNewx(arrc, o.arr)
+ @return arrNewx(o.arr)
 }, [callc], arrc)
 
 funcDefx(defmain, "idStr", ->(x Arrx, env Cptx)Cptx{
@@ -372,7 +378,7 @@ methodDefx(objc, "toDic", ->(x Arrx, env Cptx)Cptx{
  @each _ k keys(o.dic).sort(){
   arrx.push(strNewx(k))
  }
- @return dicNewx(dicc, o.dic, arrx)
+ @return dicNewx(o.dic, arrx)
 }, _, dicc)
 
 methodDefx(classc, "schema", ->(x Arrx, env Cptx)Cptx{
@@ -381,11 +387,11 @@ methodDefx(classc, "schema", ->(x Arrx, env Cptx)Cptx{
  @each _ k keys(o.dic).sort(){
   arrx.push(strNewx(k))
  }
- @return dicNewx(dicc, o.dic, arrx)
+ @return dicNewx(o.dic, arrx)
 }, _, dicc)
 methodDefx(classc, "parents", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- @return arrNewx(arrclassc, arrCopyx(o.arr))
+ @return arrNewx(arrCopyx(o.arr), arrclassc)
 }, _, arrc)
 
 methodDefx(intc, "toStr", ->(x Arrx, env Cptx)Cptx{
@@ -406,7 +412,7 @@ methodDefx(strc, "split", ->(x Arrx, env Cptx)Cptx{
  @each _ v xx{
   y.push(strNewx(v))
  }
- @return arrNewx(arrstrc, y)
+ @return arrNewx(y, arrstrc)
 },[strc, strc], arrstrc)
 methodDefx(strc, "replace", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -611,7 +617,7 @@ opDefx(jsonc, "get", ->(x Arrx, env Cptx)Cptx{
  @return nullv
 },strc, cptc, opgetc)
 
-opDefx(idlocalc, "assign", ->(x Arrx, env Cptx)Cptx{
+#assignf = opDefx(idlocalc, "assign", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
 
@@ -621,8 +627,8 @@ opDefx(idlocalc, "assign", ->(x Arrx, env Cptx)Cptx{
  local.dic[str] = copyCptFromAstx(v)
  @return v
 }, cptc, cptc, opassignc)
-
-opDefx(idstatec, "assign", ->(x Arrx, env Cptx)Cptx{
+assignf.fraw = @true
+#idstateassignf = opDefx(idstatec, "assign", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
  #v = execx(r, env)
@@ -631,6 +637,7 @@ opDefx(idstatec, "assign", ->(x Arrx, env Cptx)Cptx{
  o.dic[k] = copyCptFromAstx(v)
  @return v
 }, cptc, cptc, opassignc)
+idstateassignf.fraw = @true
 
 opDefx(strc, "add", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
@@ -825,7 +832,7 @@ execDefx("Dic", ->(x Arrx, env Cptx)Cptx{
    d[k] = execx(v, env)
   }
   #c = itemsDefx(dicc, classx(it))
-  @return dicNewx(c, d, arrCopyx(o.arr))
+  @return dicNewx(d, arrCopyx(o.arr), c)
  }
  @return o
 })
@@ -841,7 +848,7 @@ execDefx("Arr", ->(x Arrx, env Cptx)Cptx{
    a.push(execx(v, env))
   }
   #c = itemsDefx(arrc, classx(it))
-  @return arrNewx(c, a)
+  @return arrNewx(a, c)
  }
  @return o
 })

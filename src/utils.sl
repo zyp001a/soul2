@@ -173,7 +173,7 @@ valuesx ->(o Cptx)Cptx{
  }@else{
   #c = itemsDefx(arrc, classx(it))
  }
- @return arrNewx(c, arr) 
+ @return arrNewx(arr, c) 
 }
 prepareArgsx ->(args Arrx, f Cptx, env Cptx)Arrx{
  #argsx = &Arrx
@@ -241,20 +241,16 @@ intNewx ->(x Int, c Cptx)Cptx{
   int: x
  }
 }
-arrNewx ->(class Cptx, val Arrx)Cptx{
+arrNewx ->(val Arrx, class Cptx)Cptx{
  #x = &Cptx{
   type: T##ARR
   id: uidx()  
   obj: class
- }
- @if(val != _){
-  x.arr = val
- }@else{
-  x.arr = &Arrx
+  arr: arrOrx(val)
  }
  @return x
 }
-dicNewx ->(class Cptx, dic Dicx, arr Arrx)Cptx{
+dicNewx ->(dic Dicx, arr Arrx, class Cptx)Cptx{
  #r = &Cptx{
   type: T##DIC
   obj: class
@@ -284,6 +280,7 @@ nsNewx ->(name Str)Cptx{
 }
 scopeNewx ->(ns Cptx, name Str)Cptx{
  Cptx#x = classNewx()
+ x.fscope = @true
  x.name = "Scope_" + ns.str + "_" + name
  x.str = ns.str + "/" + name
  @if(ns.dic[name] == _){
@@ -460,7 +457,7 @@ fpDefx ->(types Arrx, return Cptx)Cptx{
  #x = classGetx(defmain, n);
  @if(x == _){
   #x = curryDefx(defmain, n, funcprotoc, {
-   funcVarTypes: arrNewx(arrc, types)
+   funcVarTypes: arrNewx(types)
    funcReturn: return
   })
  }
@@ -488,6 +485,7 @@ methodDefx ->(class Cptx, name Str, val Funcx, argtypes Arrx, return Cptx)Cptx{/
  fn.fprop = @true
  class.dic[name] = fn;
  fn.name = class.name + "_" + name
+ class.class.dic[fn.name] = fn;
  fn.str = name
  @return fn
 }
@@ -559,7 +557,7 @@ subClassGetx ->(scope Cptx, key Str, cache Dic)Cptx{
  @if(r != _){ 
   @return r
  }
- @if(scope.str != ""){
+ @if(scope.fscope){
   #r = dbGetx(scope, key);
   @if(r != _){
    scope.dic[key] = r
@@ -613,27 +611,26 @@ subMethodGetx ->(scope Cptx, v Cptx, key Str)Cptx{
  }
  @return r
 }
-methodGetx ->(scope Cptx, func Cptx)Cptx{
- Cptx#r = classGetx(scope, func.name);
+methodGetx ->(scope Cptx, o Cptx, key Str)Cptx{
+ Cptx#r = classGetx(scope, o.name + "_" + key);
  @if(r != _){
   @return r  
  }
 
- Cptx#o = func.class
  Arrx#p = o.arr
  @each _ v p{
-  r = subMethodGetx(scope, v, func.str)
+  r = subMethodGetx(scope, v, key)
   @if(r != _){
    @return r
   }
  }
 
- r = subMethodGetx(scope, classc, func.str)
+ r = subMethodGetx(scope, classc, key)
  @if(r != _){
   @return r
  }  
 
- r = subMethodGetx(scope, cptc, func.str)
+ r = subMethodGetx(scope, cptc, key)
  @if(r != _){
   @return r
  }   
@@ -798,21 +795,13 @@ defx ->(class Cptx, dic Dicx)Cptx{
   @return cptc
  }@elif(class.ctype == T##INT){
   Cptx#x = intNewx(0)
-  @if(class.name != "Int"){
-   x.obj = class
-  }
  }@elif(class.ctype == T##FLOAT){
   Cptx#x = floatNewx(0.0)
-  @if(class.name != "Float"){
-   x.obj = class
-  }
  }@elif(class.ctype == T##NUMBIG){
   Cptx#x = nullv//TODO
+  die("no numbig")
  }@elif(class.ctype == T##STR){
   Cptx#x = strNewx("")
-  @if(class.name != "Str"){
-   x.obj = class
-  }
  }@elif(class.ctype == T##NATIVE){
   Cptx#x = nativeNewx()
  }@elif(class.ctype == T##CALL){
@@ -821,18 +810,18 @@ defx ->(class Cptx, dic Dicx)Cptx{
   x.fdefault = @true     
  }@elif(class.ctype == T##ID){
   Cptx#x = idNewx()
-  x.obj = class
   x.fdefault = @true
  }@elif(class.ctype == T##DIC){
-  #x = dicNewx(class)
+  #x = dicNewx()
   x.fdefault = @true     
  }@elif(class.ctype == T##ARR){
-  #x = arrNewx(class)
+  #x = arrNewx()
   x.fdefault = @true     
  }@else{
   die("unknown class type")
   @return
  }
+ x.obj = class 
  @return x
 }
 
@@ -853,6 +842,8 @@ copyx ->(o Cptx)Cptx{
   farg: o.farg
   fbitems: o.fbitems
   fbnum: o.fbnum
+  fscope: o.fscope  
+  fraw: o.fraw
 
   name: o.name
   id: uidx()
@@ -1181,6 +1172,11 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  
  Arrx#stack = env.dic["envStack"].arr;
  #ostate = env.dic["envLocal"]
+ @if(func.dic["funcTplPath"]){
+  ostate.str = func.dic["funcTplPath"].str
+ }@else{
+  ostate.str = "Tpl: "+func.name
+ }
  stack.push(ostate)
  env.dic["envLocal"]  = nstate
  blockExecx(b, env)
@@ -1209,6 +1205,8 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
   nstate.int = 2  
   Arrx#stack = env.dic["envStack"].arr;
   #ostate = env.dic["envLocal"]
+  //TODO func def path
+  ostate.str = "Block:" + func.name   
   stack.push(ostate)
   env.dic["envLocal"]  = nstate
   Arrx#vars = func.dic["funcVars"].arr
@@ -1400,11 +1398,12 @@ convertx ->(val Cptx, to Cptx)Cptx{
  }
  @return callNewx(r, [val])
 }
-sendx ->(arr Arrx)Arrx{
-  #l = arr.len()
+sendx ->(scope Cptx, arr Arrx)Arrx{
+ #arrx = &Arrx;
+ #l = arr.len()
  @for #i=0; i<l-1; i++{
-  #from = ast2cptx(Astx(arr[i]), def, local, func)
-  #to = ast2cptx(Astx(arr[i+1]), def, local, func)
+  #from = arr[i]
+  #to = arr[i+1]
   #fromt = typepredx(from)
   #tot = typepredx(to)
   @if(fromt.id == unknownc.id){
@@ -1427,10 +1426,15 @@ sendx ->(arr Arrx)Arrx{
    log(strx(tot))   
    die("send to type no name")  
   }
+  /*
+  @if(i<l-3){
+   #to2 = arr[i+2]
+   #to3 = arr[i+3]   
+  }
   @if(i<l-2){
-   #toto = ast2cptx(Astx(arr[i+2]), def, local, func)
-   //#totot = typepredx(toto)  
-   #f = classGetx(tot, "bridge")
+   #to2 = arr[i+2]
+   #to2t = typepredx(to2)
+   #f = methodGetx(scope, tot, "bridge")
    @if(f){
     @if(tot.id == unknownc.id){
      log(arr)
@@ -1438,12 +1442,12 @@ sendx ->(arr Arrx)Arrx{
      die("send to type not defined")
     }
    
-    x.arr.push(callNewx(f, [to, from, toto]))
+    arrx.push(callNewx(f, [to, from, to2]))
     i++;
     @continue
    }
   }  
-  
+  */
   @if(!inClassx(fromt, handlerc)){ //write to val
    #tomsgt = classx(classGetx(tot, "handlerMsgInType"))
    @if(!inClassx(fromt, tomsgt)){
@@ -1452,8 +1456,8 @@ sendx ->(arr Arrx)Arrx{
     log(strx(tomsgt))   
     die("cannot send to toVal");
    }
-   #fwrite = classGetx(tot, "write")
-   x.arr.push(callNewx(fwrite, [to, from]))   
+   #fwrite = methodGetx(scope, tot, "write")
+   arrx.push(callNewx(fwrite, [to, from]))   
    @continue;
   }
   @if(!inClassx(tot, handlerc)){ //read from val
@@ -1475,10 +1479,10 @@ sendx ->(arr Arrx)Arrx{
      die("cannot send to fromVal");
     }
    }
-   #fread = classGetx(fromt, "read")
+   #fread = methodGetx(scope, fromt, "read")
    #assignf = getx(to, "assign")
-   #ncall = callNewx(assignf, [to, callNewx(fread, [from])], callassignc)
-   x.arr.push(ncall)   
+   #ncall = callNewx(assignf, [to, callNewx(fread, [from])], callrawc)
+   arrx.push(ncall)   
    @continue;
   }
   @if(!msgt){
@@ -1493,26 +1497,34 @@ sendx ->(arr Arrx)Arrx{
    log(strx(tomsgt))   
    die("cannot send to");
   }
-  #f = classGetx(fromt, "pipe" + tot.name)
+  #f = methodGetx(scope, fromt, "pipe" + tot.name)
   @if(f){
-   x.arr.push(callNewx(f, [from, to]))
+   arrx.push(callNewx(f, [from, to]))
    @continue
   }
-  #fread = classGetx(fromt, "read")
+  /*
+  #fread = methodGetx(scope, fromt, "read")
   //TODO convertt  
-  #fwrite = classGetx(tot, "write")
+  #fwrite = methodGetx(scope, tot, "write")
   @if(fread != _ && fwrite != _){
    #tmpid = idNewx(local, "tmp" + uidx(), idlocalc)
-   x.arr.push(callNewx(classGetx(idlocalc, "assign"), [
+   arrx.push(callNewx(classGetx(idlocalc, "assign"), [
     tmpid,
     callNewx(fread, [from])   
-   ], callassignc))
-   x.arr.push(callNewx(fwrite, [to, tmpid]))
+   ], callrawc))
+   arrx.push(callNewx(fwrite, [to, tmpid]))
    @continue   
   }
+  */
   log(arr)
   log(i)
   die("cannot send, not function matched")
  }
-
+ @return arrx
+}
+diex ->(str Str, env Cptx){
+ @each _ v env.dic["envStack"].arr{
+  log(v.str)
+ }
+ die(str)
 }

@@ -21,6 +21,8 @@ Class#c = #0
 //   res = t
   }@elif(inClass(c, Bool)){
    res = "bool"
+  }@elif(inClass(c, Enum)){
+   res = "uint8"
   }@elif(inClass(c, Uint)){
    res = "uint"
   }@elif(inClass(c, Int)){
