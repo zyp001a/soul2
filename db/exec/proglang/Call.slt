@@ -9,7 +9,6 @@ Arr#a = callArgs(#0)
  #n = getName(f)
  @if(getPropFlag(f)){ 
   #r = propGet(getExec(), getClass(f), getPropName(f))
-//  #r = methodGet(getExec(), f)
  }@else{
   #r = get(getExec(), n)
  }

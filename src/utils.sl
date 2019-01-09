@@ -944,8 +944,9 @@ getx ->(o Cptx, key Str)Cptx{
  @return classGetx(cptc, key)
 }
 setx ->(o Cptx, key Str, val Cptx)Cptx{
- //TODO objSet
- @return copyCptFromAstx(val)
+ #x = copyCptFromAstx(val)
+ o.dic[key] = x
+ @return x
 }
 
 mustTypepredx ->(o Cptx)Cptx{
@@ -955,11 +956,13 @@ mustTypepredx ->(o Cptx)Cptx{
   log(strx(r))
   die("unknown type")
  }
+ /*
  @if(r.name == ""){
   log(strx(o)) 
   log(strx(r))  
   die("typepredx: type with no name")
  }
+ */
  @return r
 }
 typepredx ->(o Cptx)Cptx{
@@ -1374,7 +1377,7 @@ convertx ->(val Cptx, to Cptx)Cptx{
  @if(val.id == nullv.id){
   @return val
  } 
- @if(!to || to.id == cptc.id){
+ @if(!to || to.id == cptc.id || to.id == unknownc.id){
   @return val
  }
  #from = typepredx(val)

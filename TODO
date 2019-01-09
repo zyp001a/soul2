@@ -42,14 +42,11 @@ A_read?
 # soul def
 rm filex
 stream handler
-functpl to real func not macro
-method
 grammar! method, scope grammar, typepredx
 tobj
 substr
 soul convert func call gen
 dynamic allow arr length
-setx
 //isdef flag
 auto gen soul "def" func to go func
 check fdefault

@@ -276,26 +276,20 @@ op2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
 
 itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  Cptx#items = ast2cptx(Astx(ast[1]), def, local, func)
- #itemstc = typepredx(items)
- @if(itemstc.id == unknownc.id){
-  log(strx(items))
-  die("don't known dic or arr")
- }
- Cptx#key = ast2cptx(Astx(ast[2]), def, local, func) 
+ #itemstc = mustTypepredx(items)
+ Cptx#key = ast2cptx(Astx(ast[2]), def, local, func)
+ 
  @if(v == _){
-  #getf = getx(itemstc, "get")
-  @if(getf == _){
-   log(strx(items))  
-   log(strx(itemstc))
-   die("no getf")
-  }
-  @return callNewx(getf, [items, key], callidc)
+  #getf = mustGetx(itemstc, "get")
+  #getc = callNewx(getf, [items, key], callidc) 
+  @return getc
  }
- #setf = getx(itemstc, "set")
-  //TODO check/convert v type
- @if(setf == _){
-  die("no setf")
- }  
+ #setf = mustGetx(itemstc, "set")
+
+ #lit = getx(itemstc, "itemsType")
+ @if(lit != _ && lit.id != cptv.id){
+  @return callNewx(setf, [items, key, convertx(v, classx(lit))])
+ }
  #lefto = callNewx(setf, [items, key, v])
   
  #predt = typepredx(v)  
@@ -350,11 +344,12 @@ return2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
 objget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  Cptx#obj = ast2cptx(Astx(ast[1]), def, local, func)
  @if(obj.type == T##OBJ || obj.type == T##CALL || obj.type == T##ID){
+  #getc = callNewx(defmain.dic["get"], [obj, strNewx(Str(ast[2]))], callidc)
   @if(v == _){
-   @return callNewx(defmain.dic["get"], [obj, strNewx(Str(ast[2]))], callidc)
-  }@else{
-   @return callNewx(defmain.dic["set"], [obj, strNewx(Str(ast[2])), v], callidc)
+   @return getc
   }
+  #lpredt = typepredx(getc)
+  @return callNewx(defmain.dic["set"], [obj, strNewx(Str(ast[2])), convertx(v, lpredt)], callidc)
  }@else{
  //TODO objget for other type
   @return
