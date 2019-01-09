@@ -106,6 +106,10 @@ funcDefx(defmain, "as", ->(x Arrx, env Cptx)Cptx{//Cpt to any
 funcDefx(defmain, "type", ->(x Arrx, env Cptx)Cptx{//Cpt to any
  @return nullv
 },[cptc], cptc)
+funcDefx(defmain, "implConvert", ->(x Arrx, env Cptx)Cptx{//int/ convertion
+ Cptx#o = x[0]
+ @return o  
+},[cptc, classc], cptc)
 funcDefx(defmain, "numConvert", ->(x Arrx, env Cptx)Cptx{//int/ convertion
  Cptx#o = x[0]
  Cptx#c = x[1]
@@ -234,6 +238,10 @@ funcDefx(defmain, "ind", ->(x Arrx, env Cptx)Cptx{
 funcDefx(defmain, "exec", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return execx(l, env, 1)
+}, [cptc], cptc)
+funcDefx(defmain, "execNative", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return execx(l, env)
 }, [cptc], cptc)
 funcDefx(defmain, "parseSend", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
@@ -415,6 +423,10 @@ methodDefx(floatc, "toStr", ->(x Arrx, env Cptx)Cptx{
  @return strNewx(Str(Float(o.val)))
 },[intc], strc)
 
+methodDefx(strc, "toBytes", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return strNewx(o.str, bytesc)
+}, _, bytesc)
 methodDefx(strc, "split", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#sep = x[1] 

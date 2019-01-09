@@ -1,6 +1,7 @@
 ~
 #arr = sendImpl(getExec(), #0)
 @each _ v #arr{
- ~~=exec(v)~~
+ ~~:exec(v)~
+~
 }
 ~

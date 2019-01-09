@@ -394,7 +394,11 @@ classDefx ->(scope Cptx, name Str, parents Arrx, schema Dicx)Cptx{
  @return x
 }
 curryDefx ->(scope Cptx, name Str, class Cptx, schema Dicx)Cptx{
- #x = classNewx([class], schema)
+ @if(class == _){
+  #x = classNewx([], schema)
+ }@else{
+  #x = classNewx([class], schema) 
+ }
  routex(x, scope, name)
  @return x
 }
@@ -996,6 +1000,10 @@ subTypepredx ->(o Cptx)Cptx{
    Cptx#arg1 = args[1]
    @return arg1
   }
+  @if(f.id == defmain.dic["implConvert"].id){
+   Cptx#arg1 = args[1]
+   @return arg1
+  }
   @if(f.id == defmain.dic["type"].id){
    Cptx#arg0 = args[0]
    @return arg0
@@ -1402,7 +1410,20 @@ convertx ->(val Cptx, to Cptx)Cptx{
   @return val  
  }
  @if(inClassx(from, to)){
- //TODO convert struct
+  //TODO convert struct TODO TODO
+  @if(to.ctype == from.ctype && to.ctype == T##OBJ){
+   @return callNewx(defmain.dic["implConvert"], [val, to])
+  }
+  @if(to.id == bytesc.id){//for bytesc exception
+   @if(!val.fmid){
+    val.obj = to
+    val.pred = to    
+    to.obj = val   
+    @return val
+   }
+   #r = getx(from, "toBytes")
+   @return callNewx(r, [val])   
+  }
   @return val
  } 
  @if(to.ctype == from.ctype){
@@ -1432,6 +1453,42 @@ convertx ->(val Cptx, to Cptx)Cptx{
  }
  @return callNewx(r, [val])
 }
+sendFinalx ->(arrx Arrx, scope Cptx, from Cptx, to Cptx)Bool{
+//should read from left
+ #fromt = mustTypepredx(from)
+ #tot = mustTypepredx(to)
+
+ @if(inClassx(tot, handlerc)){ //read from val
+  @return @false
+ }
+ @if(to.type != T##ID){
+  die("if not handler, can only assign to ID");
+  @return @false
+ }
+
+ @if(!inClassx(fromt, handlerc)){
+  #fromx = from
+  #fromxt = fromt
+ }@else{
+  #fread = mustPropGetx(scope, fromt, "read")
+  #fromx = callNewx(fread, [from])
+  #fromxt = classx(classGetx(fromt, "handlerMsgOutType"))
+ }
+ @if(tot.id == nullc.id){
+  tot = fromxt
+  to.pred = fromxt  
+  to.class.dic[to.str] = defx(fromxt)
+// }@elif(){
+  
+ }@else{
+  fromx = convertx(fromx, tot)  
+ } 
+ #assignf = mustGetx(to, "assign")
+ #ncall = callNewx(assignf, [to, fromx], callrawc)
+ arrx.push(ncall)
+ @return @true
+}
+
 sendx ->(scope Cptx, arr Arrx)Arrx{
  #arrx = &Arrx;
  #l = arr.len()
@@ -1440,35 +1497,35 @@ sendx ->(scope Cptx, arr Arrx)Arrx{
   #to = arr[i+1]
   #fromt = mustTypepredx(from)
   #tot = mustTypepredx(to)
-  @if(!inClassx(tot, handlerc)){ //read from val
-    //TODO allow handler def  
-   @if(to.type != T##ID){
-    log(strx(to))
-    log(strx(tot))    
-    die("cannot assign to from handler");
-   }
-   #fread = mustPropGetx(scope, fromt, "read")
-   #cread = callNewx(fread, [from])
-   #msgt = classx(classGetx(fromt, "handlerMsgOutType"))
-   @if(tot.id == nullc.id){
-    tot = msgt
-    to.class.dic[to.str] = msgt
-   }@else{
-    cread = convertx(cread, tot)
-   }
-   #assignf = getx(to, "assign")
-   #ncall = callNewx(assignf, [to, cread], callrawc)
-   arrx.push(ncall)
-   @continue;
+  //&B = A_read(&A)
+  #done = sendFinalx(arrx, scope, from, to)
+  @if(done){
+   @continue
   }
-  /*
+
+  /*    
   @if(i<l-3){
    #to2 = arr[i+2]
    #to3 = arr[i+3]   
   }
+
   @if(i<l-2){
-   #to2 = arr[i+2]
-   #to2t = typepredx(to2)
+   #f = propGetx(scope, tot, "exchange" + fromt.name)
+   @if(f){
+    //&C = B_exchangeA(&B, &A)   
+    #cexch = callNewx(f, [to, from])
+    #to2 = arr[i+2]    
+    #done = sendFinalx(arrx, scope, cexch, to2)
+    @if(done){
+     @continue
+    }
+    
+    #to2t = typepredx(to2)
+
+    arrx.push(callNewx(f, [to, from]))
+    i++
+    @continue
+   }
    #f = propGetx(scope, tot, "bridge")
    @if(f){
     @if(tot.id == unknownc.id){
@@ -1483,48 +1540,29 @@ sendx ->(scope Cptx, arr Arrx)Arrx{
    }
   }  
   */
+  //B_write(&B, &A)
   @if(!inClassx(fromt, handlerc)){ //write to val
    #tomsgt = classx(classGetx(tot, "handlerMsgInType"))
-   #fwrite = propGetx(scope, tot, "write")
-   @if(!fwrite){
-    log(tot)
-    die("no write")
-   }
+   #fwrite = mustPropGetx(scope, tot, "write")
    from = convertx(from, tomsgt)
-   arrx.push(callNewx(fwrite, [to, from]))   
+   arrx.push(callNewx(fwrite, [to, from]))
    @continue;
   }
-  @if(!msgt){
-   #msgt = classx(classGetx(fromt, "handlerMsgOutType"))
-  }
-  @if(!tomsgt){
-   #tomsgt = classx(classGetx(fromt, "handlerMsgInType"))
-  }
-  @if(!inClassx(msgt, tomsgt)){
-  //TODO check if can convert or die
-   log(strx(msgt))
-   log(strx(tomsgt))   
-   die("cannot send to");
-  }
+
+  //A_pipeB(&A, &B)
   #f = propGetx(scope, fromt, "pipe" + tot.name)
   @if(f){
    arrx.push(callNewx(f, [from, to]))
    @continue
   }
-  /*
-  #fread = propGetx(scope, fromt, "read")
-  //TODO convertt  
-  #fwrite = propGetx(scope, tot, "write")
-  @if(fread != _ && fwrite != _){
-   #tmpid = idNewx(local, "tmp" + uidx(), idlocalc)
-   arrx.push(callNewx(classGetx(idlocalc, "assign"), [
-    tmpid,
-    callNewx(fread, [from])   
-   ], callrawc))
-   arrx.push(callNewx(fwrite, [to, tmpid]))
-   @continue   
-  }
-  */
+
+  //B_write(&B, A_read(&A))
+  #fread = mustPropGetx(scope, fromt, "read")
+  #fwrite = mustPropGetx(scope, tot, "write")
+  #tomsgt = classx(classGetx(tot, "handlerMsgInType"))
+  #cread = convertx(callNewx(fread, [from]), tomsgt)
+  arrx.push(callNewx(fwrite, [to, cread]))
+  @continue
   log(arr)
   log(i)
   die("cannot send, not function matched")

@@ -203,7 +203,7 @@ jsonc := classDefx(defmain, "Json", [dicc])
 jsonarrc := classDefx(defmain,, "JsonArr", [arrc])
 jsonarrc.fbitems = @true
 
-bufferc := classDefx(defmain, "Buffer", [strc])
+
 pathxc := classDefx(defmain, "Pathx", _, {
  path: strc
 })
@@ -251,15 +251,25 @@ functplc := classDefx(defmain, "FuncTpl", [funcc], {
  funcTplPath: strc
 })
 
-////////////def handlers
+////////////def stream and handlers
 
-handlerc := classDefx(defmain, "Handler", _, {
- handlerMsgOutType: classc
- handlerMsgInType: classc
+bufferc := classDefx(defmain, "Buffer", [bytesc])
+streamc := classDefx(defmain, "Stream", _, {
+ streamReadable: boolc
+ streamWriteable: boolc 
+})
+
+//handler, sometimes called channel
+handlerc := curryDefx(defmain, "Handler", _, {
+ handlerMsgOutType: bytesc
+ handlerMsgInType: bytesc
 })
 routerc := classDefx(defmain, "Router", [itemsc, handlerc], {
  itemsType: handlerc
 })
+routerc.fbitems = @true
+routerc.dic["routerRoot"] = defx(routerc)
+
 //get
 //set
 //find
@@ -270,8 +280,6 @@ routersubc := classDefx(defmain, "RouterSub", [routerc], {
  routerPathPrefix: strc 
 })
 
-routerc.fbitems = @true
-routerc.dic["routerRoot"] = defx(routerc)
 handlerstandalonec := classDefx(defmain, "HandlerStandalone", [handlerc])
 handlerembeddedc := classDefx(defmain, "HandlerEmbedded", [handlerc], {
  handlerRouter: routerc
@@ -309,10 +317,7 @@ clienthttpc := curryDefx(defmain, "ClientHttp", clientc)
 clienthttpsc := curryDefx(defmain, "ClientHttps", clienthttpc)
 
 
-filec := classDefx(defmain, "File", [handlerembeddedc],{
- handlerMsgInType: bytesc
- handlerMsgOutType: bytesc
-})
+filec := classDefx(defmain, "File", [handlerembeddedc])
 fsc := classDefx(defmain, "Fs", [nodec], {
  itemsType: filec
 })

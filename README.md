@@ -1,4 +1,10 @@
 ## Stream programming
+>> normal pass, if tmp/mid stream, auto close
+>>> append to
+
+Stream
+
+
 Handler: Func
 fh ->> {
  @susp
