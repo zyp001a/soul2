@@ -252,18 +252,23 @@ functplc := classDefx(defmain, "FuncTpl", [funcc], {
 })
 
 ////////////def stream and handlers
-
-bufferc := classDefx(defmain, "Buffer", [bytesc])
 streamc := classDefx(defmain, "Stream", _, {
+ streamNative: nativec
  streamReadable: boolc
- streamWriteable: boolc 
+ streamWriteable: boolc
 })
+bufferc := classDefx(defmain, "Buffer", [bytesc, streamc])
 
 //handler, sometimes called channel
 handlerc := curryDefx(defmain, "Handler", _, {
+ handlerStreamOutType: streamc
+ handlerStreamInType: streamc
  handlerMsgOutType: bytesc
  handlerMsgInType: bytesc
 })
+
+
+
 routerc := classDefx(defmain, "Router", [itemsc, handlerc], {
  itemsType: handlerc
 })

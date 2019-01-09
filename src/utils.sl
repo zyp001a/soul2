@@ -326,10 +326,11 @@ floatNewx ->(x Float, c Cptx)Cptx{
   val: x
  }
 }
-nativeNewx ->(f Funcx)Cptx{
+nativeNewx ->(f, c Cptx)Cptx{
  @return &Cptx{
   type: T##NATIVE
-  id: uidx()    
+  id: uidx()
+  obj: c
   val: f
  } 
 }
@@ -1466,13 +1467,28 @@ sendFinalx ->(arrx Arrx, scope Cptx, from Cptx, to Cptx)Bool{
   @return @false
  }
 
- @if(!inClassx(fromt, handlerc)){
-  #fromx = from
-  #fromxt = fromt
- }@else{
+ @if(inClassx(fromt, handlerc)){
+  #r = propGetx(scope, fromt, "read"+tot.name)
+  @if(r){
+   #fromx = callNewx(r, [from])  
+   #assignf = mustGetx(to, "assign")
+   #ncall = callNewx(assignf, [to, fromx], callrawc)
+   arrx.push(ncall)
+   @return @true
+  }
+  #stmread = mustPropGetx(scope, fromt, "read")
+  #stmfrom = callNewx(stmread, [from])
+  #stmfromt = classGetx(fromt, "handlerStreamOutType")
+  #fread = mustPropGetx(scope, stmfromt, "read")
+  #fromx = callNewx(fread, [stmfrom])
+  #fromxt = classGetx(fromt, "handlerMsgOutType")
+ }@elif(inClassx(fromt, streamc)){
   #fread = mustPropGetx(scope, fromt, "read")
   #fromx = callNewx(fread, [from])
-  #fromxt = classx(classGetx(fromt, "handlerMsgOutType"))
+  #fromxt = bytesc
+ }@else{
+  #fromx = from
+  #fromxt = fromt 
  }
  @if(tot.id == nullc.id){
   tot = fromxt
@@ -1482,10 +1498,12 @@ sendFinalx ->(arrx Arrx, scope Cptx, from Cptx, to Cptx)Bool{
   
  }@else{
   fromx = convertx(fromx, tot)  
- } 
+ }
+  
  #assignf = mustGetx(to, "assign")
  #ncall = callNewx(assignf, [to, fromx], callrawc)
  arrx.push(ncall)
+
  @return @true
 }
 
