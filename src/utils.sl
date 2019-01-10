@@ -326,14 +326,7 @@ floatNewx ->(x Float, c Cptx)Cptx{
   val: x
  }
 }
-nativeNewx ->(f, c Cptx)Cptx{
- @return &Cptx{
-  type: T##NATIVE
-  id: uidx()
-  obj: c
-  val: f
- } 
-}
+
 callNewx ->(func Cptx, args Arrx, obj Cptx)Cptx{
  @return &Cptx{
   type: T##CALL
@@ -370,11 +363,13 @@ funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  #fp = fpDefx(arr, return)
  @if(val != _){
   Cptx#x = classNewx([fp, funcnativec])
-  x.dic["funcNative"] = nativeNewx(val)  
+  #y = objNewx(x)
+  y.val = val
  }@else{
   #x = classNewx([fp])
+  #y = objNewx(x)  
  }
- @return objNewx(x)
+ @return y
 }
 boolNewx ->(x Bool)Cptx{
  @if(x){
@@ -438,7 +433,7 @@ itemsDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
  @if(type != _ && type.id != cptc.id){
   type = aliasGetx(type)
   Str#n = class.name+"_"+type.name
-  @if(n == "Arr_Byte"){
+  @if(n == "StaticArr_Byte"){
    n = "Bytes"
   }
   Cptx#r = classGetx(defmain, n)
@@ -668,8 +663,6 @@ classRawx ->(t T)Cptx{
   @return dicc
  }@elif(t == T##ARR){
   @return arrc
- }@elif(t == T##NATIVE){
-  @return nativec
  }@elif(t == T##CALL){
   @return callc
  }@elif(t == T##ID){
@@ -815,8 +808,6 @@ defx ->(class Cptx, dic Dicx)Cptx{
   die("no numbig")
  }@elif(class.ctype == T##STR){
   Cptx#x = strNewx("")
- }@elif(class.ctype == T##NATIVE){
-  Cptx#x = nativeNewx()
  }@elif(class.ctype == T##CALL){
   Cptx#x = callNewx()
   x.obj = class
@@ -890,8 +881,6 @@ eqx ->(l Cptx, r Cptx)Bool{
   @return l.id == r.id
  }@elif(t == T##ARR){
   @return l.id == r.id
- }@elif(t == T##NATIVE){
-  @return l.id == r.id  
  }@elif(t == T##CALL){
   @return l.id == r.id  
  }@elif(t == T##ID){
@@ -1180,8 +1169,6 @@ strx ->(o Cptx, i Int)Str{
   @return Str(Float(o.val))
  }@elif(t == T##STR){
   @return '"'+ escapex(o.str) + '"'
- }@elif(t == T##NATIVE){
-  @return "&Native"
  }@elif(t == T##CALL){
   @return strx(o.class) + "(" + arr2strx(o.arr, i) +")"
  }@elif(t == T##ID){  
@@ -1235,7 +1222,7 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
   die("func not defined")
  }
  @if(inClassx(func.obj, funcnativec)){
-  @return call(Funcx(getx(func, "funcNative").val), [args, env]);
+  @return call(Funcx(func.val), [args, env]);
  }
  @if(inClassx(func.obj, functplc)){ 
   @return tplCallx(func, args, env)

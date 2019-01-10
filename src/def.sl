@@ -502,18 +502,19 @@ methodDefx(fsc, "get", ->(x Arrx, env Cptx)Cptx{
   handlerPath: s
  })
 }, [strc], filec)
-methodDefx(filec, "write", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#d = x[1]
- #p = Filex(o.dic["handlerPath"].str)
- p.write(d.str)
+methodDefx(filec, "out", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#d = x[1]
+// #p = Filex(o.dic["handlerPath"].str)
+// p.write(d.str)
  @return nullv
-}, [bytesc])
-methodDefx(filec, "read", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- #p = Filex(o.dic["handlerPath"].str) 
- @return strNewx(p.readAll(), bytesc)
-}, _, bytesc)
+}, _, streamc)
+methodDefx(filec, "in", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// #p = Filex(o.dic["handlerPath"].str) 
+// @return strNewx(p.readAll(), bytesc)
+ @return nullv
+}, _, streamc)
 methodDefx(filec, "rm", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #p = o.dic["handlerPath"].str

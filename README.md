@@ -1,3 +1,18 @@
+Soul language
+abstract programming
+
+## Roadmap
+core: primitive + function + env + exec + get + id + call + assign
+item: dic + arr + json
+oop: class + object + inherent + property + method
+ctrl: if + for + each
+type: typepred + convert
+macro: tpl + load
+error: signal + error + handler
+concurrency: go + wait + channel
+comm: stream + agent + router
+
+
 ## Stream programming
 >> normal pass, if tmp/mid stream, auto close
 >>> append to

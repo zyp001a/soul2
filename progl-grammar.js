@@ -87,7 +87,10 @@ var grammar = {
 
 			["@this", "return 'THIS'"],
 			["@in", "return 'IN'"],
-			["@out", "return 'OUT'"],			
+			["@out", "return 'OUT'"],
+
+			["@go", "return 'GO'"],
+			["@wait", "return 'WAIT'"],
 			
       ["\\(", "return '('"],
       ["\\)", "return ')'"],

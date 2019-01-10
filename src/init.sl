@@ -1,7 +1,6 @@
 T := @enum CPT OBJ CLASS TOBJ \
  INT FLOAT NUMBIG STR \
  ARR DIC JSON \
- NATIVE \
  ID CALL
 //ID is superior than call becasue CallId exists
 Funcx ->(Arrx, Cptx)Cptx
@@ -180,7 +179,7 @@ dicc.ctype = T##DIC
 dicc.fbitems = @true
 
 /////8 advanced type init: string, enum, unlimited number...
-bytesc := itemsDefx(arrc, bytec)
+bytesc := itemsDefx(staticarrc, bytec)
 bytesc.ctype = T##STR
 bytesc.arr.push(valc)
 strc := curryDefx(defmain, "Str", bytesc)
@@ -218,10 +217,8 @@ funcprotoc := classDefx(defmain, "FuncProto", [funcc], {
  funcReturn: classc
 })
 nativec := classDefx(defmain, "Native")
-nativec.ctype = T##NATIVE
-funcnativec := classDefx(defmain, "FuncNative", [funcprotoc], {
- funcNative: nativec
-})
+
+funcnativec := classDefx(defmain, "FuncNative", [funcprotoc, nativec])
 
 //func -> vars + block/native/tpl
 //block -> val + state
@@ -251,25 +248,45 @@ functplc := classDefx(defmain, "FuncTpl", [funcc], {
  funcTplPath: strc
 })
 
+//init ctrl
+signalc := classDefx(defmain, "Signal");
+continuec := curryDefx(defmain, "Continue", signalc)
+breakc := curryDefx(defmain, "Break", signalc)
+gotoc := classDefx(defmain, "Goto", [signalc], {
+ goto: uintc
+})
+returnc := classDefx(defmain, "Return", [signalc], {
+ return: cptc
+})
+errorc := classDefx(defmain, "Error", [signalc], {
+ errorCode: uintc
+ errorMsg: strc
+})
+
+handlerc := curryDefx(defmain, "Handler", funcc, {
+ handlerMsgOutType: bytesc
+ handlerMsgInType: bytesc
+})
+////concurrency
+channelc := classDefx(defmain, "Channel", [nativec])
+
 ////////////def stream and handlers
-streamc := classDefx(defmain, "Stream", _, {
+streamc := classDefx(defmain, "Stream", [nativec], {
  streamNative: nativec
  streamReadable: boolc
  streamWriteable: boolc
 })
-bufferc := classDefx(defmain, "Buffer", [bytesc, streamc])
 
 //handler, sometimes called channel
-handlerc := curryDefx(defmain, "Handler", _, {
- handlerStreamOutType: streamc
- handlerStreamInType: streamc
- handlerMsgOutType: bytesc
- handlerMsgInType: bytesc
+
+
+agentc := curryDefx(defmain, "Agent", _, {
+ agentHandler: handlerc
+ agentOutType: streamc
+ agentInType: streamc
 })
 
-
-
-routerc := classDefx(defmain, "Router", [itemsc, handlerc], {
+routerc := classDefx(defmain, "Router", [itemsc, agentc], {
  itemsType: handlerc
 })
 routerc.fbitems = @true
@@ -284,20 +301,14 @@ routersubc := classDefx(defmain, "RouterSub", [routerc], {
  routerParent: routerc
  routerPathPrefix: strc 
 })
-
-handlerstandalonec := classDefx(defmain, "HandlerStandalone", [handlerc])
-handlerembeddedc := classDefx(defmain, "HandlerEmbedded", [handlerc], {
- handlerRouter: routerc
- handlerPath: strc 
-})
-
+/*
 msgc := classDefx(defmain, "Msg", _, {
  msgSrc: handlerc
  msgContent: cptc
  msgModTime: timec
  msgSendTime: timec
 })
-
+*/
 
 ///////def internet and file system
 nodec := classDefx(defmain, "Node", [routerc])
@@ -322,7 +333,7 @@ clienthttpc := curryDefx(defmain, "ClientHttp", clientc)
 clienthttpsc := curryDefx(defmain, "ClientHttps", clienthttpc)
 
 
-filec := classDefx(defmain, "File", [handlerembeddedc])
+filec := classDefx(defmain, "File", [agentc])
 fsc := classDefx(defmain, "Fs", [nodec], {
  itemsType: filec
 })
@@ -331,7 +342,7 @@ dirc := classDefx(defmain, "Dir", [routersubc], {
  routerParent: fsc
 })
 
-schemac := curryDefx(defmain, "Schema", handlerc)
+schemac := curryDefx(defmain, "Schema", agentc)
 dbmsc := classDefx(defmain, "Dbms", [nodec], {
  itemsType: schemac
 })
@@ -438,20 +449,6 @@ opconcatc := curryDefx(defmain, "OpConcat", op2c, {
  opPrecedence: intNewx(80)
 })
 
-//init ctrl
-signalc := classDefx(defmain, "Signal");
-continuec := curryDefx(defmain, "Continue", signalc)
-breakc := curryDefx(defmain, "Break", signalc)
-gotoc := classDefx(defmain, "Goto", [signalc], {
- goto: uintc
-})
-returnc := classDefx(defmain, "Return", [signalc], {
- return: cptc
-})
-errorc := classDefx(defmain, "Error", [signalc], {
- errorCode: uintc
- errorMsg: strc
-})
 /////13 def ctrl
 ctrlc := classDefx(defmain, "Ctrl")
 ctrlargc := classDefx(defmain, "CtrlArg", [ctrlc], {
