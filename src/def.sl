@@ -221,6 +221,11 @@ funcDefx(defmain, "print", ->(x Arrx, env Cptx)Cptx{
  print(o.str)
  @return nullv
 }, [strc])
+funcDefx(defmain, "lg", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0];
+ print(o.str)
+ @return nullv
+}, [strc])
 funcDefx(defmain, "appendIfExists", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
  Cptx#app = x[1]; 
@@ -320,6 +325,14 @@ funcDefx(defmain, "idVal", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return o.class
 }, [callc], cptc)
+
+
+funcDefx(defmain, "malloc", ->(x Arrx, env Cptx)Cptx{
+ Cptx#i = x[0]
+ Cptx#c = x[1]
+ #arr = malloc(i.int, Cptx)
+ @return arrNewx(arr, itemsDefx(staticarrc, c))
+},[uintc, classc], staticarrc)
 
 methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -423,9 +436,14 @@ methodDefx(floatc, "toStr", ->(x Arrx, env Cptx)Cptx{
  @return strNewx(Str(Float(o.val)))
 },[intc], strc)
 
+methodDefx(bytesc, "toStr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return strNewx(o.bytes)
+}, _, strc)
+
 methodDefx(strc, "toBytes", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- @return strNewx(o.str, bytesc)
+ @return bytesNewx(o.str)
 }, _, bytesc)
 methodDefx(strc, "split", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -524,6 +542,20 @@ methodDefx(filec, "rm", ->(x Arrx, env Cptx)Cptx{
 
 
 
+methodDefx(arrc, "toStaticArr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #no = arrNewx(o.arr, o.obj)
+ itemsChangeBasicx(no, arrc) 
+ @return no
+},_, arrc)
+
+methodDefx(staticarrc, "toArr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #no = arrNewx(o.arr, o.obj)
+ itemsChangeBasicx(no, staticarrc) 
+ @return no
+},_, staticarrc)
+
 
 methodDefx(arrc, "push", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -544,8 +576,8 @@ methodDefx(arrc, "unshift", ->(x Arrx, env Cptx)Cptx{
 },[cptc])
 methodDefx(arrc, "len", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- @return intNewx(o.arr.len())
-},_, intc)
+ @return intNewx(o.arr.len(), uintc)
+},_, uintc)
 methodDefx(arrc, "set", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#i = x[1]
@@ -581,14 +613,14 @@ methodDefx(arrstrc, "join", ->(x Arrx, env Cptx)Cptx{
 methodDefx(jsonc, "len", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  //TODO
- @return intNewx(o.arr.len())
-},_, intc)
+ @return intNewx(o.arr.len(), uintc)
+},_, uintc)
 
 
 methodDefx(dicc, "len", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- @return intNewx(o.arr.len())
-},_, intc)
+ @return intNewx(o.arr.len(), uintc)
+},_, uintc)
 methodDefx(dicc, "set", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#i = x[1]
@@ -626,7 +658,12 @@ methodDefx(dicstrc, "values", ->(x Arrx, env Cptx)Cptx{
 opDefx(arrc, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
- @return o.arr[e.int]
+ #r = o.arr[e.int]
+ @if(r == _){
+  #ct = classx(getx(o, "itemsType")) 
+  r = defaultx(ct)
+ }
+ @return r
 },intc, cptc, opgetc)
 opDefx(dicc, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -899,15 +936,15 @@ execDefx("CtrlContinue", ->(x Arrx, env Cptx)Cptx{
 execDefx("CtrlIf", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
  Arrx#args = c.dic["ctrlArgs"].arr
- Int#l = args.len()
- @for Int#i=0;i<l-1;i+=2 {
+ #l = Int(args.len())
+ @for #i=0;i<l - 1;i+=2 {
   #r = execx(args[i], env)
   @if(ifcheckx(r)){
    @return blockExecx(args[i+1], env)
   }
  }
  @if(l%2 == 1){
-  @return blockExecx(args[l-1], env)
+  @return blockExecx(args[l - 1], env)
  }
  @return nullv
 })
@@ -963,9 +1000,14 @@ execDefx("CtrlEach", ->(x Arrx, env Cptx)Cptx{
    }
   }
  }@elif(da.type == T##ARR){
-  @each i v da.arr{
+  #ct = classx(getx(da, "itemsType"))
+  @for #i=0; i<da.arr.len(); i++{
+   #v = da.arr[i]
+   @if(v == _){
+    v = defaultx(ct)
+   }
    @if(key != ""){
-    local[key] = intNewx(Int(i), uintc)
+    local[key] = intNewx(i, uintc)
    }
    @if(val != ""){
     local[val] = v   

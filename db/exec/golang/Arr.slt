@@ -1,3 +1,8 @@
 ~
 #t = class(#0.itemsType)
-~&[]~=^_typemap t^~{~=^_execarr #0, ", "^~}
+#l = ""
+Uint#li = #0.itemsLimitedLen
+@if(li > 0){
+ #l = Str(#li)
+}
+~&[~=l~]~=^_typemap t^~{~=^_execarr #0, ", "^~}

@@ -1,3 +1,1 @@
-~
-#t = class(#0.itemsType)
-~[]~=^_typemap t^~{~=^_execarr #0, ", "^~}
+~=^_typemap class(#0)^~{~=^_execarr #0, ", "^~}

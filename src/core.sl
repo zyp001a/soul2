@@ -8,6 +8,8 @@
 //class.obj: cache single instance
 
 ///special usage
+//items.str: for rec
+//str.int: fixed size
 //method.str: store pure name
 //ns.str: store pure name
 //scope.str: store pure name

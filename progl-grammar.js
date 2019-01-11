@@ -32,10 +32,10 @@ var grammar = {
 			["[a-zA-Z_\\$][a-zA-Z0-9_\\$]*", "return 'ID'"],
 //			["\\#[0-9]+", "yytext = yytext.substr(1);return 'LOCAL'"],			
 			//TODO bignumber
+      ["{int}{frac}{exp}?u?[slb]?\\b", "return 'FLOAT';"],			
+      ["{int}{exp}?f?\\b", "return 'INT';"],
       ["0[0-9]+\\b", "return 'OCT';"],
-      ["0[xX][a-fA-F0-9]+\\b", "return 'HEX';"],
-      ["\\b{int}{frac}{exp}?u?[slb]?\\b", "return 'FLOAT';"],			
-      ["\\b{int}{exp}?f?\\b", "return 'INT';"],
+      ["0[xX][a-fA-F0-9]+\\b", "return 'HEX';"],			
 			["@if", "return 'IF'"],
 			["@else", "return 'ELSE'"],
 			["@elif", "return 'ELIF'"],						
@@ -92,6 +92,9 @@ var grammar = {
 			["@go", "return 'GO'"],
 			["@wait", "return 'WAIT'"],
 			
+			["@malloc", "return 'MALLOC'"],
+			["@free", "return 'free'"],						
+			
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
       ["\\[", "return '['"],
@@ -137,6 +140,7 @@ var grammar = {
 			["\\.", "return '.'"],
 			["\\|", "return '|'"],			
 			["{br}", "return ','"],
+			
 			[".", "return"]
     ]
   },
@@ -283,6 +287,8 @@ var grammar = {
 			 "$$ = ['for', [, $2, , $3]]"],
 			["FOR Expr , Expr , Expr Block",
 			 "$$ = ['for', [$2, $4, $6, $7]]"],
+			["FOR ( Expr , Expr , Expr ) Block",
+			 "$$ = ['for', [$3, $5, $7, $9]]"],
 			["EACH IdOrNull IdOrNull Expr Block",
 			 "$$ = ['each', [$2, $3, $4, $5]]"],
 			["RETURN Expr", "$$ = ['return', $2]"],

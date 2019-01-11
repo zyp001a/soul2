@@ -1,5 +1,5 @@
 T := @enum CPT OBJ CLASS TOBJ \
- INT FLOAT NUMBIG STR \
+ INT FLOAT NUMBIG STR BYTES\
  ARR DIC JSON \
  ID CALL
 //ID is superior than call becasue CallId exists
@@ -41,6 +41,7 @@ Cptx => {
  dic: Dicx
  arr: Arrx
  str: Str
+ bytes: Bytes
  int: Int
 // func: Funcx
  val: Cpt
@@ -110,7 +111,7 @@ tobjc := classNewx();
 routex(tobjc, defmain, "TObj");
 tobjc.ctype = T##TOBJ
 
-
+nativec := classDefx(defmain, "Native")
 midc := classDefx(defmain, "Mid")
 //midc must defined before itemsDefx
 
@@ -143,7 +144,7 @@ bnumDefx("Uint64", uintc)
 bnumDefx("Float32", floatc)
 bnumDefx("Float64", floatc)
 
-numbigc := curryDefx(defmain, "NumBig", numc)
+numbigc := classDefx(defmain, "NumBig", [numc, nativec])
 //TODO
 numbigc.ctype = T##NUMBIG
 
@@ -165,25 +166,29 @@ itemsc := classDefx(defmain, "Items", _, {
  itemsType: cptc
 })
 itemslimitedc := classDefx(defmain, "ItemsLimited", [itemsc], {
- itemsLimitedLength: uintc
+ itemsLimitedLen: uintc
 })
 arrc := curryDefx(defmain, "Arr", itemsc)
 arrc.ctype = T##ARR
 arrc.fbitems = @true
+arrc.str = arrc.name
 
 staticarrc := curryDefx(defmain, "StaticArr", arrc)
 staticarrc.fbitems = @true
+staticarrc.str = staticarrc.name
 
 dicc := curryDefx(defmain, "Dic", itemsc)
 dicc.ctype = T##DIC
 dicc.fbitems = @true
+dicc.str = dicc.name
 
 /////8 advanced type init: string, enum, unlimited number...
 bytesc := itemsDefx(staticarrc, bytec)
-bytesc.ctype = T##STR
+bytesc.ctype = T##BYTES
 bytesc.arr.push(valc)
-strc := curryDefx(defmain, "Str", bytesc)
 
+strc := curryDefx(defmain, "Str", valc)
+strc.ctype = T##STR
 
 arrstrc := itemsDefx(arrc, strc)
 dicstrc := itemsDefx(dicc, strc)
@@ -198,10 +203,14 @@ enumc := classDefx(defmain, "Enum", [uintc], {
  enumDic: dicuintc
 })
 timec := classDefx(defmain, "Time", [uintc])
-jsonc := classDefx(defmain, "Json", [dicc])
-jsonarrc := classDefx(defmain,, "JsonArr", [arrc])
-jsonarrc.fbitems = @true
 
+jsonc := classDefx(defmain, "Json", [dicc])
+jsonarrc := classDefx(defmain, "JsonArr", [arrc])
+
+stackc := classDefx(defmain, "Stack", [arrc])
+stackc.fbitems = @true
+queuec := classDefx(defmain, "Queue", [arrc])
+queuec.fbitems = @true
 
 pathxc := classDefx(defmain, "Pathx", _, {
  path: strc
@@ -216,7 +225,6 @@ funcprotoc := classDefx(defmain, "FuncProto", [funcc], {
  funcVarTypes: arrc
  funcReturn: classc
 })
-nativec := classDefx(defmain, "Native")
 
 funcnativec := classDefx(defmain, "FuncNative", [funcprotoc, nativec])
 
@@ -264,26 +272,33 @@ errorc := classDefx(defmain, "Error", [signalc], {
 })
 
 handlerc := curryDefx(defmain, "Handler", funcc, {
- handlerMsgOutType: bytesc
- handlerMsgInType: bytesc
+ handlerOutType: bytesc
+ handlerInType: bytesc
 })
 ////concurrency
 channelc := classDefx(defmain, "Channel", [nativec])
 
 ////////////def stream and handlers
 streamc := classDefx(defmain, "Stream", [nativec], {
- streamNative: nativec
  streamReadable: boolc
- streamWriteable: boolc
+ streamWritable: boolc
 })
+streaminc := curryDefx(defmain, "StreamIn", streamc, {
+ streamReadable: boolNewx(@true)
+})
+streamoutc := curryDefx(defmain, "StreamOut", streamc, {
+ streamWritable: boolNewx(@true)
+})
+streamioc := classDefx(defmain, "StreamOut", [streaminc, streamoutc])
+bufferc := classDefx(defmain, "Buffer", [streamioc])
 
 //handler, sometimes called channel
-
-
 agentc := curryDefx(defmain, "Agent", _, {
+ agentOutType: streamoutc
+ agentInType: streaminc
+})
+agentlocalc := curryDefx(defmain, "AgentLocal", agentc, {
  agentHandler: handlerc
- agentOutType: streamc
- agentInType: streamc
 })
 
 routerc := classDefx(defmain, "Router", [itemsc, agentc], {
@@ -301,14 +316,19 @@ routersubc := classDefx(defmain, "RouterSub", [routerc], {
  routerParent: routerc
  routerPathPrefix: strc 
 })
-/*
+
 msgc := classDefx(defmain, "Msg", _, {
- msgSrc: handlerc
- msgContent: cptc
+ msgSrc: agentc
+ msgStream: streamc
  msgModTime: timec
  msgSendTime: timec
 })
-*/
+msginc := classDefx(defmain, "MsgIn", [msgc], {
+ msgStream: streaminc
+})
+msgoutc := classDefx(defmain, "MsgOut", [msgc], {
+ msgStream: streamoutc
+})
 
 ///////def internet and file system
 nodec := classDefx(defmain, "Node", [routerc])

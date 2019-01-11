@@ -180,7 +180,7 @@ prepareArgsx ->(args Arrx, f Cptx, env Cptx)Arrx{
  @if(!inClassx(classx(f), functplc)){ //fill args
   Arrx#vartypes = getx(f, "funcVarTypes").arr
   @each i argdef vartypes{
-   @if(Int(i) < args.len()){
+   @if(i < args.len()){
     #t = passx(execx(args[i], env))
    }@else{
     t = copyx(argdef)
@@ -200,7 +200,7 @@ prepareArgsRefx ->(args Arrx, f Cptx, env Cptx)Arrx{
  @if(!inClassx(classx(f), functplc)){ //fill args
   Arrx#vartypes = getx(f, "funcVarTypes").arr
   @each i argdef vartypes{
-   @if(Int(i) < args.len()){
+   @if(i < args.len()){
     #t = execx(args[i], env)
    }@else{
     t = argdef
@@ -233,6 +233,17 @@ strNewx ->(x Str, c Cptx)Cptx{
   obj: c
   str: x
  }
+}
+bytesNewx ->(x Bytes, c Cptx)Cptx{
+ #r = &Cptx{
+  type: T##BYTES
+  obj: c
+  bytes: x
+ }
+ @if(x == _){
+  r.bytes = &Bytes
+ }
+ @return r
 }
 intNewx ->(x Int, c Cptx)Cptx{
  @return &Cptx{
@@ -403,6 +414,18 @@ bnumDefx ->(name Str, class Cptx)Cptx{
  x.fbnum = @true
  @return x
 }
+getNamex ->(x Cptx)Str{
+ @if(x.name != ""){
+  @return x.name
+ }
+ @each _ v x.arr{
+  #r = getNamex(v)
+  @if(r != ""){
+   @return r
+  }
+ }
+ @return ""
+}
 itemsChangeBasicx ->(v Cptx, nb Cptx)Cptx{
  @if(v.fmid){
   die("cannot change basic for mid")
@@ -411,7 +434,13 @@ itemsChangeBasicx ->(v Cptx, nb Cptx)Cptx{
   die("cannot change between ARR DIC JSON")
  }
  #ob = itemsGetBasicx(classx(v))
- v.obj = itemsDefx(ob, classx(getx(v, "itemsType")))
+ #r = getx(v, "itemsLimitedLen")
+ @if(r == _){
+  #l = 0
+ }@else{
+  #l = r.int
+ }
+ v.obj = itemsDefx(ob, classx(getx(v, "itemsType")), l)
  @return v
 }
 itemsGetBasicx ->(c Cptx)Cptx{
@@ -426,11 +455,11 @@ itemsGetBasicx ->(c Cptx)Cptx{
  }
  @return _;
 }
-itemsDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
+itemsDefx ->(class Cptx, type Cptx, len Int, mid Bool)Cptx{
  @if(!class.fbitems){
   die("item def first arg error")
  }
- @if(type != _ && type.id != cptc.id){
+ @if(type != _ && type.id != cptc.id && type.id != unknownc.id){
   type = aliasGetx(type)
   Str#n = class.name+"_"+type.name
   @if(n == "StaticArr_Byte"){
@@ -443,8 +472,20 @@ itemsDefx ->(class Cptx, type Cptx, mid Bool)Cptx{
  }@else{
   r = class
  }
+ r.str = r.name 
+ @if(!mid && len == 0){
+  @return r
+ }
+ r = classNewx([r])
+ r.str = r.name 
+ @if(len > 0){
+  r.arr.push(classNewx([itemslimitedc], {
+   itemsLimitedLen: intNewx(len, uintc)
+  }))
+  r.str += "_" + len
+ }
  @if(mid){
-  @return classNewx([r, midc])
+  r.arr.push(midc)
  }
  @return r;
 }
@@ -659,6 +700,8 @@ classRawx ->(t T)Cptx{
   @return numbigc
  }@elif(t == T##STR){
   @return strc
+ }@elif(t == T##BYTES){
+  @return bytesc
  }@elif(t == T##DIC){
   @return dicc
  }@elif(t == T##ARR){
@@ -742,6 +785,9 @@ classx ->(o Cptx)Cptx{
  @return classRawx(o.type)
 }
 defaultx ->(t Cptx)Cptx{
+ @if(t == _){
+  @return nullv
+ }
  @if(t.ctype == T##INT){
   #tar = intNewx(0)
  }@elif(t.ctype == T##FLOAT){
@@ -808,6 +854,8 @@ defx ->(class Cptx, dic Dicx)Cptx{
   die("no numbig")
  }@elif(class.ctype == T##STR){
   Cptx#x = strNewx("")
+ }@elif(class.ctype == T##BYTES){
+  Cptx#x = bytesNewx()
  }@elif(class.ctype == T##CALL){
   Cptx#x = callNewx()
   x.obj = class
@@ -860,6 +908,7 @@ copyx ->(o Cptx)Cptx{
   dic: dicCopyx(o.dic)
   arr: arrCopyx(o.arr)
   str: o.str
+  bytes: o.bytes
   int: o.int
   val: o.val
  }
@@ -998,6 +1047,26 @@ subTypepredx ->(o Cptx)Cptx{
    Cptx#arg0 = args[0]
    @return arg0
   }    
+  @if(f.id == defmain.dic["malloc"].id){
+   Cptx#arg1 = args[1]
+   @return itemsDefx(staticarrc, arg1)
+  }    
+  @if(f.id == defmain.dic["call"].id){
+   Cptx#arg0 = args[0]
+   #f = typepredx(arg0)
+   @if(f.id == unknownc.id){
+    @return f;
+   }
+   #ret = getx(f, "funcReturn")
+   @if(!ret){
+    @return cptc
+   }
+   @if(ret.id == emptyc.id){
+    @return cptc;
+   }   
+   @return ret
+  }
+  
   //if is itemGet    
   @if(f.id == defmain.dic["get"].id){
    Cptx#arg0 = args[0]     
@@ -1169,6 +1238,8 @@ strx ->(o Cptx, i Int)Str{
   @return Str(Float(o.val))
  }@elif(t == T##STR){
   @return '"'+ escapex(o.str) + '"'
+ }@elif(t == T##BYTES){
+  @return Str(o.bytes)
  }@elif(t == T##CALL){
   @return strx(o.class) + "(" + arr2strx(o.arr, i) +")"
  }@elif(t == T##ID){  
@@ -1185,7 +1256,6 @@ strx ->(o Cptx, i Int)Str{
  }
 }
 tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
-// log(func.dic["funcTplPath"].str)
  #b = func.dic["funcTplBlock"]
  @if(b == _){
   @return strNewx("")
@@ -1209,7 +1279,7 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  } 
  env.dic["envLocal"]  = nstate
  blockExecx(b, env)
- env.dic["envLocal"] = stack[stack.len()-1]
+ env.dic["envLocal"] = stack[stack.len() - 1]
  stack.pop()
 
  @return nstate.dic["$str"]
@@ -1243,7 +1313,7 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
    nstate.dic[vars[i].str] = arg   
   }
   Cptx#r = blockExecx(block, env)
-  env.dic["envLocal"] = stack[stack.len()-1]
+  env.dic["envLocal"] = stack[stack.len() - 1]
   stack.pop()
 
   @if(inClassx(classx(r), signalc)){
@@ -1400,17 +1470,9 @@ convertx ->(val Cptx, to Cptx)Cptx{
  @if(inClassx(from, to)){
   //TODO convert struct TODO TODO
   @if(to.ctype == from.ctype && to.ctype == T##OBJ){
-   @return callNewx(defmain.dic["implConvert"], [val, to])
-  }
-  @if(to.id == bytesc.id){//for bytesc exception
-   @if(!val.fmid){
-    val.obj = to
-    val.pred = to    
-    to.obj = val   
-    @return val
+   @if(!inClassx(to, funcc)){
+    @return callNewx(defmain.dic["implConvert"], [val, to])
    }
-   #r = getx(from, "toBytes")
-   @return callNewx(r, [val])   
   }
   @return val
  } 
@@ -1424,19 +1486,31 @@ convertx ->(val Cptx, to Cptx)Cptx{
    }@elif(val.type == T##ARR || val.type == T##DIC){
     @if(to.fbitems){
      @return itemsChangeBasicx(val, to)
-    }
+    }   
+   }
+  }
+  @if(from.ctype == T##ARR || from.ctype == T##DIC){
+   @if(from.str == "Static" + to.str){
+    #f = getx(staticarrc, "toArr")
+    @return callNewx(f, [val])
+   }
+   @if("Static" + from.str == to.str){
+    #f = getx(arrc, "toStaticArr")   
+    @return callNewx(f, [val])
    }
   }
  }
- @if(to.name == ""){
+
+ #name = getNamex(to)
+ @if(name == ""){
   die("class with no name")
  }
- #r = getx(from, "to"+to.name)
+ #r = getx(from, "to"+name)
  @if(r == _){
   log(strx(val))
   log(strx(from))   
   log(strx(to))
-  log("to"+to.name)
+  log("to"+name)
   die("convert func not defined")
  }
  @return callNewx(r, [val])
@@ -1497,7 +1571,7 @@ sendFinalx ->(arrx Arrx, scope Cptx, from Cptx, to Cptx)Bool{
 sendx ->(scope Cptx, arr Arrx)Arrx{
  #arrx = &Arrx;
  #l = arr.len()
- @for #i=0; i<l-1; i++{
+ @for #i=0; i<l - 1; i++{
   #from = arr[i]
   #to = arr[i+1]
   #fromt = mustTypepredx(from)

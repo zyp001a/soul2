@@ -40,11 +40,13 @@ A_read?
   ==>B_write(&B, A_read(&A))
 
 # soul def
+json
 rm filex
 stream handler
 grammar! method, scope grammar, typepredx
 tobj
 substr
+auto type and or
 soul convert func call gen
 dynamic allow arr length
 //isdef flag
