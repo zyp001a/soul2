@@ -112,7 +112,7 @@ parentMakex ->(o Cptx, parentarr Arrx){
  }
 }
 routex ->(o Cptx, scope Cptx, name Str)Cptx{
- //TODO route name should not contain $
+ //TODO route name should not contain $ ?
  #dic = scope.dic;
  dic[name] = o 
  o.name = name;
@@ -492,7 +492,7 @@ itemsDefx ->(class Cptx, type Cptx, len Int, mid Bool)Cptx{
 fpDefx ->(types Arrx, return Cptx)Cptx{
  #n = "FuncProto"
  @each _ v types{
-  #n += "_" + aliasGetx(classx(v)).name
+  #n += "__" + aliasGetx(classx(v)).name
  }
  #n += "__"+return.name
  #x = classGetx(defmain, n);
@@ -1468,9 +1468,9 @@ convertx ->(val Cptx, to Cptx)Cptx{
   @return val  
  }
  @if(inClassx(from, to)){
-  //TODO convert struct TODO TODO
   @if(to.ctype == from.ctype && to.ctype == T##OBJ){
    @if(!inClassx(to, funcc)){
+  //TODO convert struct TODO TODO   
     @return callNewx(defmain.dic["implConvert"], [val, to])
    }
   }
@@ -1567,7 +1567,11 @@ sendFinalx ->(arrx Arrx, scope Cptx, from Cptx, to Cptx)Bool{
 
  @return @true
 }
-
+byte2strx ->(b Byte)Str{
+ #c = malloc(1, Byte)
+ c[0] = b
+ @return Str(c) 
+}
 sendx ->(scope Cptx, arr Arrx)Arrx{
  #arrx = &Arrx;
  #l = arr.len()

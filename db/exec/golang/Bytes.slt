@@ -1,1 +1,1 @@
-[]byte(~=^Str #0^~)
+[]byte(~=exec(Str(Bytes(#0)))~)

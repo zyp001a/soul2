@@ -17,7 +17,7 @@ var grammar = {
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\(\\/)/g, '$1'); return 'REGEX';"],
 			["\\@`(\\\\.|[^\\\\`])*`", 
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\([~\\&])/g, '$1'); return 'TPL';"],
-			["@\'(\\\\.|\\.)*\'",
+			["@\'(\\\\.|[^\\\\\'])+\'",
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\u([0-9a-fA-F]{4})/, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; return n;}); return 'BYTE';"],
 			["@\"(\\\\.|[^\\\\\"])*\"",
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\u([0-9a-fA-F]{4})/g, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/g, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; return n;}); return 'BYTES';"],
@@ -35,39 +35,72 @@ var grammar = {
       ["{int}{frac}{exp}?u?[slb]?\\b", "return 'FLOAT';"],			
       ["{int}{exp}?f?\\b", "return 'INT';"],
       ["0[0-9]+\\b", "return 'OCT';"],
-      ["0[xX][a-fA-F0-9]+\\b", "return 'HEX';"],			
+      ["0[xX][a-fA-F0-9]+\\b", "return 'HEX';"],
+
+			["@true", "return 'TRUE'"],
+			["@false", "return 'FALSE'"],
+
+			["@enum", "return 'ENUM'"],			
+			["@type", "return 'TYPE'"],
+			
 			["@if", "return 'IF'"],
 			["@else", "return 'ELSE'"],
-			["@elif", "return 'ELIF'"],						
+			["@elif", "return 'ELIF'"],
+			["@for", "return 'FOR'"],
+			["@each", "return 'EACH'"],
+			["@switch", "return 'SWITCH'"],
+			["@case", "return 'CASE'"],						
+			
 			["@return", "return 'RETURN'"],
 			["@continue", "return 'CONTINUE'"],
 			["@break", "return 'BREAK'"],			
-			["@goto", "return 'GOTO'"],	
-			["@for", "return 'FOR'"],
-			["@each", "return 'EACH'"],
+			["@goto", "return 'GOTO'"],
+			
 			["@env", "return 'ENV'"],
-			["@addr", "return 'ADDR'"],
-			["@enum", "return 'ENUM'"],			
-			["@type", "return 'TYPE'"],
-			["@true", "return 'TRUE'"],
-			["@false", "return 'FALSE'"],
+						
 			["@load", "return 'LOAD'"],
+//TODO addr
+			["@addr", "return 'ADDR'"],			
+			
+//OS
+			["@proc", "return 'PROC'"],			
+			["@fs", "return 'FS'"],
+//NET			
+			["@inet", "return 'INET'"],
+			["@http", "return 'HTTP'"],
+			["@https", "return 'HTTPS'"],						
+			["@dir", "return 'DIR'"],
+			["@pwd", "return 'PWD'"],			
+			["@stdin", "return 'STDIN'"],
+			["@stdout", "return 'STDOUT'"],
+
+			//CONCURRENCY
+			["@go", "return 'GO'"],
+			["@wait", "return 'WAIT'"],
+
+			//ERR
+			["@throw", "return 'THROW'"],
+			["@err[0-9a-zA-Z_]*\\b", "yytext = yytext.substr(4); return 'ERR'"],
+			
+			//TODO
+			["@malloc", "return 'MALLOC'"],
+			["@free", "return 'free'"],						
+			
 			["@plugin", "return 'PLUGIN'"],						
 			["@debug", "return 'DEBUG'"],
 
-			["@suspend", "return 'SUSPEND'"],//Ctrl-Z
-			["@resume", "return 'RESUME'"], //fg/bg
 			
+			["@suspend", "return 'SUSPEND'"],//Ctrl-Z
+			["@resume", "return 'RESUME'"], //fg/bg			
 			["@exit", "return 'EXIT'"], //kill
 			["@forceexit", "return 'FORCEEXIT'"],//kill -9
-
+			
+			["@on", "return 'ON'"],
 			["@syn", "return 'SYN'"],//for three way handshake
 			["@synack", "return 'SYNACK'"],
 			["@ack", "return 'ACK'"],
 
 			["@ok", "return 'OK'"], //200
-			["@err{int}", "yytext = yytext.substr(4); return 'ERR'"], //500
-			["@err", "yytext=''; return 'ERR'"], //500			
 			
 			["@redirect", "return 'REDIRECT'"],//201
 			["@cached", "return 'CACHED'"], //304
@@ -75,25 +108,9 @@ var grammar = {
 			
 			["@timeout", "return 'TIMEOUT'"], 
 
-			["@proc", "return 'PROC'"],			
-			["@fs", "return 'FS'"],
-			["@dir", "return 'DIR'"],
-			["@pwd", "return 'PWD'"],						
-			["@inet", "return 'INET'"],
-			["@stdin", "return 'STDIN'"],
-			["@stdout", "return 'STDOUT'"],
-
-			["@on", "return 'ON'"],
-
 			["@this", "return 'THIS'"],
 			["@in", "return 'IN'"],
 			["@out", "return 'OUT'"],
-
-			["@go", "return 'GO'"],
-			["@wait", "return 'WAIT'"],
-			
-			["@malloc", "return 'MALLOC'"],
-			["@free", "return 'free'"],						
 			
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
@@ -109,7 +126,7 @@ var grammar = {
 			["\\<\\=", "return '<='"],
 			["\\=\\>", "return '=>'"],
 			["\\-\\>", "return '->'"],
-			["\\>\\>", "return '>>'"],
+			["\\<\\<", "return '<<'"],
 			["\\=\\=", "return '=='"],
 			["\\!\\=", "return '!='"],
 			["\\+\\=", "return '+='"],
@@ -145,6 +162,7 @@ var grammar = {
     ]
   },
 	"operators": [
+		["right", "<<"],		
 		["right", "=", "+=", "-=", "*=", "/=", ":="],
     ["left", "++", "--"],
     ["left", "??"], //8
@@ -155,7 +173,6 @@ var grammar = {
     ["left", "+", "-", "^"], //3
     ["left", "*", "/", "%"],//2
     ["right", "!", "?"], //1
-		["left", ">>"],
     ["right", "&", "#", "@", "|", "->", "=>", "==>", "-->", "ON"],
 		["left", "(", ")", "[", "]", "{", "}", "."],		
 	],
@@ -283,6 +300,7 @@ var grammar = {
 		],
 		Ctrl: [
 			["If", "$$ = ['if', $1]"],
+			["SWITCH Block", "$$ = ['switch', $2]"],
 			["FOR Expr Block",
 			 "$$ = ['for', [, $2, , $3]]"],
 			["FOR Expr , Expr , Expr Block",
@@ -326,7 +344,8 @@ var grammar = {
 		KeyColon: [
 			["ID :", "$$ = $1"],
 			["STR :", "$$ = $1"],
-			["NUM :", "$$ = $1"],
+			["INT :", "$$ = $1"],
+			[":", "$$ = ''"],			
 		],
 		Sentences: [
       [",", "$$ = [];"],			
@@ -473,8 +492,8 @@ var grammar = {
 		],
 		Send: "$$ = ['send', $1]",
 		SEND: [
-			["Expr >> Mid", "$$ = [$1, $3]"],
-			["SEND >> Mid", "$$.push($3)"],
+			["Expr << Mid", "$$ = [$1, $3]"],
+			["SEND << Mid", "$$.push($3)"],
 		]
   }
 };

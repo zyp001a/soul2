@@ -11,6 +11,10 @@ Class#ret = #0.funcReturn
  @if(!vars){
   argvx += typemap(class(v)) 
  }@else{
+  @if(vars.len() == 0){
+   log(#0)
+   die("func not define var")
+  }
   argvx += varname(vars[i]) + " " + typemap(class(v))
  }
 }

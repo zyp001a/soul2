@@ -119,6 +119,9 @@ funcDefx(defmain, "numConvert", ->(x Arrx, env Cptx)Cptx{//int/ convertion
   die("numConvert between float int big")
  }
  @if(o.type == c.ctype){
+  @if(inClassx(c, bytec)){
+    o.str = byte2strx(o.int)
+  }
   o.obj = c
   @return o
  }
@@ -440,7 +443,15 @@ methodDefx(bytesc, "toStr", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return strNewx(o.bytes)
 }, _, strc)
+methodDefx(bytec, "toStr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return strNewx(o.str)
+}, _, strc)
 
+methodDefx(strc, "len", ->(x Arrx, env Cptx)Cptx{
+ Cptx#s = x[0];
+ @return intNewx(s.str.len(), uintc)
+}, _, uintc)
 methodDefx(strc, "toBytes", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return bytesNewx(o.str)
@@ -461,6 +472,7 @@ methodDefx(strc, "replace", ->(x Arrx, env Cptx)Cptx{
  Cptx#to = x[2]
  @return strNewx(o.str.replace(fr.str, to.str))
 },[strc, strc], strc)
+
 methodDefx(strc, "toPathx", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #p = Pathx(o.str)
@@ -482,6 +494,7 @@ methodDefx(strc, "toDirx", ->(x Arrx, env Cptx)Cptx{
   path: strNewx(p.resolve() + "/")
  })
 },_, dirxc)
+
 methodDefx(strc, "toJsonArr", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
  //TODO
@@ -514,25 +527,38 @@ methodDefx(strc, "isInt", ->(x Arrx, env Cptx)Cptx{
 methodDefx(fsc, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#s = x[1]
- //TODO
  @return objNewx(filec, {
   handlerRouter: o
   handlerPath: s
  })
 }, [strc], filec)
-methodDefx(filec, "out", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
-// Cptx#d = x[1]
-// #p = Filex(o.dic["handlerPath"].str)
-// p.write(d.str)
+
+methodDefx(fsc, "sub", ->(x Arrx, env Cptx)Cptx{
+
+ Cptx#o = x[0]
+ Cptx#s = x[1]
+ @if(Bytes(s.str)[s.str.len() - 1] != @'/'){
+  s.str += "/"
+ }
+ @return objNewx(dirc, {
+  routerRoot: o
+  handlerPath: s
+ })
+
  @return nullv
-}, _, streamc)
-methodDefx(filec, "in", ->(x Arrx, env Cptx)Cptx{
+}, [strc], filec)
+methodDefx(filec, "open", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
 // #p = Filex(o.dic["handlerPath"].str) 
 // @return strNewx(p.readAll(), bytesc)
  @return nullv
-}, _, streamc)
+}, [strc], streamc)
+methodDefx(filec, "readAll", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, _, bytesc)
+methodDefx(filec, "write", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [bytesc])
 methodDefx(filec, "rm", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #p = o.dic["handlerPath"].str
@@ -655,6 +681,15 @@ methodDefx(dicstrc, "values", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return valuesx(o)
 }, _, arrstrc)
+opDefx(bytesc, "get", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1]
+ #b = o.bytes[e.int]
+ #r = intNewx(b, bytec)
+ r.str = byte2strx(b)
+ @return r
+ @return nullv
+},intc, cptc, opgetc)
 opDefx(arrc, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]

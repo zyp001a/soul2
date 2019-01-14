@@ -40,15 +40,15 @@ A_read?
   ==>B_write(&B, A_read(&A))
 
 # soul def
+switch
+goto
 json
 rm filex
 stream handler
 grammar! method, scope grammar, typepredx
 tobj
 substr
-auto type and or
-soul convert func call gen
-dynamic allow arr length
+auto type for 'and' 'or'
 //isdef flag
 auto gen soul "def" func to go func
 check fdefault

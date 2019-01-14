@@ -25,6 +25,8 @@ Class#c = #0
    res = "uint8"
   }@elif(inClass(c, Uint)){
    res = "uint"
+  }@elif(inClass(c, Byte)){
+   res = "byte"
   }@elif(inClass(c, Int)){
    res = "int"
   }@elif(inClass(c, Float32)){

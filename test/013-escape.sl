@@ -6,3 +6,6 @@ log("\\n")
 print("\\n")
 log("\a")
 print("\\a")
+print(@'a')
+print(@"a")
+

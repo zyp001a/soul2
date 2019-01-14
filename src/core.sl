@@ -6,6 +6,7 @@
 //funcblock.val: cache state(nlocal)
 //items.val: cache init expr
 //class.obj: cache single instance
+//byte.str: cache char
 
 ///special usage
 //items.str: for rec

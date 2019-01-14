@@ -127,10 +127,9 @@ floatc := bnumDefx("Float", numc)
 floatc.ctype = T##FLOAT
 
 
-bytec := curryDefx(defmain, "Byte", intc)
-
 boolc := bnumDefx("Bool", uintc)
 
+bytec := bnumDefx("Byte", intc)
 
 bnumDefx("Int16", intc)
 bnumDefx("Int32", intc)
@@ -271,9 +270,8 @@ errorc := classDefx(defmain, "Error", [signalc], {
  errorMsg: strc
 })
 
-handlerc := curryDefx(defmain, "Handler", funcc, {
- handlerOutType: bytesc
- handlerInType: bytesc
+handlerc := curryDefx(defmain, "Handler", _, {
+ handlerFunc: funcc
 })
 ////concurrency
 channelc := classDefx(defmain, "Channel", [nativec])
@@ -283,25 +281,11 @@ streamc := classDefx(defmain, "Stream", [nativec], {
  streamReadable: boolc
  streamWritable: boolc
 })
-streaminc := curryDefx(defmain, "StreamIn", streamc, {
- streamReadable: boolNewx(@true)
-})
-streamoutc := curryDefx(defmain, "StreamOut", streamc, {
- streamWritable: boolNewx(@true)
-})
-streamioc := classDefx(defmain, "StreamOut", [streaminc, streamoutc])
-bufferc := classDefx(defmain, "Buffer", [streamioc])
+bufferc := classDefx(defmain, "Buffer", [streamc])
 
 //handler, sometimes called channel
-agentc := curryDefx(defmain, "Agent", _, {
- agentOutType: streamoutc
- agentInType: streaminc
-})
-agentlocalc := curryDefx(defmain, "AgentLocal", agentc, {
- agentHandler: handlerc
-})
 
-routerc := classDefx(defmain, "Router", [itemsc, agentc], {
+routerc := classDefx(defmain, "Router", [itemsc], {
  itemsType: handlerc
 })
 routerc.fbitems = @true
@@ -313,21 +297,8 @@ routerc.dic["routerRoot"] = defx(routerc)
 //del
 
 routersubc := classDefx(defmain, "RouterSub", [routerc], {
- routerParent: routerc
- routerPathPrefix: strc 
-})
-
-msgc := classDefx(defmain, "Msg", _, {
- msgSrc: agentc
- msgStream: streamc
- msgModTime: timec
- msgSendTime: timec
-})
-msginc := classDefx(defmain, "MsgIn", [msgc], {
- msgStream: streaminc
-})
-msgoutc := classDefx(defmain, "MsgOut", [msgc], {
- msgStream: streamoutc
+ routerRoot: routerc
+ routerPath: strc
 })
 
 ///////def internet and file system
@@ -338,32 +309,39 @@ inetc := classDefx(defmain, "Inet", [routerc], {
 inetv := defx(inetc)
 
 
-serverc := classDefx(defmain, "Server", [nodec], {
- serverPort: intc
+filec := classDefx(defmain, "File", [handlerc])
+fsc := classDefx(defmain, "Fs", [routerc], {
+ itemsType: filec
 })
+fsv := defx(fsc)
+dirc := classDefx(defmain, "Dir", [routersubc], {
+ routerRoot: fsc
+})
+
+protocolc := classDefx(defmain, "Protocol")
+serverc := classDefx(defmain, "Server")
+clientc := classDefx(defmain, "Client")
+
+
+httpc := classDefx(defmain, "Http", [protocolc])
+
+streamhttpc := classDefx(defmain, "StreamHttp", [streamc])
+handlerhttpc := classDefx(defmain, "HandlerHttp", [handlerc])
 serverhttpc := curryDefx(defmain, "ServerHttp", serverc, {
  serverPort: intNewx(80)
 })
 serverhttpsc := curryDefx(defmain, "ServerHttps", serverhttpc, {
  serverPort: intNewx(443)
 })
-
-clientc := classDefx(defmain, "Client", [nodec])
 clienthttpc := curryDefx(defmain, "ClientHttp", clientc)
 clienthttpsc := curryDefx(defmain, "ClientHttps", clienthttpc)
 
 
-filec := classDefx(defmain, "File", [agentc])
-fsc := classDefx(defmain, "Fs", [nodec], {
- itemsType: filec
-})
-fsv := defx(fsc)
-dirc := classDefx(defmain, "Dir", [routersubc], {
- routerParent: fsc
-})
 
-schemac := curryDefx(defmain, "Schema", agentc)
-dbmsc := classDefx(defmain, "Dbms", [nodec], {
+
+
+schemac := curryDefx(defmain, "Schema", handlerc)
+dbmsc := classDefx(defmain, "Dbms", [routerc], {
  itemsType: schemac
 })
 

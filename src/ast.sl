@@ -920,11 +920,12 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   x.fast = @true
   @return x
  }@elif(t == "byte"){
-//  #x = intNewx(Str(ast[1]), bytec)
-//  x.fast = @true
-//  @return x
+  #x = intNewx(Bytes(Str(ast[1]))[0], bytec)
+  x.str = Str(ast[1])
+  x.fast = @true
+  @return x
  }@elif(t == "bytes"){
-  #x = strNewx(Str(ast[1]), bytesc)
+  #x = bytesNewx(Bytes(Str(ast[1])))
   x.fast = @true
   @return x
  }@elif(t == "float"){
