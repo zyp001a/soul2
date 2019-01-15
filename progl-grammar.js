@@ -208,6 +208,8 @@ var grammar = {
 			"Env",
 			"BlockMain",
 			"EnumGet",
+
+			"Router",
 			["ADDR ( Expr )", "$$ = ['addr', $3]"],
 			["( Expr )", "$$ = $2"],
 		],
@@ -366,7 +368,7 @@ var grammar = {
 		],
 		ItemsGet: [
 			["Expr [ Expr ]", "$$ = ['itemsget', $1, $3]"],
-			["Router [ Expr ]", "$$ = ['itemsget', $1, $3]"],
+//			["Router [ Expr ]", "$$ = ['itemsget', $1, $3]"],
 			["Expr [ Expr : Expr ]", "$$ = ['itemsrange', $1, $3, $5]"],
 			["Expr [ : Expr ]", "$$ = ['itemsrange', $1, , $4]"],
 			["Expr [ Expr : ]", "$$ = ['itemsrange', $1, $3, ,]"],									

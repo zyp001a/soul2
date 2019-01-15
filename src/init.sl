@@ -270,9 +270,6 @@ errorc := classDefx(defmain, "Error", [signalc], {
  errorMsg: strc
 })
 
-handlerc := curryDefx(defmain, "Handler", _, {
- handlerFunc: funcc
-})
 ////concurrency
 channelc := classDefx(defmain, "Channel", [nativec])
 
@@ -283,44 +280,67 @@ streamc := classDefx(defmain, "Stream", [nativec], {
 })
 bufferc := classDefx(defmain, "Buffer", [streamc])
 
-//handler, sometimes called channel
+//def path
+pathc := classDefx(defmain, "Path", [strc])
+//add
+//subtract
+//parent
 
+handlerc := curryDefx(defmain, "Handler", _, {
+ handlerFunc: funcc
+ handlerPath: pathc
+})
 routerc := classDefx(defmain, "Router", [itemsc], {
  itemsType: handlerc
 })
-routerc.fbitems = @true
-routerc.dic["routerRoot"] = defx(routerc)
-
 //get
 //set
-//find
-//del
+//select 
+//update
+//rm
+routerc.fbitems = @true
 
-routersubc := classDefx(defmain, "RouterSub", [routerc], {
- routerRoot: routerc
- routerPath: strc
-})
+routerrootedc := classDefx(defmain, "RouterRooted", [routerc])
+routerrootedc.dic["routerRoot"] = defx(routerrootedc)
+
 
 ///////def internet and file system
-nodec := classDefx(defmain, "Node", [routerc])
-inetc := classDefx(defmain, "Inet", [routerc], {
- itemsType: nodec
+pathipc := classDefx(defmain, "PathIp", [pathc])
+pathip6c := classDefx(defmain, "PathIp6", [pathc])
+ipc := classDefx(defmain, "Ip", [handlerc], {
+ 
 })
-inetv := defx(inetc)
+ip6c := classDefx(defmain, "Ip6", [handlerc])
+inetc := classDefx(defmain, "Inet", [routerc], {
+ itemsType: ipc
+})
+inet6c := classDefx(defmain, "Inet6", [routerc], {
+ itemsType: ip6c
+})
+inetv := defx(inetc, {
+ path: strNewx("127.0.0.1")
+})
+inet6v := defx(inet6c, {
+ path: strNewx("::1")
+})
 
-
+pathfs := curryDefx(defmain, "PathFs", pathc)
 filec := classDefx(defmain, "File", [handlerc])
-fsc := classDefx(defmain, "Fs", [routerc], {
+dirc := classDefx(defmain, "Dir", [routerrootedc], {
  itemsType: filec
 })
-fsv := defx(fsc)
-dirc := classDefx(defmain, "Dir", [routersubc], {
- routerRoot: fsc
+fsv := defx(dirc, {
+ path: strNewx("/")
 })
+fsv.dic["treeRoot"] = fsv
 
 protocolc := classDefx(defmain, "Protocol")
-serverc := classDefx(defmain, "Server")
-clientc := classDefx(defmain, "Client")
+serverc := classDefx(defmain, "Server", [routerrootedc], {
+ serverProtocol: protocolc
+})
+clientc := classDefx(defmain, "Client", _, {
+ clientProtocol: protocolc
+})
 
 
 httpc := classDefx(defmain, "Http", [protocolc])
@@ -329,6 +349,7 @@ streamhttpc := classDefx(defmain, "StreamHttp", [streamc])
 handlerhttpc := classDefx(defmain, "HandlerHttp", [handlerc])
 serverhttpc := curryDefx(defmain, "ServerHttp", serverc, {
  serverPort: intNewx(80)
+ itemsType: defx(handlerhttpc)
 })
 serverhttpsc := curryDefx(defmain, "ServerHttps", serverhttpc, {
  serverPort: intNewx(443)
@@ -338,20 +359,16 @@ clienthttpsc := curryDefx(defmain, "ClientHttps", clienthttpc)
 
 
 
-
-
 schemac := curryDefx(defmain, "Schema", handlerc)
-dbmsc := classDefx(defmain, "Dbms", [routerc], {
+dbmsc := classDefx(defmain, "Dbms", [routerrootedc], {
  itemsType: schemac
 })
 
 
+remotec := classDefx(defmain, "Remote")
+soulc := classDefx(defmain, "Soul")
 
-
-
-
-
-/////10 def mid
+///// def mid
 
 callc := classDefx(defmain, "Call", [midc])
 callc.ctype = T##CALL

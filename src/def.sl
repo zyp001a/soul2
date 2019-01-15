@@ -524,7 +524,7 @@ methodDefx(strc, "isInt", ->(x Arrx, env Cptx)Cptx{
 
 
 
-methodDefx(fsc, "get", ->(x Arrx, env Cptx)Cptx{
+methodDefx(dirc, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#s = x[1]
  @return objNewx(filec, {
@@ -533,8 +533,7 @@ methodDefx(fsc, "get", ->(x Arrx, env Cptx)Cptx{
  })
 }, [strc], filec)
 
-methodDefx(fsc, "sub", ->(x Arrx, env Cptx)Cptx{
-
+methodDefx(dirc, "sub", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#s = x[1]
  @if(Bytes(s.str)[s.str.len() - 1] != @'/'){
@@ -542,11 +541,17 @@ methodDefx(fsc, "sub", ->(x Arrx, env Cptx)Cptx{
  }
  @return objNewx(dirc, {
   routerRoot: o
-  handlerPath: s
+  routerPath: s
  })
-
- @return nullv
 }, [strc], filec)
+methodDefx(fsc, "rm", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#s = x[0] 
+ o.rm(s.str)
+ @return nullv
+}, [strc])
+
+
 methodDefx(filec, "open", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
 // #p = Filex(o.dic["handlerPath"].str) 
@@ -554,17 +559,15 @@ methodDefx(filec, "open", ->(x Arrx, env Cptx)Cptx{
  @return nullv
 }, [strc], streamc)
 methodDefx(filec, "readAll", ->(x Arrx, env Cptx)Cptx{
- @return nullv
+ Cptx#o = x[0]
+ @return bytesNewx(@fs[o.str].readAll())
 }, _, bytesc)
 methodDefx(filec, "write", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#s = x[1]
+ @fs[o.str].write(s.bytes)
  @return nullv
 }, [bytesc])
-methodDefx(filec, "rm", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- #p = o.dic["handlerPath"].str
- @fs[p].rm()
- @return nullv
-})
 
 
 

@@ -679,7 +679,7 @@ callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   log(strx(oo))
   die("cannot typepred obj")
  }
- Cptx#arr = ast2arrx(Astx(ast[3]), def, local, func)
+ #astarr = Astx(ast[3])
  #f = getx(to, Str(ast[2]))
  @if(f == _){
   log(strx(oo))
@@ -687,11 +687,22 @@ callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   log(Str(ast[2]))  
   die("no method")
  }
- arr.arr.unshift(oo)
- @if(f.fraw){
-  @return callNewx(f, arr.arr, callrawc) 
+ #vt = getx(f, "funcVarTypes") 
+ #arrx = malloc(astarr.len() + 1, Cptx)
+ arrx[0] = oo
+ @each i e astarr{
+  Cptx#ee = ast2cptx(Astx(e), def, local, func)
+  @if(vt){
+   ee = convertx(ee, classx(vt.arr[i+1]))
+  }
+  ee = preExecx(ee)  
+  arrx[i+1] = ee
  }
- @return callNewx(f, arr.arr)
+ 
+ @if(f.fraw){
+  @return callNewx(f, arrx, callrawc) 
+ }
+ @return callNewx(f, arrx)
 }
 preAst2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx){
  @each i e ast{
