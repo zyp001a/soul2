@@ -118,7 +118,8 @@ func2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
  #v = Astx(ast[1]) 
  x.dic["funcBlock"] = ast2blockx(Astx(v[3]), def, Cptx(x.val), x);
  @if(v[4] != _){
-  die("TODO alterblock")
+  #ab = preExecx(ast2cptx(Astx(v[4]), def, local, x))
+  x.dic["funcErrFunc"] = ab
  }
  @return x;
 }
@@ -322,7 +323,22 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  }
  @return lefto
 }
-return2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
+err2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
+ #err = intNewx(Str(ast[1]), errorc)
+ @if(ast.len() > 2){
+  #msg = ast2cptx(Astx(ast[2]), def, local, func)
+ }@else{
+  #msg = strNewx("")
+ }
+ @if(func == _){
+  //TODO default error handlering
+  @return callNewx(defmain.dic["die"], [msg])
+ }
+ @return objNewx(ctrlerrorc, {
+  ctrlArgs: arrNewx([err, msg])
+ })
+}
+return2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  @if(func == _){
   log(ast)
   die("return outside func")
@@ -867,7 +883,6 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return falsev
  }@elif(t == "idlocal"){
   #id = Str(ast[1])
-
   #val = local.dic[id]
   @if(val == _){
    @if(ast.len() > 2){  
@@ -881,6 +896,8 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
    local.dic[id] = defx(type)   
   }
   @return idNewx(local, id, idlocalc)
+ }@elif(t == "idcond"){
+  @return idNewx(_, Str(ast[1]), idcondc)
  }@elif(t == "id"){
   #id = Str(ast[1])
   #x = id2cptx(id, def, local, func)
@@ -921,7 +938,9 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  }@elif(t == "objget"){
   @return objget2cptx(ast, def, local, func)
  }@elif(t == "return"){
-  @return return2cptx(ast, def, local, func) 
+  @return return2cptx(ast, def, local, func)
+ }@elif(t == "err"){
+  @return err2cptx(ast, def, local, func)    
  }@elif(t == "break"){
   @return objNewx(ctrlbreakc)
  }@elif(t == "continue"){
@@ -977,6 +996,10 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return x
  }@elif(t == "fs"){
   @return fsv
+ }@elif(t == "inet"){
+  @return inetv
+ }@elif(t == "inet6"){
+  @return inet6v
  }@else{
   die("ast2cptx: " + t + " is not defined")
  }

@@ -28,15 +28,7 @@ var grammar = {
 //			["\<[a-zA-Z0-9_\\\/\\s]*\>",
 //       "yytext = yytext.replace(/^\<\\s*/, '').replace(/\\s*\>$/, ''); return 'PARENTS';"],
       ["\\\\[\\r\\n;]+", "return"],//allow \ at end of line
-			["\\b\\_\\b", "return 'NULL'"],
-			["[a-zA-Z_\\$][a-zA-Z0-9_\\$]*", "return 'ID'"],
-//			["\\#[0-9]+", "yytext = yytext.substr(1);return 'LOCAL'"],			
-			//TODO bignumber
-      ["{int}{frac}{exp}?u?[slb]?\\b", "return 'FLOAT';"],			
-      ["{int}{exp}?f?\\b", "return 'INT';"],
-      ["0[0-9]+\\b", "return 'OCT';"],
-      ["0[xX][a-fA-F0-9]+\\b", "return 'HEX';"],
-
+			
 			["@soul", "return 'SOUL'"],
 			
 			["@true", "return 'TRUE'"],
@@ -69,6 +61,7 @@ var grammar = {
 			["@fs", "return 'FS'"],
 //NET			
 			["@inet", "return 'INET'"],
+			["@inet6", "return 'INET6'"],			
 			["@http", "return 'HTTP'"],
 			["@https", "return 'HTTPS'"],						
 			["@dir", "return 'DIR'"],
@@ -81,8 +74,8 @@ var grammar = {
 			["@wait", "return 'WAIT'"],
 
 			//ERR
-			["@throw", "return 'THROW'"],
-			["@err[0-9a-zA-Z_]*\\b", "yytext = yytext.substr(4); return 'ERR'"],
+			["@err[0-9a-zA-Z_]+\\b", "yytext = yytext.substr(4); return 'ERR'"],
+			
 
 			//Handler
 			["@this", "return 'THIS'"],
@@ -97,7 +90,6 @@ var grammar = {
 			["@plugin", "return 'PLUGIN'"],						
 			["@debug", "return 'DEBUG'"],
 
-			
 			["@suspend", "return 'SUSPEND'"],//Ctrl-Z
 			["@resume", "return 'RESUME'"], //fg/bg			
 			["@exit", "return 'EXIT'"], //kill
@@ -115,6 +107,16 @@ var grammar = {
 			["@notfound", "return 'NOTFOUND'"], //404
 			
 			["@timeout", "return 'TIMEOUT'"], 
+			
+			["\\b\\_\\b", "return 'NULL'"],
+			["[a-zA-Z_\\$][a-zA-Z0-9_\\$]*", "return 'ID'"],
+//			["\\#[0-9]+", "yytext = yytext.substr(1);return 'LOCAL'"],			
+			//TODO bignumber
+      ["{int}{frac}{exp}?u?[slb]?\\b", "return 'FLOAT';"],			
+      ["{int}{exp}?f?\\b", "return 'INT';"],
+      ["0[0-9]+\\b", "return 'OCT';"],
+      ["0[xX][a-fA-F0-9]+\\b", "return 'HEX';"],
+
 
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
@@ -177,7 +179,7 @@ var grammar = {
     ["left", "+", "-", "^"], //3
     ["left", "*", "/", "%"],//2
     ["right", "!", "?"], //1
-    ["right", "&", "#", "@", "|", "->", "=>", "==>", "-->", "ON"],
+    ["right", "&", "#", "@", "@@", "|", "->", "=>", "==>", "-->", "ON"],
 		["left", "(", ")", "[", "]", "{", "}", "."],		
 	],
   "start": "Start",
@@ -291,6 +293,7 @@ var grammar = {
 			["# INT", "$$ = ['idlocal', $2]"],					
 			["ID # ID ", "$$ = ['idlocal', $3, $1]"],
 			["ID # INT", "$$ = ['idlocal', $3, $1]"],
+			["@@ ID", "$$ = ['idcond', $2]"],			
 		],
 		Sentence: [
 			["SubSentence", "$$ = [$1]"],
@@ -302,7 +305,6 @@ var grammar = {
 			"Ctrl",
 			"Load",
 			"Send",
-			"Signal",
 		],
 		Ctrl: [
 			["If", "$$ = ['if', $1]"],
@@ -319,15 +321,9 @@ var grammar = {
 			["RETURN", "$$ = ['return']"],			
 			["BREAK", "$$ = ['break']"],
 			["CONTINUE", "$$ = ['continue']"],
-			["GOTO ID", "$$ = ['goto', $2]"],			
-		],
-		Signal: [
-			["Err", "$$ = $1"],
-		],
-		Err: [
-			["ERR", "$$ = ['err', $1]"],			
-			["ERR Str", "$$ = ['err', $1, $2]"],
-			["ERR ( Mid )", "$$ = ['err', $1, $3]"],
+			["GOTO ID", "$$ = ['goto', $2]"],
+			["ERR Expr", "$$ = ['err', $1, $2]"],
+			["ERR", "$$ = ['err', $1]"],
 		],
 		IdOrNull: [
 			["ID", "$$ = $1"],
@@ -382,9 +378,11 @@ var grammar = {
 			["( Expr )", "$$ = $2"],
 		],
 		FUNC: [//CLASS? ARGDEF RETURN BLOCK AFTERBLOCK
-			["-> FuncArgs Block Block", "$$ = $2.concat([$3,$4,])"],
+//			["-> FuncArgs Block Block", "$$ = $2.concat([$3,$4,])"],
+			["-> FuncArgs Block Id", "$$ = $2.concat([$3,$4,])"],
 			["-> FuncArgs Block", "$$ = $2.concat([$3,,])"],	
-			["-> Block Block", "$$ = [,[],,$2,$3,]"],
+//			["-> Block Block", "$$ = [,[],,$2,$3,]"],
+			["-> Block Id", "$$ = [,[],,$2,$3,]"],			
 			["-> Block", "$$ = [,[],,$2,,]"],
 		],
 		FuncProto: [
@@ -485,12 +483,10 @@ var grammar = {
 		EnumGet: [
 			["ID ## ID", "$$ = ['enumget', $1, $3]"],
 		],
-		On: [
-			["ON Signal", "$$ = ['on', $2]"],
-		],
 		Router: [
 			["FS", "$$ = ['fs']"],
 			["INET", "$$ = ['inet']"],
+			["INET6", "$$ = ['inet6']"],			
 			["PROC", "$$ = ['proc']"],			
 		],
 		Handler: [

@@ -97,8 +97,6 @@ nullv.fstatic = @true
 //call, func, block, arrcall: for exec
 
 
-
-
 objc := classNewx();
 routex(objc, defmain, "Obj");
 objc.ctype = T##OBJ
@@ -114,6 +112,9 @@ tobjc.ctype = T##TOBJ
 nativec := classDefx(defmain, "Native")
 midc := classDefx(defmain, "Mid")
 //midc must defined before itemsDefx
+
+//alias is id processed in lex scope
+aliasc := classDefx(defmain, "Alias")
 
 //init val
 valc := classDefx(defmain, "Val")
@@ -243,19 +244,8 @@ blockc.dic["blockParent"] = defx(blockc)
 
 blockmainc := curryDefx(defmain, "BlockMain", blockc)
 
-//stack
-funcblockc := classDefx(defmain, "FuncBlock", [funcprotoc], {
- funcVars: arrstrc
- funcBlock: blockc
-})
-funcclosurec := curryDefx(defmain, "FuncClosure", funcblockc)
 
-functplc := classDefx(defmain, "FuncTpl", [funcc], {
- funcTplBlock: blockc
- funcTplPath: strc
-})
-
-//init ctrl
+////init signal
 signalc := classDefx(defmain, "Signal");
 continuec := curryDefx(defmain, "Continue", signalc)
 breakc := curryDefx(defmain, "Break", signalc)
@@ -265,10 +255,20 @@ gotoc := classDefx(defmain, "Goto", [signalc], {
 returnc := classDefx(defmain, "Return", [signalc], {
  return: cptc
 })
-errorc := classDefx(defmain, "Error", [signalc], {
- errorCode: uintc
- errorMsg: strc
+errorc := classDefx(defmain, "Error", [uintc, signalc])
+
+funcblockc := classDefx(defmain, "FuncBlock", [funcprotoc], {
+ funcVars: arrstrc
+ funcBlock: blockc
+ funcErrFunc: fpDefx([defx(errorc), defx(strc)], boolc)
 })
+funcclosurec := curryDefx(defmain, "FuncClosure", funcblockc)
+
+functplc := classDefx(defmain, "FuncTpl", [funcc], {
+ funcTplBlock: blockc
+ funcTplPath: strc
+})
+
 
 ////concurrency
 channelc := classDefx(defmain, "Channel", [nativec])
@@ -408,9 +408,9 @@ idglobalc := curryDefx(defmain, "IdGlobal", idstatec)
 idclassc := classDefx(defmain, "IdClass", [idstrc], {
  idVal: cptc
 })
+idcondc := classDefx(defmain, "IdCond", [idstrc])
 
-//alias is id processed in lex scope
-aliasc := classDefx(defmain, "Alias")
+
 
 //init op
 opc := classDefx(defmain, "Op", [funcc], {
