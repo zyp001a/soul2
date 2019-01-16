@@ -1,18 +1,18 @@
-@fs["a"].write("024")
-#x = @fs["a"].readAll()
+@fs["a"] = "024"
+#x = @fs["a"]
 log(Str(x))
-@fs["a"].rm()
+@fs.rm("a")
 
-#c = @fs["b"].open("w")
+#c = @fs.open("b", "w")
 c.write("1")
 c.close()
-#d = @fs["b"].open("r")
+#d = @fs.open("b", "r")
 #x = d.readAll()
 log(Str(x))
-@fs["b"].rm()
+@fs.rm("b")
 
 #dir = @fs.sub("test")
-dir["a"].write("123")
-#y = dir["a"].read(2)
+dir["a"] = "123"
+#y = dir["a"]
 log(Str(y))
-@fs["test/a"].rm()
+dir.rm("a")

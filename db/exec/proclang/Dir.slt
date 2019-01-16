@@ -1,0 +1,1 @@
+~=exec(Dir(#0).routerPath)~

@@ -37,6 +37,8 @@ var grammar = {
       ["0[0-9]+\\b", "return 'OCT';"],
       ["0[xX][a-fA-F0-9]+\\b", "return 'HEX';"],
 
+			["@soul", "return 'SOUL'"],
+			
 			["@true", "return 'TRUE'"],
 			["@false", "return 'FALSE'"],
 
@@ -81,6 +83,12 @@ var grammar = {
 			//ERR
 			["@throw", "return 'THROW'"],
 			["@err[0-9a-zA-Z_]*\\b", "yytext = yytext.substr(4); return 'ERR'"],
+
+			//Handler
+			["@this", "return 'THIS'"],
+			["@in", "return 'IN'"],
+			["@out", "return 'OUT'"],
+			
 			
 			//TODO
 			["@malloc", "return 'MALLOC'"],
@@ -108,10 +116,6 @@ var grammar = {
 			
 			["@timeout", "return 'TIMEOUT'"], 
 
-			["@this", "return 'THIS'"],
-			["@in", "return 'IN'"],
-			["@out", "return 'OUT'"],
-			
       ["\\(", "return '('"],
       ["\\)", "return ')'"],
       ["\\[", "return '['"],
@@ -380,8 +384,8 @@ var grammar = {
 		FUNC: [//CLASS? ARGDEF RETURN BLOCK AFTERBLOCK
 			["-> FuncArgs Block Block", "$$ = $2.concat([$3,$4,])"],
 			["-> FuncArgs Block", "$$ = $2.concat([$3,,])"],	
-			["-> Block Block", "$$ = [,,,$2,$3,]"],
-			["-> Block", "$$ = [,,,$2,,]"],
+			["-> Block Block", "$$ = [,[],,$2,$3,]"],
+			["-> Block", "$$ = [,[],,$2,,]"],
 		],
 		FuncProto: [
 			["-> FuncArgs", "$2[1].forEach(function(e){e[1]=e[0];e[0]=''}); $$ = ['funcproto', $2]"],			
@@ -389,10 +393,10 @@ var grammar = {
 		FuncArgs: [
 			["ID Arg ID", "$$ = [$1, $2, $3,]"],
 			["Arg ID", "$$ = [, $1, $2,]"],
-			["ID ID", "$$ = [$1, , $2,]"],
+			["ID ID", "$$ = [$1, [], $2,]"],
 			["ID Arg", "$$ = [$1, $2, ,]"],
 			["Arg", "$$ = [, $1, ,]"],
-			["ID", "$$ = [$1, , ,]"],						
+			["ID", "$$ = [$1, [], ,]"],						
 		],
 		"Arg": [
 			["( )", "$$ = []"],

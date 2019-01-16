@@ -1515,11 +1515,16 @@ convertx ->(val Cptx, to Cptx)Cptx{
  }
  @return callNewx(r, [val])
 }
+byte2strx ->(b Byte)Str{
+ #c = malloc(1, Byte)
+ c[0] = b
+ @return Str(c) 
+}
+/*
 sendFinalx ->(arrx Arrx, scope Cptx, from Cptx, to Cptx)Bool{
 //should read from left
  #fromt = mustTypepredx(from)
  #tot = mustTypepredx(to)
-
  @if(inClassx(tot, handlerc)){ //read from val
   @return @false
  }
@@ -1567,12 +1572,9 @@ sendFinalx ->(arrx Arrx, scope Cptx, from Cptx, to Cptx)Bool{
 
  @return @true
 }
-byte2strx ->(b Byte)Str{
- #c = malloc(1, Byte)
- c[0] = b
- @return Str(c) 
-}
+*/
 sendx ->(scope Cptx, arr Arrx)Arrx{
+/*
  #arrx = &Arrx;
  #l = arr.len()
  @for #i=0; i<l - 1; i++{
@@ -1586,43 +1588,6 @@ sendx ->(scope Cptx, arr Arrx)Arrx{
    @continue
   }
 
-  /*    
-  @if(i<l-3){
-   #to2 = arr[i+2]
-   #to3 = arr[i+3]   
-  }
-
-  @if(i<l-2){
-   #f = propGetx(scope, tot, "exchange" + fromt.name)
-   @if(f){
-    //&C = B_exchangeA(&B, &A)   
-    #cexch = callNewx(f, [to, from])
-    #to2 = arr[i+2]    
-    #done = sendFinalx(arrx, scope, cexch, to2)
-    @if(done){
-     @continue
-    }
-    
-    #to2t = typepredx(to2)
-
-    arrx.push(callNewx(f, [to, from]))
-    i++
-    @continue
-   }
-   #f = propGetx(scope, tot, "bridge")
-   @if(f){
-    @if(tot.id == unknownc.id){
-     log(arr)
-     log(i)
-     die("send to type not defined")
-    }
-   
-    arrx.push(callNewx(f, [to, from, to2]))
-    i++;
-    @continue
-   }
-  }  
-  */
   //B_write(&B, &A)
   @if(!inClassx(fromt, handlerc)){ //write to val
    #tomsgt = classx(classGetx(tot, "handlerMsgInType"))
@@ -1651,6 +1616,8 @@ sendx ->(scope Cptx, arr Arrx)Arrx{
   die("cannot send, not function matched")
  }
  @return arrx
+ */
+ @return &Arrx
 }
 diex ->(str Str, env Cptx){
  @each _ v env.dic["envStack"].arr{

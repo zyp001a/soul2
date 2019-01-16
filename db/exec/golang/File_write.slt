@@ -1,3 +1,0 @@
-~
-funcImport("_File_write")
-~_File_write(^0, ^1)

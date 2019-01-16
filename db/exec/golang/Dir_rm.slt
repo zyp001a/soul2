@@ -1,2 +1,2 @@
 ~goImport("os")
-~os.Remove(^0)
+~os.Remove(~=^_Dir_path #0,#1^~)

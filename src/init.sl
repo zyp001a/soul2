@@ -286,70 +286,89 @@ pathc := classDefx(defmain, "Path", [strc])
 //subtract
 //parent
 
-handlerc := curryDefx(defmain, "Handler", _, {
- handlerFunc: funcc
- handlerPath: pathc
-})
+//handler is the basic unit for soul
+
 routerc := classDefx(defmain, "Router", [itemsc], {
- itemsType: handlerc
+ itemsType: bytesc
+ routerPath: pathc
 })
+routerc.fbitems = @true
 //get
 //set
 //select 
 //update
 //rm
-routerc.fbitems = @true
 
 routerrootedc := classDefx(defmain, "RouterRooted", [routerc])
 routerrootedc.dic["routerRoot"] = defx(routerrootedc)
 
 
-///////def internet and file system
-pathipc := classDefx(defmain, "PathIp", [pathc])
-pathip6c := classDefx(defmain, "PathIp6", [pathc])
-ipc := classDefx(defmain, "Ip", [handlerc], {
- 
-})
-ip6c := classDefx(defmain, "Ip6", [handlerc])
+///////def internet and file system abstract type
+ipc := classDefx(defmain, "Ip", [pathc])
+ip6c := classDefx(defmain, "Ip6", [pathc])
 inetc := classDefx(defmain, "Inet", [routerc], {
- itemsType: ipc
+ routerPath: ipc
 })
 inet6c := classDefx(defmain, "Inet6", [routerc], {
- itemsType: ip6c
+ routerPath: ip6c
 })
 inetv := defx(inetc, {
- path: strNewx("127.0.0.1")
+ routerPath: strNewx("127.0.0.1", ipc)
 })
+inetv.fstatic = @true
 inet6v := defx(inet6c, {
- path: strNewx("::1")
+ routerPath: strNewx("::1", ip6c)
 })
+inet6v.fstatic = @true
 
-pathfs := curryDefx(defmain, "PathFs", pathc)
-filec := classDefx(defmain, "File", [handlerc])
+statc := classDefx(defmain, "Stat", _, {
+ statTimeCreated: timec
+ statTimeModified: timec
+ statSize: uintc
+})
+pathfsc := curryDefx(defmain, "PathFs", pathc)
+statpathfsc := curryDefx(defmain, "StatPathFs", statc)
 dirc := classDefx(defmain, "Dir", [routerrootedc], {
- itemsType: filec
+ routerPath: pathfsc
 })
 fsv := defx(dirc, {
- path: strNewx("/")
+ routerPath: strNewx("", pathfsc)
 })
+fsv.fstatic = @true
 fsv.dic["treeRoot"] = fsv
 
+schemac := curryDefx(defmain, "Schema", pathc)
+dbmsc := classDefx(defmain, "Dbms", [routerrootedc], {
+ itemsType: schemac
+})
+
+remotec := classDefx(defmain, "Remote")
+
+soulc := classDefx(defmain, "Soul", _, {
+ soulFs: dirc
+ soulInet: inetc
+ soulInet6: inet6c
+})
+soulv := defx(soulc, {
+ soulFs: fsv
+ soulInet: inetv
+ soulInet6: inet6v 
+})
+
+//impl type
 protocolc := classDefx(defmain, "Protocol")
-serverc := classDefx(defmain, "Server", [routerrootedc], {
+serverc := classDefx(defmain, "Server", _, {
  serverProtocol: protocolc
 })
 clientc := classDefx(defmain, "Client", _, {
  clientProtocol: protocolc
 })
 
-
 httpc := classDefx(defmain, "Http", [protocolc])
 
 streamhttpc := classDefx(defmain, "StreamHttp", [streamc])
-handlerhttpc := classDefx(defmain, "HandlerHttp", [handlerc])
 serverhttpc := curryDefx(defmain, "ServerHttp", serverc, {
  serverPort: intNewx(80)
- itemsType: defx(handlerhttpc)
 })
 serverhttpsc := curryDefx(defmain, "ServerHttps", serverhttpc, {
  serverPort: intNewx(443)
@@ -358,15 +377,6 @@ clienthttpc := curryDefx(defmain, "ClientHttp", clientc)
 clienthttpsc := curryDefx(defmain, "ClientHttps", clienthttpc)
 
 
-
-schemac := curryDefx(defmain, "Schema", handlerc)
-dbmsc := classDefx(defmain, "Dbms", [routerrootedc], {
- itemsType: schemac
-})
-
-
-remotec := classDefx(defmain, "Remote")
-soulc := classDefx(defmain, "Soul")
 
 ///// def mid
 

@@ -1,0 +1,4 @@
+~
+goImport("io/ioutil")
+funcImport("_lf")
+~_lf(ioutil.ReadFile(~=^_Dir_path #0,#1^~)).([]byte)

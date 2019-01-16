@@ -1,2 +1,0 @@
-~goImport("os")
-~os.Remove(^0)

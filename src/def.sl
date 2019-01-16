@@ -1,3 +1,4 @@
+//func
 funcDefx(defmain, "getEnv", ->(x Arrx, env Cptx)Cptx{
  @return env
 }, _, envc)
@@ -39,6 +40,10 @@ funcDefx(defmain, "getDefaultFlag", ->(x Arrx, env Cptx)Cptx{
 funcDefx(defmain, "getPropFlag", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return boolNewx(o.fprop)
+}, [cptc], boolc)
+funcDefx(defmain, "getStaticFlag", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return boolNewx(o.fstatic)
 }, [cptc], boolc)
 funcDefx(defmain, "getMidFlag", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -154,7 +159,7 @@ funcDefx(defmain, "set", ->(x Arrx, env Cptx)Cptx{
   @return r
  }
  o.fdefault = @false 
- @return nullv 
+ @return v
 },[cptc, strc, cptc], cptc)
 
 funcDefx(defmain, "inClass", ->(x Arrx, env Cptx)Cptx{
@@ -344,8 +349,28 @@ methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
 
 
 
-
-
+//method to delete
+methodDefx(strc, "toPathx", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #p = Pathx(o.str)
+ @return objNewx(filexc, {
+  path: strNewx(p.resolve())
+ })
+},_, filexc)
+methodDefx(strc, "toFilex", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #p = Filex(o.str)
+ @return objNewx(filexc, {
+  path: strNewx(p.resolve())
+ })
+},_, filexc)
+methodDefx(strc, "toDirx", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #p = Dirx(o.str) 
+ @return objNewx(dirxc, {
+  path: strNewx(p.resolve() + "/")
+ })
+},_, dirxc)
 methodDefx(pathxc, "timeMod", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
 // Str#p = o.dic["path"].str
@@ -407,15 +432,49 @@ methodDefx(dirxc, "makeAll", ->(x Arrx, env Cptx)Cptx{
  @return nullv
 }, [strc, strc])
 
-methodDefx(objc, "toDic", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- #arrx = &Arrx
- @each _ k keys(o.dic).sort(){
-  arrx.push(strNewx(k))
- }
- @return dicNewx(o.dic, arrx)
-}, _, dicc)
 
+////METHOD BASIC///////////////////
+//method cptc
+opDefx(cptc, "add", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @if(l.type != r.type){
+  log(strx(l)) 
+  die("add: wrong type")
+ }
+ @if(l.type == T##INT){ 
+  @return intNewx(l.int + r.int)
+ }
+ @if(l.type == T##FLOAT){ 
+  @return floatNewx(Float(l.val) + Float(r.val))
+ }
+ @if(l.type == T##STR){ 
+  @return strNewx(l.str + r.str)
+ }
+ log(strx(l))
+ die("cannot add")
+ @return nullv
+}, cptc, cptc, opaddc)
+opDefx(cptc, "not", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @if(l.type != T##INT){
+  log(strx(l)) 
+  die("not wrong type")
+ }
+ @return boolNewx(l.int == 0)
+}, _, boolc, opnotc)
+opDefx(cptc, "ne", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return boolNewx(!eqx(l, r))
+}, cptc, boolc, opnec)
+opDefx(cptc, "eq", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return boolNewx(eqx(l, r))
+}, cptc, boolc, opeqc)
+
+//method classc
 methodDefx(classc, "schema", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #arrx = &Arrx
@@ -429,337 +488,22 @@ methodDefx(classc, "parents", ->(x Arrx, env Cptx)Cptx{
  @return arrNewx(arrCopyx(o.arr), arrclassc)
 }, _, arrc)
 
+///objc
+methodDefx(objc, "toDic", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #arrx = &Arrx
+ @each _ k keys(o.dic).sort(){
+  arrx.push(strNewx(k))
+ }
+ @return dicNewx(o.dic, arrx)
+}, _, dicc)
+
+////METHOD NUM///////////////////
+///numc
 methodDefx(intc, "toStr", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return strNewx(Str(o.int))
 },[intc], strc)
-
-methodDefx(floatc, "toStr", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return strNewx(Str(Float(o.val)))
-},[intc], strc)
-
-methodDefx(bytesc, "toStr", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return strNewx(o.bytes)
-}, _, strc)
-methodDefx(bytec, "toStr", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return strNewx(o.str)
-}, _, strc)
-
-methodDefx(strc, "len", ->(x Arrx, env Cptx)Cptx{
- Cptx#s = x[0];
- @return intNewx(s.str.len(), uintc)
-}, _, uintc)
-methodDefx(strc, "toBytes", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return bytesNewx(o.str)
-}, _, bytesc)
-methodDefx(strc, "split", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#sep = x[1] 
- Arr_Str#xx = o.str.split(sep.str)
- Arrx#y = &Arrx
- @each _ v xx{
-  y.push(strNewx(v))
- }
- @return arrNewx(y, arrstrc)
-},[strc, strc], arrstrc)
-methodDefx(strc, "replace", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#fr = x[1]
- Cptx#to = x[2]
- @return strNewx(o.str.replace(fr.str, to.str))
-},[strc, strc], strc)
-
-methodDefx(strc, "toPathx", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- #p = Pathx(o.str)
- @return objNewx(filexc, {
-  path: strNewx(p.resolve())
- })
-},_, filexc)
-methodDefx(strc, "toFilex", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- #p = Filex(o.str)
- @return objNewx(filexc, {
-  path: strNewx(p.resolve())
- })
-},_, filexc)
-methodDefx(strc, "toDirx", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- #p = Dirx(o.str) 
- @return objNewx(dirxc, {
-  path: strNewx(p.resolve() + "/")
- })
-},_, dirxc)
-
-methodDefx(strc, "toJsonArr", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
- //TODO
- @return nullv
-},_, jsonarrc)
-methodDefx(strc, "toJson", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
- //TODO
- @return nullv
-},_, jsonc)
-methodDefx(strc, "toInt", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return intNewx(Int(o.str))
-},_, intc)
-methodDefx(strc, "toFloat", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return floatNewx(Float(o.str))
-},_, floatc)
-methodDefx(strc, "escape", ->(x Arrx, env Cptx)Cptx{
- Str#s = x[0].str
- @return strNewx(escapex(s))//TODO replace 
-},[strc], strc)
-methodDefx(strc, "isInt", ->(x Arrx, env Cptx)Cptx{
- Str#s = x[0].str
- @return boolNewx(s.isInt())
-},[strc], boolc)
-
-
-
-methodDefx(dirc, "get", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#s = x[1]
- @return objNewx(filec, {
-  handlerRouter: o
-  handlerPath: s
- })
-}, [strc], filec)
-
-methodDefx(dirc, "sub", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#s = x[1]
- @if(Bytes(s.str)[s.str.len() - 1] != @'/'){
-  s.str += "/"
- }
- @return objNewx(dirc, {
-  routerRoot: o
-  routerPath: s
- })
-}, [strc], filec)
-methodDefx(fsc, "rm", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#s = x[0] 
- o.rm(s.str)
- @return nullv
-}, [strc])
-
-
-methodDefx(filec, "open", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
-// #p = Filex(o.dic["handlerPath"].str) 
-// @return strNewx(p.readAll(), bytesc)
- @return nullv
-}, [strc], streamc)
-methodDefx(filec, "readAll", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return bytesNewx(@fs[o.str].readAll())
-}, _, bytesc)
-methodDefx(filec, "write", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#s = x[1]
- @fs[o.str].write(s.bytes)
- @return nullv
-}, [bytesc])
-
-
-
-methodDefx(arrc, "toStaticArr", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- #no = arrNewx(o.arr, o.obj)
- itemsChangeBasicx(no, arrc) 
- @return no
-},_, arrc)
-
-methodDefx(staticarrc, "toArr", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- #no = arrNewx(o.arr, o.obj)
- itemsChangeBasicx(no, staticarrc) 
- @return no
-},_, staticarrc)
-
-
-methodDefx(arrc, "push", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1] 
- o.arr.push(e)
- @return nullv
-},[cptc])
-methodDefx(arrc, "pop", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- o.arr.pop()
- @return nullv
-})
-methodDefx(arrc, "unshift", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1] 
- o.arr.unshift(e)
- @return nullv
-},[cptc])
-methodDefx(arrc, "len", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return intNewx(o.arr.len(), uintc)
-},_, uintc)
-methodDefx(arrc, "set", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#i = x[1]
- Cptx#v = x[2]
- @if(o.arr.len() <= i.int){
-  log(arr2strx(o.arr))
-  log(i.int)
-  die("arrset: index out of range")
- }
- o.arr[i.int] = copyCptFromAstx(v)
- o.fdefault = @false
- @return v
-}, [uintc, cptc], cptc)
-methodDefx(arrstrc, "sort", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
- //TODO
- @return nullv
-},_, arrstrc)
-
-methodDefx(arrstrc, "join", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#sep = x[1]
- #s = ""
- @each i v o.arr{
-  @if(i != 0){
-   s += sep.str
-  }
-  s += v.str
- }
- @return strNewx(s)
-},[strc], strc)
-
-methodDefx(jsonc, "len", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- //TODO
- @return intNewx(o.arr.len(), uintc)
-},_, uintc)
-
-
-methodDefx(dicc, "len", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return intNewx(o.arr.len(), uintc)
-},_, uintc)
-methodDefx(dicc, "set", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#i = x[1]
- Cptx#v = x[2]
- @if(o.dic[i.str] == _){
-  o.arr.push(i)
- }
- o.dic[i.str] = copyCptFromAstx(v)
- o.fdefault = @false 
- @return v
-}, [strc, cptc], cptc)
-methodDefx(dicc, "hasKey", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#i = x[1]
- @if(o.dic[i.str] != _){
-  @return truev
- }
- @return falsev
-}, [strc], boolc)
-methodDefx(dicc, "appendClass", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#c = x[1]
- appendClassx(o, c)
- @return o
-}, [classc], dicc)
-//TODO to func
-methodDefx(dicc, "values", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return valuesx(o)
-}, _, arrc)
-methodDefx(dicstrc, "values", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return valuesx(o)
-}, _, arrstrc)
-opDefx(bytesc, "get", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1]
- #b = o.bytes[e.int]
- #r = intNewx(b, bytec)
- r.str = byte2strx(b)
- @return r
- @return nullv
-},intc, cptc, opgetc)
-opDefx(arrc, "get", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1]
- #r = o.arr[e.int]
- @if(r == _){
-  #ct = classx(getx(o, "itemsType")) 
-  r = defaultx(ct)
- }
- @return r
-},intc, cptc, opgetc)
-opDefx(dicc, "get", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1]
- #r = o.dic[e.str]
- @return nullOrx(r)
-},strc, cptc, opgetc)
-opDefx(jsonc, "get", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
-// Cptx#e = x[1]
- //TODO
- @return nullv
-},strc, cptc, opgetc)
-
-#assignf = opDefx(idlocalc, "assign", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
-
- #v = execx(r, env)
- Cptx#local = env.dic["envLocal"]
- #str = l.str
- local.dic[str] = copyCptFromAstx(v)
- @return v
-}, cptc, cptc, opassignc)
-assignf.fraw = @true
-#idstateassignf = opDefx(idstatec, "assign", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
- #v = execx(r, env)
- Str#k = l.str
- Cptx#o = l.class.obj
- o.dic[k] = copyCptFromAstx(v)
- @return v
-}, cptc, cptc, opassignc)
-idstateassignf.fraw = @true
-
-opDefx(strc, "add", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
- @return strNewx(l.str + r.str)
-}, strc, strc, opaddc)
-opDefx(strc, "eq", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
- @return boolNewx(l.str == r.str)
-}, strc, boolc, opeqc)
-opDefx(strc, "ne", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
- @return boolNewx(l.str != r.str)
-}, strc, boolc, opnec)
-opDefx(strc, "concat", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
- l.str += r.str
- @return l
-}, strc, strc, opconcatc)
-
 opDefx(intc, "add", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
@@ -818,6 +562,358 @@ opDefx(intc, "ge", ->(x Arrx, env Cptx)Cptx{
  @return boolNewx(l.int >= r.int)
 }, intc, boolc, opgec)
 
+methodDefx(floatc, "toStr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return strNewx(Str(Float(o.val)))
+},[intc], strc)
+
+methodDefx(bytec, "toStr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return strNewx(o.str)
+}, _, strc)
+
+
+////METHOD STR////////////
+///strc
+methodDefx(strc, "len", ->(x Arrx, env Cptx)Cptx{
+ Cptx#s = x[0];
+ @return intNewx(s.str.len(), uintc)
+}, _, uintc)
+methodDefx(strc, "toBytes", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return bytesNewx(o.str)
+}, _, bytesc)
+methodDefx(strc, "split", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#sep = x[1] 
+ Arr_Str#xx = o.str.split(sep.str)
+ Arrx#y = &Arrx
+ @each _ v xx{
+  y.push(strNewx(v))
+ }
+ @return arrNewx(y, arrstrc)
+},[strc, strc], arrstrc)
+methodDefx(strc, "replace", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#fr = x[1]
+ Cptx#to = x[2]
+ @return strNewx(o.str.replace(fr.str, to.str))
+},[strc, strc], strc)
+
+methodDefx(strc, "toJsonArr", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+ //TODO
+ @return nullv
+},_, jsonarrc)
+methodDefx(strc, "toJson", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+ //TODO
+ @return nullv
+},_, jsonc)
+methodDefx(strc, "toInt", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return intNewx(Int(o.str))
+},_, intc)
+methodDefx(strc, "toFloat", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return floatNewx(Float(o.str))
+},_, floatc)
+methodDefx(strc, "escape", ->(x Arrx, env Cptx)Cptx{
+ Str#s = x[0].str
+ @return strNewx(escapex(s))//TODO replace 
+}, [strc], strc)
+methodDefx(strc, "isInt", ->(x Arrx, env Cptx)Cptx{
+ Str#s = x[0].str
+ @return boolNewx(s.isInt())
+}, [strc], boolc)
+opDefx(strc, "add", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return strNewx(l.str + r.str)
+}, strc, strc, opaddc)
+opDefx(strc, "eq", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return boolNewx(l.str == r.str)
+}, strc, boolc, opeqc)
+opDefx(strc, "ne", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ @return boolNewx(l.str != r.str)
+}, strc, boolc, opnec)
+//TODO change
+opDefx(strc, "concat", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ l.str += r.str
+ @return l
+}, strc, strc, opconcatc)
+
+
+
+/////////////METHOD ARR////////////
+///arrc
+methodDefx(arrc, "len", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return intNewx(o.arr.len(), uintc)
+},_, uintc)
+methodDefx(arrc, "set", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#i = x[1]
+ Cptx#v = x[2]
+ @if(o.arr.len() <= i.int){
+  log(arr2strx(o.arr))
+  log(i.int)
+  die("arrset: index out of range")
+ }
+ o.arr[i.int] = copyCptFromAstx(v)
+ o.fdefault = @false
+ @return v
+}, [uintc, cptc], cptc)
+opDefx(arrc, "get", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1]
+ #r = o.arr[e.int]
+ @if(r == _){
+  #ct = classx(getx(o, "itemsType")) 
+  r = defaultx(ct)
+ }
+ @return r
+},intc, cptc, opgetc)
+methodDefx(arrc, "toStaticArr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #no = arrNewx(o.arr, o.obj)
+ itemsChangeBasicx(no, arrc) 
+ @return no
+},_, arrc)
+opDefx(arrc, "add", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, arrc, arrc, opaddc)
+methodDefx(arrc, "push", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1] 
+ o.arr.push(e)
+ @return nullv
+}, [cptc])
+methodDefx(arrc, "pop", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ o.arr.pop()
+ @return nullv
+})
+methodDefx(arrc, "unshift", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1] 
+ o.arr.unshift(e)
+ @return nullv
+},[cptc])
+
+///arrstrc
+methodDefx(arrstrc, "sort", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+ //TODO
+ @return nullv
+},_, arrstrc)
+methodDefx(arrstrc, "join", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#sep = x[1]
+ #s = ""
+ @each i v o.arr{
+  @if(i != 0){
+   s += sep.str
+  }
+  s += v.str
+ }
+ @return strNewx(s)
+}, [strc], strc)
+
+///staticarr
+methodDefx(staticarrc, "toArr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ #no = arrNewx(o.arr, o.obj)
+ itemsChangeBasicx(no, staticarrc) 
+ @return no
+},_, staticarrc)
+
+///////BYTESC/////////////////
+///bytesc
+methodDefx(bytesc, "toStr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return strNewx(o.bytes)
+}, _, strc)
+methodDefx(bytesc, "set", ->(x Arrx, env Cptx)Cptx{
+/*
+ Cptx#o = x[0]
+ Cptx#i = x[1]
+ Cptx#v = x[2]
+ v = copyCptFromAstx(v)
+ o.bytes[i.int] = v
+ o.fdefault = @false
+ */
+ @return nullv
+}, [strc, bytec], bytec)
+opDefx(bytesc, "get", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1]
+ #b = o.bytes[e.int]
+ #r = intNewx(b, bytec)
+ r.str = byte2strx(b)
+ @return r
+}, intc, cptc, opgetc)
+
+
+/////////////METHOD DIC///////
+methodDefx(dicc, "len", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return intNewx(o.arr.len(), uintc)
+},_, uintc)
+opDefx(dicc, "get", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1]
+ #r = o.dic[e.str]
+ @return nullOrx(r)
+},strc, cptc, opgetc)
+methodDefx(dicc, "set", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#i = x[1]
+ Cptx#v = x[2]
+ @if(o.dic[i.str] == _){
+  o.arr.push(i)
+ }
+ v = copyCptFromAstx(v)
+ o.dic[i.str] = v
+ o.fdefault = @false 
+ @return v
+}, [strc, cptc], cptc)
+methodDefx(dicc, "hasKey", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#i = x[1]
+ @if(o.dic[i.str] != _){
+  @return truev
+ }
+ @return falsev
+}, [strc], boolc)
+methodDefx(dicc, "appendClass", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#c = x[1]
+ appendClassx(o, c)
+ @return o
+}, [classc], dicc)
+//TODO to func
+methodDefx(dicc, "values", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return valuesx(o)
+}, _, arrc)
+methodDefx(dicstrc, "values", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return valuesx(o)
+}, _, arrstrc)
+
+//////METHOD DIR/////////////
+///dirc
+methodDefx(dirc, "len", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [strc], uintc)
+opDefx(dirc, "get", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#s = x[1]
+// @return bytesNewx(@fs[o.str].readAll())
+ @return nullv
+}, strc, bytesc, opgetc)
+methodDefx(dirc, "set", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#s = x[1]
+// @return bytesNewx(@fs[o.str].readAll())
+ @return nullv
+}, [strc, bytesc], bytesc)
+methodDefx(dirc, "sub", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#s = x[1]
+ @if(Bytes(s.str)[s.str.len() - 1] != @'/'){
+  s.str += "/"
+ }
+ s.obj = pathfsc
+ @return objNewx(dirc, {
+  routerRoot: o
+  routerPath: s
+ })
+}, [strc], dirc)
+methodDefx(dirc, "rm", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#s = x[0] 
+// #r = @fs.sub(o.)
+// r.rm(s.str)
+ @return nullv
+}, [strc])
+methodDefx(dirc, "open", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// #p = Filex(o.dic["handlerPath"].str) 
+// @return strNewx(p.readAll(), bytesc)
+ @return nullv
+}, [strc, strc], streamc)
+methodDefx(dirc, "stat", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [strc], statpathfsc)
+methodDefx(dirc, "timeMod", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [strc], timec)
+
+
+////////////METHOD JSON/////
+methodDefx(jsonc, "len", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ //TODO
+ @return intNewx(o.arr.len(), uintc)
+},_, uintc)
+opDefx(jsonc, "get", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#e = x[1]
+ //TODO
+ @return nullv
+}, strc, cptc, opgetc)
+
+
+////METHOD STREAM
+///streamc
+methodDefx(streamc, "readAll", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// @return bytesNewx(@fs[o.str].readAll())
+ @return nullv
+}, _, bytesc)
+methodDefx(streamc, "write", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#s = x[1]
+// @fs[o.str].write(s.bytes)
+ @return nullv
+}, [bytesc])
+
+
+////METHOD ID
+#assignf = opDefx(idlocalc, "assign", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+
+ #v = execx(r, env)
+ Cptx#local = env.dic["envLocal"]
+ #str = l.str
+ v = copyCptFromAstx(v)
+ local.dic[str] = v
+ @return v
+}, cptc, cptc, opassignc)
+assignf.fraw = @true
+#idstateassignf = opDefx(idstatec, "assign", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ #v = execx(r, env)
+ Str#k = l.str
+ Cptx#o = l.class.obj
+ v = copyCptFromAstx(v) 
+ o.dic[k] = v
+ @return v
+}, cptc, cptc, opassignc)
+idstateassignf.fraw = @true
+
+
+////METHOD BOOL////
 opDefx(boolc, "and", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
@@ -829,44 +925,8 @@ opDefx(boolc, "or", ->(x Arrx, env Cptx)Cptx{
  @return boolNewx(l.int !=0 || r.int != 0)
 }, boolc, boolc, oporc)
 
-opDefx(cptc, "add", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
- @if(l.type != r.type){
-  log(strx(l)) 
-  die("add: wrong type")
- }
- @if(l.type == T##INT){ 
-  @return intNewx(l.int + r.int)
- }
- @if(l.type == T##FLOAT){ 
-  @return floatNewx(Float(l.val) + Float(r.val))
- }
- @if(l.type == T##STR){ 
-  @return strNewx(l.str + r.str)
- }
- log(strx(l))
- die("cannot add")
- @return nullv
-}, cptc, cptc, opaddc)
-opDefx(cptc, "not", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- @if(l.type != T##INT){
-  log(strx(l)) 
-  die("not wrong type")
- }
- @return boolNewx(l.int == 0)
-}, _, boolc, opnotc)
-opDefx(cptc, "ne", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
- @return boolNewx(!eqx(l, r))
-}, cptc, boolc, opnec)
-opDefx(cptc, "eq", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1];
- @return boolNewx(eqx(l, r))
-}, cptc, boolc, opeqc)
+
+///execDefx
 execDefx("Env", ->(x Arrx, env Cptx)Cptx{
  Cptx#nenv = x[0]
  _indentx = " "
