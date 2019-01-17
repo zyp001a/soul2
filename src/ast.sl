@@ -240,7 +240,9 @@ obj2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    die("obj2cpt: no class "+Str(ast[1])) 
  }
  Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);
- @if(schema.fmid){
+ @if(inClassx(c, nativec)){
+  #x = callNewx(getx(c, "new"), [c, schema])
+ }@elif(schema.fmid){
   #x = callNewx(defmain.dic["new"], [c, schema])
  }@else{
   #x = defx(c, schema.dic)

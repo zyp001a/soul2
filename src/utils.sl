@@ -838,11 +838,6 @@ defx ->(class Cptx, dic Dicx)Cptx{
     r.fmid = @true
    }
   }
-  @if(inClassx(class, nativec)){
-   @if(inClassx(class, bufferc) ){
-    r.val = &Buffer
-   }   
-  }
   @return r
  }@elif(class.ctype == T##CLASS){
   @return cptc
@@ -1304,7 +1299,11 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  blockExecx(b, env)
  env.dic["envLocal"] = stack[stack.len() - 1]
  stack.pop()
-
+ /*
+ #buf = Buffer(nstate.dic["$buf"].val)
+ #r = strNewx(Str(buf.readAll()))
+ buf.clear()
+ */
  @return nstate.dic["$str"]
 }
 

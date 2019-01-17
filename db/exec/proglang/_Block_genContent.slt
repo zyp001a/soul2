@@ -1,6 +1,8 @@
 ~
 Block#b = #0
 @each _ e b.blockVal {
+// #x = exec(e)
+// log(x)
  ~~:exec(e)~
 ~
 }

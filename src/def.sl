@@ -838,6 +838,17 @@ methodDefx(bufferc, "writeStr", ->(x Arrx, env Cptx)Cptx{
  Buffer(o.val).writeStr(s.str)
  @return nullv
 }, [strc])
+methodDefx(bufferc, "clear", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#s = x[1]
+// Buffer(o.val).clear(s.str)
+ @return nullv
+})
+methodDefx(bufferc, "new", ->(x Arrx, env Cptx)Cptx{
+ #r = objNewx(bufferc)
+ r.val = &Buffer
+ @return r
+}, _, bufferc)
 
 
 ////METHOD ID
