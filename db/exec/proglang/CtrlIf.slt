@@ -4,7 +4,7 @@ Arr#a = #0.ctrlArgs;
 @if(l > 4){
 //TODO switch
 }
-@for #i=0;i<l-1;i+=2 {
+@for #i=0;i< l - 1;i+=2 {
  @if i == 0 {
   ~if~
  }@else{
@@ -16,7 +16,7 @@ Arr#a = #0.ctrlArgs;
 }
 @if l % 2 == 1 {
 ~else{
-~=ind(^_Block_genContent a[l-1]^)~
+~=ind(^_Block_genContent a[l - 1]^)~
 }~
 }
 ~

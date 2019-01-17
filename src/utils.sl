@@ -359,15 +359,6 @@ idNewx ->(def Cptx, key Str, obj Cptx)Cptx{
  }
  @return x
 }
-bufferNewx ->()Cptx{
- #x = &Cptx{
-  type: T##OBJ
-  id: uidx()
-  obj: bufferc
-  val: &Buffer
- }
- @return x
-}
 funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  @if(return == _){
   return = emptyc
@@ -847,6 +838,11 @@ defx ->(class Cptx, dic Dicx)Cptx{
     r.fmid = @true
    }
   }
+  @if(inClassx(class, nativec)){
+   @if(inClassx(class, bufferc) ){
+    r.val = &Buffer
+   }   
+  }
   @return r
  }@elif(class.ctype == T##CLASS){
   @return cptc
@@ -1256,7 +1252,7 @@ strx ->(o Cptx, i Int)Str{
  }@elif(t == T##STR){
   @return '"'+ escapex(o.str) + '"'
  }@elif(t == T##BYTES){
-  @return Str(o.bytes)
+  @return "@"+Str(o.bytes)
  }@elif(t == T##CALL){
   @return strx(o.class) + "(" + arr2strx(o.arr, i) +")"
  }@elif(t == T##ID){  

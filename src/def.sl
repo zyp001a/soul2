@@ -823,14 +823,13 @@ methodDefx(streamc, "write", ->(x Arrx, env Cptx)Cptx{
 }, [bytesc])
 
 methodDefx(bufferc, "readAll", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
-// @return bytesNewx(Buffer(o.val).readAll())
- @return nullv
+ Cptx#o = x[0]
+ @return bytesNewx(Buffer(o.val).readAll())
 }, _, bytesc)
 methodDefx(bufferc, "write", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
-// Cptx#s = x[1]
-// Buffer(o.val).write(s.bytes)
+ Cptx#o = x[0]
+ Cptx#s = x[1]
+ Buffer(o.val).write(s.bytes)
  @return nullv
 }, [bytesc])
 

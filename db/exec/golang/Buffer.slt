@@ -1,5 +1,3 @@
 ~
 goImport("bytes")
-@if(!@@ctx["assign"]){
-~bytes.Buffer~
-}~
+~new(bytes.Buffer)

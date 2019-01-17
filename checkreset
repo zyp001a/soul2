@@ -1,4 +1,6 @@
 #!/bin/bash
 rm db/exec/*/*cache -f
 mkdir -p soul.cache
+node progl-grammar.js
+node tpl-grammar.js
 time go run seed.go main.sl golang
