@@ -1,4 +1,4 @@
 ~goImport("strconv")
 funcImport("_checkErr2")
-funcImport("_arr")
-~_checkErr2(_arr(strconv.ParseFloat(^0, 64)), ~=^_funcErrFunc^~).(float64)
+funcImport("_arg2arr")
+~_checkErr2(_arg2arr(strconv.ParseFloat(^0, 64)), ~=^_funcErrFunc^~).(float64)

@@ -1,13 +1,13 @@
 ~
 goImport("os")
 ~func _stat(s string) map[string]uint{
- s, err := os.Stat(s);
+ ss, err := os.Stat(s);
  if(err != nil){
   return nil
  }
  x := map[string]uint{
-  size: uint(x.Size())
-  timeMod: uint(x.ModTime().Unix())
+  "size": uint(ss.Size()),
+  "timeMod": uint(ss.ModTime().Unix()),
  }
  return x
 }

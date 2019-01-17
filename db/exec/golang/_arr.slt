@@ -1,3 +1,0 @@
-func _arr(a ...interface{}) []interface{} {
-  return a
-}

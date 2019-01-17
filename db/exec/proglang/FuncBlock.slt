@@ -6,4 +6,5 @@
 }@else{
  ~~=^_Func_gen #0^~~
 }
+@@ctx["func"] = _
 ~

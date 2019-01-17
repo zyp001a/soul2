@@ -571,13 +571,14 @@ opDefx(strc, "ne", ->(x Arrx, env Cptx)Cptx{
  @return boolNewx(l.str != r.str)
 }, strc, boolc, opnec)
 //TODO change
+/*
 opDefx(strc, "concat", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
  l.str += r.str
  @return l
 }, strc, strc, opconcatc)
-
+*/
 
 
 /////////////METHOD ARR////////////
@@ -590,11 +591,13 @@ methodDefx(arrc, "set", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#i = x[1]
  Cptx#v = x[2]
+ 
  @if(o.arr.len() <= i.int){
   log(arr2strx(o.arr))
   log(i.int)
   die("arrset: index out of range")
  }
+ 
  o.arr[i.int] = copyCptFromAstx(v)
  o.fdefault = @false
  @return v
@@ -746,32 +749,35 @@ methodDefx(dirc, "has", ->(x Arrx, env Cptx)Cptx{
 opDefx(dirc, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#s = x[1]
- @return bytesNewx(@fs[o.str + s.str])
+ @return bytesNewx(@fs[o.dic["routerPath"].str + s.str])
 }, strc, bytesc, opgetc)
 methodDefx(dirc, "set", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#s = x[1]
  Cptx#v = x[2] 
- @fs[o.str + s.str] = v.bytes
+ @fs[o.dic["routerPath"].str + s.str] = v.bytes
  @return v
 }, [strc, bytesc], bytesc)
 methodDefx(dirc, "sub", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
+ #d = o.dic["routerPath"].str
  Cptx#s = x[1]
  @if(Bytes(s.str)[s.str.len() - 1] != @'/'){
   s.str += "/"
  }
+ #np = strNewx(d + s.str); 
+ @fs.sub(np.str)
  s.obj = pathfsc
  @return objNewx(dirc, {
   routerRoot: o
-  routerPath: s
+  routerPath: np
  })
 }, [strc], dirc)
 methodDefx(dirc, "rm", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
-// Cptx#s = x[0] 
-// #r = @fs.sub(o.)
-// r.rm(s.str)
+ Cptx#o = x[0]
+ #d = o.dic["routerPath"].str
+ Cptx#s = x[1]
+ @fs.rm(d+s.str)
  @return nullv
 }, [strc])
 methodDefx(dirc, "open", ->(x Arrx, env Cptx)Cptx{
@@ -1088,7 +1094,7 @@ execDefx("IdCond", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
  Cptx#l = env.dic["envLocal"]
  Str#k = "@" + c.str
- #r = getx(l, k)
+ #r = l.dic[k]
  @return nullOrx(r);
 })
 execDefx("IdClass", ->(x Arrx, env Cptx)Cptx{

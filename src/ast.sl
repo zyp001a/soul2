@@ -786,7 +786,11 @@ ast2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
 }
 
 ast2arrx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
- #arrx = malloc(asts.len(), Cptx)
+ @if(il == 0){
+  #arrx = malloc(asts.len(), Cptx)
+ }@else{
+  #arrx = malloc(il, Cptx) 
+ }
  #callable = @false;
  @each i e asts{
   Cptx#ee = ast2cptx(Astx(e), def, local, func)
@@ -801,7 +805,9 @@ ast2arrx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
 
  @if(!callable){
   @each i v arrx{
-   arrx[i] = preExecx(v)
+   @if(v != _){
+    arrx[i] = preExecx(v)
+   }
   }
  }
  #l = arrx.len()

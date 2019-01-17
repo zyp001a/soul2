@@ -25,6 +25,14 @@ arrCopyx ->(o Arrx)Arrx{
  }
  @return n;
 }
+byteCopyx ->(o Bytes)Bytes{
+ @if(o == _){ @return }
+ #n = malloc(o.len(), Byte)
+ @each i e o{
+  n[i] = e
+ }
+ @return n;
+}
 dicCopyx ->(o Dicx)Dicx{
  @if(o == _){ @return }
  #n = &Dicx
@@ -900,7 +908,7 @@ copyx ->(o Cptx)Cptx{
   dic: dicCopyx(o.dic)
   arr: arrCopyx(o.arr)
   str: o.str
-  bytes: o.bytes
+  bytes: byteCopyx(o.bytes)
   int: o.int
   val: o.val
  }
@@ -1273,10 +1281,13 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  Arrx#stack = env.dic["envStack"].arr;
  #ostate = env.dic["envLocal"]
  #ctx = ostate.dic["@ctx"]
+ #ctxn = dicNewx()
+ nstate.dic["@ctx"] = ctxn
  @if(ctx != _ && !ctx.fdefault){
-  nstate.dic["@ctx"] = ctx
- }@else{
-  nstate.dic["@ctx"] = dicNewx() 
+  @each k v ctx.dic{
+   ctxn.arr.push(strNewx(k))
+   ctxn.dic[k] = v
+  }
  }
  
  stack.push(ostate)
@@ -1316,7 +1327,7 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
   #ctx = ostate.dic["@ctx"]
   @if(ctx){
    nstate.dic["@ctx"] = ctx
-  }  
+  }
   stack.push(ostate)
   nstate.str = "Block:" + func.name  
   env.dic["envLocal"]  = nstate
