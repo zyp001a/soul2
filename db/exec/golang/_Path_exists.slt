@@ -1,6 +1,0 @@
-~
-goImport("os")
-~func _Path_exists(s string) bool{
- _, err := os.Stat(s);
- return !os.IsNotExist(err)
-}

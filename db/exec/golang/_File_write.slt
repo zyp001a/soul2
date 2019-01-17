@@ -1,8 +1,0 @@
-~
-goImport("io/ioutil")
-~func _File_write(f string, s []byte){
- err := ioutil.WriteFile(f, s, 0666); 
- if(err != nil){
-  ~=^_error "err"^~
- }
-}

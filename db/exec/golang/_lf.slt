@@ -1,7 +1,0 @@
-//only leave first return value
-func _lf(x interface{}, e error)interface{}{
- if(e != nil){
-  ~=^_error "e"^~
- }
- return x
-}

@@ -1,9 +1,0 @@
-~
-goImport("io/ioutil")
-~func _File_readAll(s string)[]byte{
- r, err := ioutil.ReadFile(s)
- if(err != nil){
-  ~=^_error "err"^~
- }
- return r
-}

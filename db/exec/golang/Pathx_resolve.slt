@@ -1,4 +1,0 @@
-~
-goImport("path/filepath")
-funcImport("_lf")
-~_lf(filepath.Abs(^0)).(string)

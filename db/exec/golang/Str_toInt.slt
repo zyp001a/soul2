@@ -1,3 +1,4 @@
 ~goImport("strconv")
-funcImport("_lf")
-~_lf(strconv.Atoi(^0)).(int)
+funcImport("_checkErr2")
+funcImport("_arr")
+~_checkErr2(_arr(strconv.Atoi(^0)), ~=^_funcErrFunc^~).(int)

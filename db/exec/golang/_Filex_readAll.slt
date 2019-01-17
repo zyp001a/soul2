@@ -1,9 +1,0 @@
-~
-goImport("io/ioutil")
-~func _Filex_readAll(s string)string{
- r, err := ioutil.ReadFile(s)
- if(err != nil){
-  ~=^_error "err"^~
- }
- return string(r)
-}
