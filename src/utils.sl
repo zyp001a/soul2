@@ -359,7 +359,15 @@ idNewx ->(def Cptx, key Str, obj Cptx)Cptx{
  }
  @return x
 }
-
+bufferNewx ->()Cptx{
+ #x = &Cptx{
+  type: T##OBJ
+  id: uidx()
+  obj: bufferc
+  val: &Buffer
+ }
+ @return x
+}
 funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
  @if(return == _){
   return = emptyc

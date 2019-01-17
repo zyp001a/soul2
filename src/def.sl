@@ -822,6 +822,18 @@ methodDefx(streamc, "write", ->(x Arrx, env Cptx)Cptx{
  @return nullv
 }, [bytesc])
 
+methodDefx(bufferc, "readAll", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// @return bytesNewx(Buffer(o.val).readAll())
+ @return nullv
+}, _, bytesc)
+methodDefx(bufferc, "write", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#s = x[1]
+// Buffer(o.val).write(s.bytes)
+ @return nullv
+}, [bytesc])
+
 
 ////METHOD ID
 #assignf = opDefx(idlocalc, "assign", ->(x Arrx, env Cptx)Cptx{

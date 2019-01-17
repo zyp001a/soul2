@@ -343,6 +343,7 @@ dbmsc := classDefx(defmain, "Dbms", [routerrootedc], {
 remotec := classDefx(defmain, "Remote")
 
 soulc := classDefx(defmain, "Soul", _, {
+ soulIsSelf: boolc
  soulFs: dirc
  soulInet: inetc
  soulInet6: inet6c
@@ -350,9 +351,10 @@ soulc := classDefx(defmain, "Soul", _, {
 soulsubc := curryDefx(defmain, "SoulSub", soulc)
 
 soulv := defx(soulc, {
+ soulIsSelf: boolNewx(@true)
  soulFs: fsv
  soulInet: inetv
- soulInet6: inet6v 
+ soulInet6: inet6v
 })
 
 //impl type

@@ -19,6 +19,9 @@ Class#c = #0
    res = "" 
 //  }@elif(inClass(c, Alias)){
 //   res = t
+  }@elif(inClass(c, Buffer)){
+   goImport("bytes")
+   res = "bytes.Buffer"
   }@elif(inClass(c, Bool)){
    res = "bool"
   }@elif(inClass(c, Enum)){
