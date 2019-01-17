@@ -39,7 +39,7 @@ A_read?
  B_to{A_MsgOutType} || A_to{B_MsgInType}? 
   ==>B_write(&B, A_read(&A))
 # soul def
-HANDLER
+raw
 error!!!
 tplCall -> use buffer ; rm passbyref(redo concat)
 soul, initSoul

@@ -1,4 +1,5 @@
 ~
 goImport("io/ioutil")
-funcImport("_lf")
-~_lf(ioutil.ReadFile(~=^_Dir_path #0,#1^~)).([]byte)
+funcImport("_checkerr2")
+funcImport("_argarr")
+~_checkerr2(_argarr(ioutil.ReadFile(~=^_Dir_path #0,#1^~)), ~=^_funcErrFunc^~).([]byte)

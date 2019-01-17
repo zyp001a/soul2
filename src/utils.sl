@@ -789,12 +789,12 @@ defaultx ->(t Cptx)Cptx{
   @return nullv
  }
  @if(t.ctype == T##INT){
-  #tar = intNewx(0)
+  #tar = intNewx(0, t)
  }@elif(t.ctype == T##FLOAT){
-  #tar = floatNewx(0.0)
+  #tar = floatNewx(0.0, t)
  }@elif(t.ctype == T##NUMBIG){   
  }@elif(t.ctype == T##STR){
-  #tar = strNewx("")
+  #tar = strNewx("", t)
  }@else{
   #tar = nullv
  }
@@ -854,8 +854,11 @@ defx ->(class Cptx, dic Dicx)Cptx{
   die("no numbig")
  }@elif(class.ctype == T##STR){
   Cptx#x = strNewx("")
+  x.obj = class
  }@elif(class.ctype == T##BYTES){
   Cptx#x = bytesNewx()
+  x.obj = class
+  x.fdefault = @true  
  }@elif(class.ctype == T##CALL){
   Cptx#x = callNewx()
   x.obj = class
@@ -1039,6 +1042,10 @@ subTypepredx ->(o Cptx)Cptx{
    Cptx#arg1 = args[1]
    @return arg1
   }
+  @if(f.id == defmain.dic["strConvert"].id){
+   Cptx#arg1 = args[1]
+   @return arg1
+  }
   @if(f.id == defmain.dic["implConvert"].id){
    Cptx#arg1 = args[1]
    @return arg1
@@ -1153,6 +1160,12 @@ subTypepredx ->(o Cptx)Cptx{
    Cptx#s = o.class
    @return classx(s)
   }
+  
+  @if(inClassx(o.obj, idcondc)){
+   @if(o.str == "ctx"){
+    @return dicc
+   }
+  }
   die("wrong id: "+o.str)
   @return _
  }@elif(t == T##OBJ){
@@ -1185,7 +1198,6 @@ arr2strx ->(a Arrx, i Int)Str{
  }
  @return s
 }
-
 
 parent2strx ->(d Arrx)Str{
  #s = ""
@@ -1271,6 +1283,13 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  
  Arrx#stack = env.dic["envStack"].arr;
  #ostate = env.dic["envLocal"]
+ #ctx = ostate.dic["@ctx"]
+ @if(ctx != _ && !ctx.fdefault){
+  nstate.dic["@ctx"] = ctx
+ }@else{
+  nstate.dic["@ctx"] = dicNewx() 
+ }
+ 
  stack.push(ostate)
  @if(func.dic["funcTplPath"]){
   nstate.str = func.dic["funcTplPath"].str
@@ -1305,6 +1324,10 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
   Arrx#stack = env.dic["envStack"].arr;
   #ostate = env.dic["envLocal"]
   //TODO func def path
+  #ctx = ostate.dic["@ctx"]
+  @if(ctx){
+   nstate.dic["@ctx"] = ctx
+  }  
   stack.push(ostate)
   nstate.str = "Block:" + func.name  
   env.dic["envLocal"]  = nstate
@@ -1466,6 +1489,12 @@ convertx ->(val Cptx, to Cptx)Cptx{
   val.pred = to
   to.obj = val
   @return val  
+ }
+ @if(to.ctype == from.ctype && from.ctype == T##STR){
+  @if(!val.fmid){
+   @return strNewx(val.str, to)
+  }
+  @return callNewx(defmain.dic["strConvert"], [val, to])
  }
  @if(inClassx(from, to)){
   @if(to.ctype == from.ctype && to.ctype == T##OBJ){

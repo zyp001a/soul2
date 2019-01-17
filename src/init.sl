@@ -185,9 +185,8 @@ dicc.str = dicc.name
 /////8 advanced type init: string, enum, unlimited number...
 bytesc := itemsDefx(staticarrc, bytec)
 bytesc.ctype = T##BYTES
-bytesc.arr.push(valc)
 
-strc := curryDefx(defmain, "Str", valc)
+strc := curryDefx(defmain, "Str")
 strc.ctype = T##STR
 
 arrstrc := itemsDefx(arrc, strc)
@@ -195,6 +194,12 @@ dicstrc := itemsDefx(dicc, strc)
 dicuintc := itemsDefx(dicc, uintc)
 dicclassc := itemsDefx(dicc, classc)
 arrclassc := itemsDefx(arrc, classc)
+
+
+errorc := classDefx(defmain, "Error", [strc])
+rawc := classDefx(defmain, "Raw", [strc])
+//def path
+pathc := classDefx(defmain, "Path", [strc])
 
 
 //init misc type
@@ -255,7 +260,7 @@ gotoc := classDefx(defmain, "Goto", [signalc], {
 returnc := classDefx(defmain, "Return", [signalc], {
  return: cptc
 })
-errorc := classDefx(defmain, "Error", [uintc, signalc])
+
 
 funcblockc := classDefx(defmain, "FuncBlock", [funcprotoc], {
  funcVars: arrstrc
@@ -280,8 +285,6 @@ streamc := classDefx(defmain, "Stream", [nativec], {
 })
 bufferc := classDefx(defmain, "Buffer", [streamc])
 
-//def path
-pathc := classDefx(defmain, "Path", [strc])
 //add
 //subtract
 //parent

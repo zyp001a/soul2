@@ -115,6 +115,11 @@ funcDefx(defmain, "implConvert", ->(x Arrx, env Cptx)Cptx{//int/ convertion
  Cptx#o = x[0]
  @return o  
 },[cptc, classc], cptc)
+funcDefx(defmain, "strConvert", ->(x Arrx, env Cptx)Cptx{//int/ convertion
+ Cptx#o = x[0]
+ Cptx#c = x[1]
+ @return strNewx(o.str, c)
+}, [cptc, classc], cptc)
 funcDefx(defmain, "numConvert", ->(x Arrx, env Cptx)Cptx{//int/ convertion
  Cptx#o = x[0]
  Cptx#c = x[1]
@@ -138,7 +143,7 @@ funcDefx(defmain, "numConvert", ->(x Arrx, env Cptx)Cptx{//int/ convertion
   @return intNewx(Int(Float(o.val)), c)
  }
  @return nullv
-},[cptc, classc], cptc)
+}, [cptc, classc], cptc)
 funcDefx(defmain, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
@@ -224,6 +229,12 @@ funcDefx(defmain, "die", ->(x Arrx, env Cptx)Cptx{
  diex(o.str, env)
  @return nullv
 }, [strc])
+funcDefx(defmain, "throw", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0];
+ 
+ diex(o.str, env)
+ @return nullv
+}, [errorc, strc])
 funcDefx(defmain, "print", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
  print(o.str)
@@ -985,6 +996,9 @@ execDefx("Class", ->(x Arrx, env Cptx)Cptx{
 execDefx("Val", ->(x Arrx, env Cptx)Cptx{
  @return x[0]
 })
+execDefx("Str", ->(x Arrx, env Cptx)Cptx{
+ @return x[0]
+})
 execDefx("Dic", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @if(inClassx(classx(o), midc)){
@@ -1132,6 +1146,13 @@ execDefx("CtrlEach", ->(x Arrx, env Cptx)Cptx{
  }
  @return nullv
 })
+execDefx("IdCond", ->(x Arrx, env Cptx)Cptx{
+ Cptx#c = x[0]
+ Cptx#l = env.dic["envLocal"]
+ Str#k = "@" + c.str
+ #r = getx(l, k)
+ @return nullOrx(r);
+})
 execDefx("IdClass", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
  @return c.class
@@ -1141,10 +1162,7 @@ execDefx("IdLocal", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = env.dic["envLocal"]
  Str#k = c.str
  #r = getx(l, k)
- @if(r == _){
-  @return nullv
- }
- @return r;
+ @return nullOrx(r);
 })
 execDefx("IdState", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]

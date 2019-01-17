@@ -1,0 +1,14 @@
+~
+goImport("log")
+goImport("os")
+~func _checkerr(e error, f func(string, string)bool){
+ if(e != nil){
+  if(f != nil){ 
+   if(!f("", e.Error())){
+    return
+   }
+  }
+  log.Fatal(e)
+  os.Exit(1)  
+ }
+}

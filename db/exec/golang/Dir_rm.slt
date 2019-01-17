@@ -1,2 +1,3 @@
 ~goImport("os")
-~os.Remove(~=^_Dir_path #0,#1^~)
+funcImport("_checkerr")
+~_checkerr(os.Remove(~=^_Dir_path #0,#1^~), ~=^_funcErrFunc^~)

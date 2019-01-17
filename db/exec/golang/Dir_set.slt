@@ -1,3 +1,4 @@
 ~
-funcImport("_File_write")
-~_File_write(~=^_Dir_path #0,#1^~, ^2)
+goImport("io/ioutil")
+funcImport("_checkerr")
+~_checkerr(ioutil.WriteFile(~=^_Dir_path #0,#1^~, ^2, 0666), ~=^_funcErrFunc^~)

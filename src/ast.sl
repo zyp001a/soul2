@@ -51,13 +51,13 @@ subFunc2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, isproto Int)Cptx{
  #nlocal = classNewx([local])
  @if(v[0] != _){ //method
   #class = classGetx(def, Str(v[0]))
-  funcVars.push(strNewx("$self"))
+  funcVars.push(strNewx("@this"))
   Cptx#x = defx(class)
   @if(!x.fstatic){
    x.farg = @true
   }
   funcVarTypes.push(x)
-  nlocal.dic["$self"] = x
+  nlocal.dic["@this"] = x
  }
  #args = JsonArr(v[1])
  @each _ arg args{
@@ -120,6 +120,10 @@ func2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
  @if(v[4] != _){
   #ab = preExecx(ast2cptx(Astx(v[4]), def, local, x))
   x.dic["funcErrFunc"] = ab
+ }@elif(func){
+  x.dic["funcErrFunc"] = func.dic["funcErrFunc"]
+ }@else{
+  x.dic["funcErrFunc"] = defmain.dic["throw"]
  }
  @return x;
 }
@@ -324,7 +328,7 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  @return lefto
 }
 err2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
- #err = intNewx(Str(ast[1]), errorc)
+ #err = strNewx(Str(ast[1]), errorc)
  @if(ast.len() > 2){
   #msg = ast2cptx(Astx(ast[2]), def, local, func)
  }@else{
@@ -332,7 +336,7 @@ err2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
  @if(func == _){
   //TODO default error handlering
-  @return callNewx(defmain.dic["die"], [msg])
+  @return callNewx(defmain.dic["throw"], [err, msg])
  }
  @return objNewx(ctrlerrorc, {
   ctrlArgs: arrNewx([err, msg])

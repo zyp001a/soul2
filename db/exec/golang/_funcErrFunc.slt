@@ -1,0 +1,18 @@
+~
+#f = @@ctx["func"]
+@if(!f){
+ ~nil~
+}@else{
+ #fe = f.funcErrFunc
+ @if(!fe){
+  ~nil~
+ }@else{
+  #n = getName(fe)
+  @if(n == "throw"){
+   ~nil~
+  }@else{
+   ~~=n~~
+  }
+ }
+}
+~

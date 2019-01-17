@@ -1,0 +1,7 @@
+~
+goImport("fmt")
+goImport("os")
+@if(class(#0) != Raw && #0 != ""){
+ ~fmt.Println("ERROR "+^0);~
+}
+~fmt.Print(^1);os.Exit(1)

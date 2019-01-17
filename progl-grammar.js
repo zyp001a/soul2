@@ -74,18 +74,7 @@ var grammar = {
 			["@wait", "return 'WAIT'"],
 
 			//ERR
-			["@err[0-9a-zA-Z_]+\\b", "yytext = yytext.substr(4); return 'ERR'"],
-			
-
-			//Handler
-			["@this", "return 'THIS'"],
-			["@in", "return 'IN'"],
-			["@out", "return 'OUT'"],
-			
-			
-			//TODO
-			["@malloc", "return 'MALLOC'"],
-			["@free", "return 'free'"],						
+			["@err[0-9a-zA-Z_]*\\b", "yytext = yytext.substr(4); return 'ERR'"],
 			
 			["@plugin", "return 'PLUGIN'"],						
 			["@debug", "return 'DEBUG'"],
@@ -198,7 +187,7 @@ var grammar = {
 			"Num",
 			"Str",
 			"Byte",
-			"Bytes",			
+			"Bytes",
 //			
 			"Func",			
 
@@ -215,7 +204,7 @@ var grammar = {
 			"BlockMain",
 			"EnumGet",
 
-			"Router",
+			"Keyword",
 			["ADDR ( Expr )", "$$ = ['addr', $3]"],
 			["( Expr )", "$$ = $2"],
 		],
@@ -239,7 +228,7 @@ var grammar = {
 		],
 		Str: "$$ = ['str', $1]",
 		Byte: "$$ = ['byte', $1]",
-		Bytes: "$$ = ['bytes', $1]",		
+		Bytes: "$$ = ['bytes', $1]",
 		Tpl: [
 			["TPL", "$$ = ['tpl', JSON.stringify(lib.proglparse(lib.tplparse($1)))]"],
 			["TPL STR", "$$ = ['tpl', JSON.stringify(lib.proglparse(lib.tplparse($1))), $2]"],
@@ -368,7 +357,6 @@ var grammar = {
 		],
 		ItemsGet: [
 			["Expr [ Expr ]", "$$ = ['itemsget', $1, $3]"],
-//			["Router [ Expr ]", "$$ = ['itemsget', $1, $3]"],
 			["Expr [ Expr : Expr ]", "$$ = ['itemsrange', $1, $3, $5]"],
 			["Expr [ : Expr ]", "$$ = ['itemsrange', $1, , $4]"],
 			["Expr [ Expr : ]", "$$ = ['itemsrange', $1, $3, ,]"],									
@@ -483,11 +471,11 @@ var grammar = {
 		EnumGet: [
 			["ID ## ID", "$$ = ['enumget', $1, $3]"],
 		],
-		Router: [
+		Keyword: [
 			["FS", "$$ = ['fs']"],
 			["INET", "$$ = ['inet']"],
 			["INET6", "$$ = ['inet6']"],			
-			["PROC", "$$ = ['proc']"],			
+			["PROC", "$$ = ['proc']"],
 		],
 		Handler: [
 			["--> Block", "$$ = ['handler', $2]"],
