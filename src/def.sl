@@ -832,12 +832,6 @@ methodDefx(bufferc, "write", ->(x Arrx, env Cptx)Cptx{
  Buffer(o.val).write(s.bytes)
  @return nullv
 }, [bytesc])
-methodDefx(bufferc, "writeStr", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#s = x[1]
- Buffer(o.val).writeStr(s.str)
- @return nullv
-}, [strc])
 methodDefx(bufferc, "clear", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
 // Cptx#s = x[1]
@@ -849,6 +843,23 @@ methodDefx(bufferc, "new", ->(x Arrx, env Cptx)Cptx{
  r.val = &Buffer
  @return r
 }, _, bufferc)
+
+methodDefx(builderstrc, "new", ->(x Arrx, env Cptx)Cptx{
+ #r = objNewx(builderstrc)
+ r.val = &BuilderStr
+ @return r
+}, _, builderstrc)
+methodDefx(builderstrc, "writeStr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#s = x[1]
+ BuilderStr(o.val).writeStr(s.str)
+ @return nullv
+}, [strc])
+methodDefx(builderstrc, "toStr", ->(x Arrx, env Cptx)Cptx{
+ #r = objNewx(builderstrc)
+ r.val = &BuilderStr
+ @return r
+}, _, strc)
 
 
 ////METHOD ID

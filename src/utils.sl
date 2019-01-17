@@ -1299,11 +1299,9 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  blockExecx(b, env)
  env.dic["envLocal"] = stack[stack.len() - 1]
  stack.pop()
- /*
- #buf = Buffer(nstate.dic["$buf"].val)
- #r = strNewx(Str(buf.readAll()))
- buf.clear()
- */
+// #buf = BuilderStr(nstate.dic["$buf"].val)
+// #r = strNewx(buf)
+// @return r
  @return nstate.dic["$str"]
 }
 

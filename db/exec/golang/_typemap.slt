@@ -22,6 +22,9 @@ Class#c = #0
   }@elif(inClass(c, Buffer)){
    goImport("bytes")
    res = "*bytes.Buffer"
+  }@elif(inClass(c, BuilderStr)){
+   goImport("strings")
+   res = "*strings.Builder"
   }@elif(inClass(c, Bool)){
    res = "bool"
   }@elif(inClass(c, Enum)){

@@ -284,6 +284,7 @@ streamc := classDefx(defmain, "Stream", [nativec], {
  streamWritable: boolc
 })
 bufferc := classDefx(defmain, "Buffer", [streamc])
+builderstrc := classDefx(defmain, "BuilderStr", [nativec])
 
 //add
 //subtract
