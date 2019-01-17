@@ -832,6 +832,12 @@ methodDefx(bufferc, "write", ->(x Arrx, env Cptx)Cptx{
  Buffer(o.val).write(s.bytes)
  @return nullv
 }, [bytesc])
+methodDefx(bufferc, "writeStr", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#s = x[1]
+ Buffer(o.val).writeStr(s.str)
+ @return nullv
+}, [strc])
 
 
 ////METHOD ID
