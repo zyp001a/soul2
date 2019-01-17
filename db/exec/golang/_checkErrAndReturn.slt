@@ -1,14 +1,15 @@
 ~
 goImport("log")
 goImport("os")
-~func _checkerr(e error, f func(string, string)bool){
+~func _checkErrAndReturn(e error, r interface{}, f func(string, string)bool)interface{}{
  if(e != nil){
   if(f != nil){ 
    if(!f("", e.Error())){
-    return
+    return r
    }
   }
   log.Fatal(e)
   os.Exit(1)  
  }
+ return r
 }

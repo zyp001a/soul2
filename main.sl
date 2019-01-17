@@ -1,10 +1,11 @@
 @load "src/core"
 /////24 main func
-#osargs = osArgs()
+#osargs = @soul.getCmdArgs()
 @if(osargs.len() == 1){
  log("./soul3 [FILE] [EXECFLAG] [DEFFLAG]")
+ @soul.exit(0)
 }@else{
- Str#fc = Filex(osargs[1]).readAll()
+ Str#fc = @fs[osargs[1]]
  Str#execsp = "main"
  Str#defsp = "main"
  @if(osargs.len() > 2){

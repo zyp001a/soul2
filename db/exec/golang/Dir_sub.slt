@@ -1,0 +1,3 @@
+~goImport("os")
+funcImport("_checkErrAndReturn")
+~_checkErrAndReturn(os.MkdirAll(~=^_Dir_path #0,#1^~, 0777), ~=^_Dir_path #0,#1^~, ~=^_funcErrFunc^~).(string)

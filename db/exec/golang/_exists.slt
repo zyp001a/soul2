@@ -1,0 +1,6 @@
+~
+goImport("os")
+~func _exists(s string) bool{
+ _, err := os.Stat(s);
+ return !os.IsNotExist(err)
+}

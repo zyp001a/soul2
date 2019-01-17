@@ -33,6 +33,8 @@ Class#c = #0
    res = "float32"
   }@elif(inClass(c, Num)){
    res = "float64"
+  }@elif(inClass(c, Dir)){
+   res = "string"   
   }@elif(inClass(c, Error)){
    res = "string"
   }@elif(inClass(c, Str)){

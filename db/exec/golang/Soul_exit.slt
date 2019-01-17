@@ -1,0 +1,1 @@
+~goImport("os")~os.Exit(^1)

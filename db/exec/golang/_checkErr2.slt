@@ -1,7 +1,7 @@
 ~
 goImport("log")
 goImport("os")
-~func _checkerr2(x []interface{}, f func(string, string)bool)interface{}{
+~func _checkErr2(x []interface{}, f func(string, string)bool)interface{}{
  if(x[1] != nil){
   e := x[1].(error) 
   if(f != nil){

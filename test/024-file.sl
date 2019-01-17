@@ -2,7 +2,7 @@
 #x = @fs["a"]
 log(Str(x))
 @fs.rm("a")
-
+/*
 #c = @fs.open("b", "w")
 c.write("1")
 c.close()
@@ -10,7 +10,7 @@ c.close()
 #x = d.readAll()
 log(Str(x))
 @fs.rm("b")
-
+*/
 #dir = @fs.sub("test")
 dir["a"] = "123"
 #y = dir["a"]

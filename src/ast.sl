@@ -1004,6 +1004,8 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return inetv
  }@elif(t == "inet6"){
   @return inet6v
+ }@elif(t == "soul"){
+  @return soulv
  }@else{
   die("ast2cptx: " + t + " is not defined")
  }

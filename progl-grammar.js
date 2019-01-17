@@ -476,6 +476,7 @@ var grammar = {
 			["INET", "$$ = ['inet']"],
 			["INET6", "$$ = ['inet6']"],			
 			["PROC", "$$ = ['proc']"],
+			["SOUL", "$$ = ['soul']"],			
 		],
 		Handler: [
 			["--> Block", "$$ = ['handler', $2]"],

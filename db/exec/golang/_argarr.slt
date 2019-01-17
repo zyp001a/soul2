@@ -1,3 +1,0 @@
-func _argarr(a ...interface{}) []interface{} {
-  return a
-}

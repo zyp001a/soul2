@@ -1,0 +1,3 @@
+~
+funcImport("_stat")
+~_stat(~=^_Dir_path #0,#1^~)

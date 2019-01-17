@@ -1,0 +1,3 @@
+~
+funcImport("_exists")
+~_exists(~=^_Dir_path #0,#1^~)

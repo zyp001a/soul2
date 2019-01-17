@@ -306,7 +306,8 @@ routerrootedc := classDefx(defmain, "RouterRooted", [routerc])
 routerrootedc.dic["routerRoot"] = defx(routerrootedc)
 
 
-///////def internet and file system abstract type
+///////def os and network abstract type
+
 ipc := classDefx(defmain, "Ip", [pathc])
 ip6c := classDefx(defmain, "Ip6", [pathc])
 inetc := classDefx(defmain, "Inet", [routerc], {
@@ -324,13 +325,7 @@ inet6v := defx(inet6c, {
 })
 inet6v.fstatic = @true
 
-statc := classDefx(defmain, "Stat", _, {
- statTimeCreated: timec
- statTimeModified: timec
- statSize: uintc
-})
 pathfsc := curryDefx(defmain, "PathFs", pathc)
-statpathfsc := curryDefx(defmain, "StatPathFs", statc)
 dirc := classDefx(defmain, "Dir", [routerrootedc], {
  routerPath: pathfsc
 })
@@ -352,6 +347,8 @@ soulc := classDefx(defmain, "Soul", _, {
  soulInet: inetc
  soulInet6: inet6c
 })
+soulsubc := curryDefx(defmain, "SoulSub", soulc)
+
 soulv := defx(soulc, {
  soulFs: fsv
  soulInet: inetv

@@ -62,18 +62,7 @@ copyCptFromAstx ->(v Cptx)Cptx{
 escapex ->(s Str)Str{
  @return s.replace("\\", "\\\\").replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r").replace("\"", "\\\"")
 }
-//TODO no recursive dirWritex
-dirWritex ->(d Str, dic Dicx){
- @each k v dic{
-  @if(v.type == T##STR){
-   #x = Filex(d + k)
-   x.write(v.str)
-  }@else{
-   log(dic2strx(dic))
-   die("wrong dic for dirWrite")
-  }
- } 
-}
+
 appendClassx ->(o Cptx, c Cptx){
  @each _ k keys(c.dic).sort(){
   @if(o.dic[k] == _){
@@ -550,9 +539,9 @@ nsGetx ->(ns Cptx, key Str)Cptx{
   @return s;
  }
  #s = scopeNewx(ns, key)
- #f = Filex(osEnvGet("HOME")+"/soul2/db/"+ns.str+"/"+key+".slp")
- @if(f.exists()){
-  Str#fc = f.readAll()
+ #f = osEnvGet("HOME")+"/soul2/db/"+ns.str+"/"+key+".slp"
+ @if(@fs.has(f)){
+  Str#fc = @fs[f]
   Arr_Str#arr = fc.split(" ")
   @each _ v arr{
    s.arr.push(nsGetx(ns, v))
@@ -562,26 +551,26 @@ nsGetx ->(ns Cptx, key Str)Cptx{
 }
 dbGetx ->(scope Cptx, key Str)Cptx{
  #fstr = osEnvGet("HOME")+"/soul2/db/"+scope.str + "/" + key + ".sl" 
- #f = Filex(fstr)
- #f2 = Filex(fstr+"t")
- #fcache = Filex(fstr+".cache")
- #f2cache = Filex(fstr+"t.cache")  
+ #f = @fs.stat(fstr)
+ #f2 = @fs.stat(fstr+"t")
+ #fcache = @fs.stat(fstr+".cache")
+ #f2cache = @fs.stat(fstr+"t.cache")  
  
- @if(f.exists()){
-  Str#str = f.readAll()
-  @if(f.timeMod() > fcache.timeMod()){
+ @if(f){
+  Str#str = @fs[fstr]
+  @if(f["timeMod"] > fcache["timeMod"]){
    Str#jstr = osCmd("./sl-reader", key + " := "+str)
-   fcache.write(jstr)
+   @fs[fstr + ".cache"] = jstr
   }@else{
-   Str#jstr = fcache.readAll()
+   Str#jstr = @fs[fstr + ".cache"]
   }
- }@elif(f2.exists()){
-  str = "@`"+f2.readAll()+"` '"+fstr+"t'";
-  @if(f2.timeMod() > f2cache.timeMod()){
+ }@elif(f2){
+  str = "@`"+@fs[fstr+"t"]+"` '"+fstr+"t'";
+  @if(f2["timeMod"] > f2cache["timeMod"]){  
    Str#jstr = osCmd("./sl-reader", key + " := "+str)
-   f2cache.write(jstr)
+   @fs[fstr + "t.cache"] = jstr   
   }@else{
-   Str#jstr = f2cache.readAll()
+   Str#jstr = @fs[fstr + "t.cache"]  
   }
  }@else{
   @return _

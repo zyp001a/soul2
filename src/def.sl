@@ -1,4 +1,5 @@
 //func
+//////ENV/////
 funcDefx(defmain, "getEnv", ->(x Arrx, env Cptx)Cptx{
  @return env
 }, _, envc)
@@ -11,24 +12,79 @@ funcDefx(defmain, "osCmd", ->(x Arrx, env Cptx)Cptx{
  Cptx#p = x[1]
  @return strNewx(osCmd(o.str, p.str))
 }, [strc, strc], strc)
-funcDefx(defmain, "osArgs", ->(x Arrx, env Cptx)Cptx{
- @if(_osArgs == _){
-  #x = &Arrx
-  Arr_Str#aa = osArgs()
-  @each i v aa{
-   @if(i == 0){
-    @continue
-   }
-   x.push(strNewx(v))
-  }
-  _osArgs = arrNewx(x, arrstrc)
- }
- @return _osArgs
-}, _, arrstrc)
 funcDefx(defmain, "osEnvGet", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return strNewx(osEnvGet(o.str))
 }, [strc], strc)
+
+/////////TPL/////
+funcDefx(defmain, "setIndent", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ _indentx = o.str
+ @return nullv
+},[strc])
+funcDefx(defmain, "uid", ->(x Arrx, env Cptx)Cptx{
+ @return strNewx(uidx())
+}, _, strc)
+funcDefx(defmain, "appendIfExists", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0];
+ Cptx#app = x[1]; 
+ @if(o.str == ""){
+  @return o
+ }
+ o.str += app.str
+ @return o
+}, [strc, strc], strc)
+funcDefx(defmain, "ind", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#f = x[1] 
+ @return strNewx(indx(o.str, f.int))
+}, [strc, intc], strc)
+funcDefx(defmain, "exec", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return execx(l, env, 1)
+}, [cptc], cptc)
+//TODO ???
+funcDefx(defmain, "execNative", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return execx(l, env)
+}, [cptc], cptc)
+funcDefx(defmain, "blockExec", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return blockExecx(l, env)
+}, [blockc], cptc)
+funcDefx(defmain, "opp", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#op = x[1]
+ Cptx#ret = execx(o, env, 1)
+ @if(ret.type != T##STR){
+  die("opp: not used in tplCall")
+ }
+ @if(!inClassx(classx(o), callc)){
+  @return ret
+ }
+ Cptx#f = o.class
+ @if(!inClassx(classx(f), opc)){
+  @return ret
+ }
+ Int#sub = getx(f, "opPrecedence").int
+ Int#main = getx(op, "opPrecedence").int
+ @if(sub > main){
+  @return strNewx("(" + ret.str + ")")
+ }
+ @return ret
+},[cptc, opc, envc], strc)
+funcDefx(defmain, "tplCall", ->(x Arrx, env Cptx)Cptx{
+ Cptx#f = x[0];
+ Cptx#a = x[1];
+ Cptx#e = x[2];
+ @if(e.fdefault){
+  e = env
+ }
+ @return tplCallx(f, a.arr, e)
+}, [functplc, arrc, envc], cptc)
+
+////////CPT//////////
 funcDefx(defmain, "getArgFlag", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return boolNewx(o.farg)
@@ -69,25 +125,22 @@ funcDefx(defmain, "getNote", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return strNewx(o.str)
 }, [cptc], strc)
-funcDefx(defmain, "setIndent", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- _indentx = o.str
- @return nullv
-},[strc])
 
+///TODO rm////
+funcDefx(defmain, "parseSend", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return execx(l, env, 1)
+}, [cptc], cptc)
+funcDefx(defmain, "keys", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return copyx(arrNewx(o.arr, arrstrc))
+}, [dicc], arrstrc)
 funcDefx(defmain, "sendImpl", ->(x Arrx, env Cptx)Cptx{
  Cptx#s = x[0]
  Cptx#o = x[1] 
  #arr = sendx(s, o.arr)
  @return arrNewx(arr)
 },[classc, arrc], arrc)
-funcDefx(defmain, "propGet", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#c = x[1]
- Cptx#s = x[2] 
- @return nullOrx(propGetx(o, c, s.str))//TODO modify
-},[classc, classc, strc], cptc)
-
 funcDefx(defmain, "send", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #arr = sendx(defmain, o.arr)
@@ -99,11 +152,75 @@ funcDefx(defmain, "send", ->(x Arrx, env Cptx)Cptx{
  }
  @return nullv
 },[arrc])
+
+//////SYS///////
+funcDefx(defmain, "propGet", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#c = x[1]
+ Cptx#s = x[2] 
+ @return nullOrx(propGetx(o, c, s.str))//TODO modify
+},[classc, classc, strc], cptc)
 funcDefx(defmain, "new", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
  @return defx(o, e.dic)
 },[classc, dicc], cptc)
+funcDefx(defmain, "get", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1]
+ @return nullOrx(getx(o, e.str))
+},[cptc, strc], cptc)
+funcDefx(defmain, "mustGet", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1]
+ #r = mustGetx(o, e.str)
+ @return r
+},[cptc, strc], cptc)
+funcDefx(defmain, "set", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1]
+ Cptx#v = x[2] 
+ #r = setx(o, e.str, v)
+ @if(r != _){
+  @return r
+ }
+ o.fdefault = @false 
+ @return v
+},[cptc, strc, cptc], cptc)
+funcDefx(defmain, "inClass", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1]; 
+ @return boolNewx(inClassx(l, r))
+}, [classc, classc], boolc)
+funcDefx(defmain, "class", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return classx(l)
+}, [cptc], cptc)
+funcDefx(defmain, "typepred", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ @return typepredx(l)
+}, [cptc], classc)
+funcDefx(defmain, "malloc", ->(x Arrx, env Cptx)Cptx{
+ Cptx#i = x[0]
+ Cptx#c = x[1]
+ #arr = malloc(i.int, Cptx)
+ @return arrNewx(arr, itemsDefx(staticarrc, c))
+},[uintc, classc], staticarrc)
+funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
+ Cptx#f = x[0];
+ Cptx#a = x[1];
+ @if(f == _ || f.id == nullv.id){
+  log(strx(a))
+  die("call() error");
+ }
+ @if(!inClassx(classx(f), funcc)){ 
+  log(strx(f))
+  diex("not func", env)
+ }
+ @return callx(f, a.arr, env)
+}, [funcc, arrc], cptc)
+
+////CONVERT///////
 funcDefx(defmain, "as", ->(x Arrx, env Cptx)Cptx{//Cpt to any
  Cptx#o = x[0]
  @return o
@@ -144,42 +261,8 @@ funcDefx(defmain, "numConvert", ->(x Arrx, env Cptx)Cptx{//int/ convertion
  }
  @return nullv
 }, [cptc, classc], cptc)
-funcDefx(defmain, "get", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1]
- @return nullOrx(getx(o, e.str))
-},[cptc, strc], cptc)
-funcDefx(defmain, "mustGet", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1]
- #r = mustGetx(o, e.str)
- @return r
-},[cptc, strc], cptc)
-funcDefx(defmain, "set", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1]
- Cptx#v = x[2] 
- #r = setx(o, e.str, v)
- @if(r != _){
-  @return r
- }
- o.fdefault = @false 
- @return v
-},[cptc, strc, cptc], cptc)
 
-funcDefx(defmain, "inClass", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- Cptx#r = x[1]; 
- @return boolNewx(inClassx(l, r))
-}, [classc, classc], boolc)
-funcDefx(defmain, "class", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- @return classx(l)
-}, [cptc], cptc)
-funcDefx(defmain, "typepred", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- @return typepredx(l)
-}, [cptc], classc)
+//////////////TYPE///
 funcDefx(defmain, "isCpt", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return boolNewx(l.type == T##CPT)
@@ -216,9 +299,8 @@ funcDefx(defmain, "isDic", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return boolNewx(l.type == T##DIC)
 }, [cptc], boolc)
-funcDefx(defmain, "uid", ->(x Arrx, env Cptx)Cptx{
- @return strNewx(uidx())
-}, _, strc)
+
+///UTILS common///
 funcDefx(defmain, "log", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
  log(strx(o))
@@ -231,10 +313,11 @@ funcDefx(defmain, "die", ->(x Arrx, env Cptx)Cptx{
 }, [strc])
 funcDefx(defmain, "throw", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
- 
  diex(o.str, env)
  @return nullv
 }, [errorc, strc])
+
+//TODO change
 funcDefx(defmain, "print", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
  print(o.str)
@@ -245,84 +328,8 @@ funcDefx(defmain, "lg", ->(x Arrx, env Cptx)Cptx{
  print(o.str)
  @return nullv
 }, [strc])
-funcDefx(defmain, "appendIfExists", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0];
- Cptx#app = x[1]; 
- @if(o.str == ""){
-  @return o
- }
- o.str += app.str
- @return o
-}, [strc, strc], strc)
-funcDefx(defmain, "ind", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#f = x[1] 
- @return strNewx(indx(o.str, f.int))
-}, [strc, intc], strc)
-funcDefx(defmain, "exec", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- @return execx(l, env, 1)
-}, [cptc], cptc)
-funcDefx(defmain, "execNative", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- @return execx(l, env)
-}, [cptc], cptc)
-funcDefx(defmain, "parseSend", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- @return execx(l, env, 1)
-}, [cptc], cptc)
-funcDefx(defmain, "blockExec", ->(x Arrx, env Cptx)Cptx{
- Cptx#l = x[0];
- @return blockExecx(l, env)
-}, [blockc], cptc)
-funcDefx(defmain, "opp", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#op = x[1]
- Cptx#ret = execx(o, env, 1)
- @if(ret.type != T##STR){
-  die("opp: not used in tplCall")
- }
- @if(!inClassx(classx(o), callc)){
-  @return ret
- }
- Cptx#f = o.class
- @if(!inClassx(classx(f), opc)){
-  @return ret
- }
- Int#sub = getx(f, "opPrecedence").int
- Int#main = getx(op, "opPrecedence").int
- @if(sub > main){
-  @return strNewx("(" + ret.str + ")")
- }
- @return ret
-},[cptc, opc, envc], strc)
-funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
- Cptx#f = x[0];
- Cptx#a = x[1];
- @if(f == _ || f.id == nullv.id){
-  log(strx(a))
-  die("call() error");
- }
- @if(!inClassx(classx(f), funcc)){ 
-  log(strx(f))
-  diex("not func", env)
- }
- @return callx(f, a.arr, env)
-}, [funcc, arrc], cptc)
-funcDefx(defmain, "tplCall", ->(x Arrx, env Cptx)Cptx{
- Cptx#f = x[0];
- Cptx#a = x[1];
- Cptx#e = x[2];
- @if(e.fdefault){
-  e = env
- }
- @return tplCallx(f, a.arr, e)
-}, [functplc, arrc, envc], cptc)
-funcDefx(defmain, "keys", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return copyx(arrNewx(o.arr, arrstrc))
-}, [dicc], arrstrc)
 
+/////get struct INTERNAL/////
 funcDefx(defmain, "callFunc", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return o.class
@@ -345,18 +352,6 @@ funcDefx(defmain, "idVal", ->(x Arrx, env Cptx)Cptx{
  @return o.class
 }, [callc], cptc)
 
-
-funcDefx(defmain, "malloc", ->(x Arrx, env Cptx)Cptx{
- Cptx#i = x[0]
- Cptx#c = x[1]
- #arr = malloc(i.int, Cptx)
- @return arrNewx(arr, itemsDefx(staticarrc, c))
-},[uintc, classc], staticarrc)
-
-methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return aliasGetx(o)
-}, _, classc)
 
 
 
@@ -417,13 +412,7 @@ methodDefx(filexc, "readAll", ->(x Arrx, env Cptx)Cptx{
  #p = Filex(o.dic["path"].str) 
  @return strNewx(p.readAll())
 }, _, strc)
-methodDefx(dirxc, "write", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#d = x[1]
- Str#p = o.dic["path"].str
- dirWritex(p, d.dic) 
- @return nullv
-}, [dicc])
+
 methodDefx(dirxc, "writeFile", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#f = x[1]
@@ -498,6 +487,13 @@ methodDefx(classc, "parents", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return arrNewx(arrCopyx(o.arr), arrclassc)
 }, _, arrc)
+
+///aliasc
+methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return aliasGetx(o)
+}, _, classc)
+
 
 ///objc
 methodDefx(objc, "toDic", ->(x Arrx, env Cptx)Cptx{
@@ -795,7 +791,7 @@ methodDefx(dicc, "set", ->(x Arrx, env Cptx)Cptx{
  o.fdefault = @false 
  @return v
 }, [strc, cptc], cptc)
-methodDefx(dicc, "hasKey", ->(x Arrx, env Cptx)Cptx{
+methodDefx(dicc, "has", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#i = x[1]
  @if(o.dic[i.str] != _){
@@ -810,31 +806,32 @@ methodDefx(dicc, "appendClass", ->(x Arrx, env Cptx)Cptx{
  @return o
 }, [classc], dicc)
 //TODO to func
-methodDefx(dicc, "values", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- @return valuesx(o)
-}, _, arrc)
 methodDefx(dicstrc, "values", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return valuesx(o)
 }, _, arrstrc)
 
-//////METHOD DIR/////////////
+//////DIR/////////////
 ///dirc
 methodDefx(dirc, "len", ->(x Arrx, env Cptx)Cptx{
  @return nullv
 }, [strc], uintc)
-opDefx(dirc, "get", ->(x Arrx, env Cptx)Cptx{
+methodDefx(dirc, "has", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
-// Cptx#s = x[1]
-// @return bytesNewx(@fs[o.str].readAll())
- @return nullv
+// Cptx#i = x[1]
+ @return falsev
+}, [strc], boolc)
+opDefx(dirc, "get", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#s = x[1]
+ @return bytesNewx(@fs[o.str + s.str])
 }, strc, bytesc, opgetc)
 methodDefx(dirc, "set", ->(x Arrx, env Cptx)Cptx{
-// Cptx#o = x[0]
-// Cptx#s = x[1]
-// @return bytesNewx(@fs[o.str].readAll())
- @return nullv
+ Cptx#o = x[0]
+ Cptx#s = x[1]
+ Cptx#v = x[2] 
+ @fs[o.str + s.str] = v.bytes
+ @return v
 }, [strc, bytesc], bytesc)
 methodDefx(dirc, "sub", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -863,7 +860,7 @@ methodDefx(dirc, "open", ->(x Arrx, env Cptx)Cptx{
 }, [strc, strc], streamc)
 methodDefx(dirc, "stat", ->(x Arrx, env Cptx)Cptx{
  @return nullv
-}, [strc], statpathfsc)
+}, [strc], dicuintc)
 methodDefx(dirc, "timeMod", ->(x Arrx, env Cptx)Cptx{
  @return nullv
 }, [strc], timec)
@@ -936,6 +933,25 @@ opDefx(boolc, "or", ->(x Arrx, env Cptx)Cptx{
  @return boolNewx(l.int !=0 || r.int != 0)
 }, boolc, boolc, oporc)
 
+
+//////METHOD SOUL/////
+methodDefx(soulc, "getCmdArgs", ->(x Arrx, env Cptx)Cptx{
+ @if(_osArgs == _){
+  #x = &Arrx
+  Arr_Str#aa = @soul.getCmdArgs()
+  @each i v aa{
+   @if(i == 0){
+    @continue
+   }
+   x.push(strNewx(v))
+  }
+  _osArgs = arrNewx(x, arrstrc)
+ }
+ @return nullv
+}, _, arrstrc)
+methodDefx(soulc, "exit", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [intc])
 
 ///execDefx
 execDefx("Env", ->(x Arrx, env Cptx)Cptx{
