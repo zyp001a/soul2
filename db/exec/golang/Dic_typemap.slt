@@ -1,0 +1,3 @@
+~#typemap = getExec()._typemap
+Class#c = #0
+~map[string]~=typemap(class(c.itemsType))~

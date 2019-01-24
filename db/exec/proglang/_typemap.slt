@@ -1,0 +1,20 @@
+~
+Class#c = #0
+#typemap = getExec()._typemap
+#t = getName(c)
+#id = getId(c)
+#r = typemapCache[id]
+@if(r){
+ ~~=r~~
+}@else{
+ #res = ""
+ #rf = propGet(getExec(), c, "typemap")
+ @if(rf){
+  res = rf(c)
+ }@else{
+  die("no typemap " + t)
+ }
+ typemapCache[id] = res
+ ~~=res~~
+}
+~

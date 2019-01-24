@@ -1,0 +1,9 @@
+~
+Class#c = #0
+#l = ""
+Uint#li = c.itemsLimitedLen
+@if(li > 0){
+ #l = Str(#li)
+}
+#typemap = getExec()._typemap
+~*[~=l~]~=typemap(class(c.itemsType))~

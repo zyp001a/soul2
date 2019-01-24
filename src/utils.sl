@@ -666,9 +666,11 @@ mustPropGetx ->(scope Cptx, o Cptx, key Str)Cptx{
  @return r
 }
 propGetx ->(scope Cptx, o Cptx, key Str)Cptx{
- Cptx#r = classGetx(scope, o.name + "_" + key);
- @if(r != _){
-  @return r  
+ @if(o.name != ""){
+  Cptx#r = classGetx(scope, o.name + "_" + key);
+  @if(r != _){
+   @return r  
+  }
  }
 
  Arrx#p = o.arr
