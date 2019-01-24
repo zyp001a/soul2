@@ -47,8 +47,6 @@ Class#c = #0
    res = "string"
   }@elif(inClass(c, Bytes)){
    res = "[]byte"
-  }@elif(inClass(c, Pathx)){
-   res = "string"
   }@elif(inClass(c, JsonArr)){
    res = "[]interface{}"
   }@elif(inClass(c, Json)){

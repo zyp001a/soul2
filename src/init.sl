@@ -217,11 +217,6 @@ stackc.fbitems = @true
 queuec := classDefx(defmain, "Queue", [arrc])
 queuec.fbitems = @true
 
-pathxc := classDefx(defmain, "Pathx", _, {
- path: strc
-})
-filexc := classDefx(defmain, "Filex", [pathxc])
-dirxc := classDefx(defmain, "Dirx", [pathxc])
 
 //init call
 
