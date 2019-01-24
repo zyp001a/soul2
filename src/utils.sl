@@ -376,6 +376,7 @@ funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
   #x = classNewx([fp])
   #y = objNewx(x)  
  }
+ y.id2 = uidx()
  @return y
 }
 boolNewx ->(x Bool)Cptx{
@@ -490,6 +491,9 @@ fpDefx ->(types Arrx, return Cptx)Cptx{
  @each _ v types{
   #n += "__" + aliasGetx(classx(v)).name
  }
+ @if(return == _){
+  return = emptyc
+ }
  #n += "__"+return.name
  #x = classGetx(defmain, n);
  @if(x == _){
@@ -522,7 +526,7 @@ methodDefx ->(class Cptx, name Str, val Funcx, argtypes Arrx, return Cptx)Cptx{/
  fn.fprop = @true
  class.dic[name] = fn;
  fn.name = class.name + "_" + name
- class.class.dic[fn.name] = fn;
+ fn.class = class
  fn.str = name
  @return fn
 }
@@ -614,10 +618,15 @@ subClassGetx ->(scope Cptx, key Str, cache Dic)Cptx{
  @return _
 }
 propDefx ->(scope Cptx, key Str, r Cptx)Cptx{
- Cptx#o = copyx(r)
- o.class = scope
- o.name = scope.name + "_" + key
- @return o;
+ @if(r.name != scope.name + "_" + key){
+  Cptx#o = copyx(r)
+  o.class = scope
+  o.name = scope.name + "_" + key
+  scope.dic[key] = o
+  o.class = scope
+  @return o;  
+ }
+ @return r;
 }
 classGetx ->(scope Cptx, key Str)Cptx{
  Cptx#r = subClassGetx(scope, key, {})
@@ -899,6 +908,7 @@ copyx ->(o Cptx)Cptx{
 
   name: o.name
   id: uidx()
+  id2: o.id2
   class: o.class
   
   obj: o.obj
@@ -1026,7 +1036,7 @@ subTypepredx ->(o Cptx)Cptx{
   @if(f == _){
    @return callc
   }
-  @if(f.id == defmain.dic["new"].id){
+  @if(f.id2 != 0 && f.id2 == classc.dic["new"].id2){
    Cptx#arg0 = args[0]
    @return arg0
   }
@@ -1453,7 +1463,11 @@ execx ->(o Cptx, env Cptx, flag Int)Cptx{
  @if(!ex){
   die("exec: unknown type "+classx(o).name);
  }
- @return callx(ex, [o], env);
+ #r = callx(ex, [o], env);
+ @if(r == _){
+  diex("exec return null", env)
+ }
+ @return r;
 }
 
 tobj2objx ->(to Cptx)Cptx{
@@ -1657,4 +1671,6 @@ diex ->(str Str, env Cptx){
  log(l.str + ":" + l.int)
  log(l.ast)  
  die(str)
+}
+httpx ->(){
 }

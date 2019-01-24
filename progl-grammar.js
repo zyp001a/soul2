@@ -473,8 +473,7 @@ var grammar = {
 		],
 		Keyword: [
 			["FS", "$$ = ['fs']"],
-			["INET", "$$ = ['inet']"],
-			["INET6", "$$ = ['inet6']"],			
+			["NET", "$$ = ['net']"],
 			["PROC", "$$ = ['proc']"],
 			["SOUL", "$$ = ['soul']"],			
 		],

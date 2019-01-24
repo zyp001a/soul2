@@ -107,6 +107,10 @@ funcDefx(defmain, "getMidFlag", ->(x Arrx, env Cptx)Cptx{
 }, [cptc], boolc)
 funcDefx(defmain, "getClass", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
+ @if(o.class == _){
+  log(strx(o))
+  diex("no scope", env)
+ }
  @return o.class
 }, [cptc], classc)
 funcDefx(defmain, "getPropName", ->(x Arrx, env Cptx)Cptx{
@@ -160,11 +164,6 @@ funcDefx(defmain, "propGet", ->(x Arrx, env Cptx)Cptx{
  Cptx#s = x[2] 
  @return nullOrx(propGetx(o, c, s.str))//TODO modify
 },[classc, classc, strc], cptc)
-funcDefx(defmain, "new", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#e = x[1]
- @return defx(o, e.dic)
-},[classc, dicc], cptc)
 funcDefx(defmain, "get", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  Cptx#e = x[1]
@@ -409,6 +408,12 @@ methodDefx(classc, "parents", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return arrNewx(arrCopyx(o.arr), arrclassc)
 }, _, arrc)
+methodDefx(classc, "new", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ Cptx#e = x[1]
+ @return defx(o, e.dic)
+},[dicc], cptc)
+
 
 ///aliasc
 methodDefx(aliasc, "getClass", ->(x Arrx, env Cptx)Cptx{
@@ -765,7 +770,7 @@ methodDefx(dirc, "sub", ->(x Arrx, env Cptx)Cptx{
  @if(Bytes(s.str)[s.str.len() - 1] != @'/'){
   s.str += "/"
  }
- #np = strNewx(d + s.str); 
+ #np = strNewx(d + s.str);
  @fs.sub(np.str)
  s.obj = pathfsc
  @return objNewx(dirc, {
@@ -777,7 +782,7 @@ methodDefx(dirc, "rm", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #d = o.dic["routerPath"].str
  Cptx#s = x[1]
- @fs.rm(d+s.str)
+ @fs.rm(d + s.str)
  @return nullv
 }, [strc])
 methodDefx(dirc, "open", ->(x Arrx, env Cptx)Cptx{
@@ -792,6 +797,43 @@ methodDefx(dirc, "stat", ->(x Arrx, env Cptx)Cptx{
 methodDefx(dirc, "timeMod", ->(x Arrx, env Cptx)Cptx{
  @return nullv
 }, [strc], timec)
+
+//////INET/////////////
+/*
+methodDefx(inetc, "http", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#s = x[1]
+// #ip = o.dic["routerPath"].str
+ 
+// @inet.http(ip, s)
+ @return nullv
+}, [strc, httpreqc], httpresc)
+*/
+methodDefx(clienthttpc, "get", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [streamc, dicstrc], streamc)
+methodDefx(clienthttpc, "getStr", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [strc, dicstrc], strc)
+methodDefx(clienthttpc, "post", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [strc, streamc, dicstrc], streamc)
+methodDefx(clienthttpc, "postStr", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [strc, strc, dicstrc], strc)
+methodDefx(serverhttpc, "listen", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [uintc], strc)
+methodDefx(serverhttpc, "close", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [uintc], strc)
+methodDefx(serverhttpc, "use", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [strc, handlerc], strc)
+
+methodDefx(clientc, "send", ->(x Arrx, env Cptx)Cptx{
+ @return nullv
+}, [strc, streamc], streamc)
 
 
 ////////////METHOD JSON/////

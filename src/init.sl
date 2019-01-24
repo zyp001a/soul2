@@ -33,6 +33,7 @@ Cptx => {
  
  name: Str
  id: Uint
+ id2: Uint 
  class: Cptx 
 
  obj: Cptx
@@ -303,23 +304,10 @@ routerrootedc.dic["routerRoot"] = defx(routerrootedc)
 
 
 ///////def os and network abstract type
+///inet in soul
 
 ipc := classDefx(defmain, "Ip", [pathc])
-ip6c := classDefx(defmain, "Ip6", [pathc])
-inetc := classDefx(defmain, "Inet", [routerc], {
- routerPath: ipc
-})
-inet6c := classDefx(defmain, "Inet6", [routerc], {
- routerPath: ip6c
-})
-inetv := defx(inetc, {
- routerPath: strNewx("127.0.0.1", ipc)
-})
-inetv.fstatic = @true
-inet6v := defx(inet6c, {
- routerPath: strNewx("::1", ip6c)
-})
-inet6v.fstatic = @true
+ip6c := classDefx(defmain, "Ip6", [ipc])
 
 pathfsc := curryDefx(defmain, "PathFs", pathc)
 dirc := classDefx(defmain, "Dir", [routerrootedc], {
@@ -331,48 +319,59 @@ fsv := defx(dirc, {
 fsv.fstatic = @true
 fsv.dic["treeRoot"] = fsv
 
+
+
 schemac := curryDefx(defmain, "Schema", pathc)
 dbmsc := classDefx(defmain, "Dbms", [routerrootedc], {
  itemsType: schemac
 })
 
-remotec := classDefx(defmain, "Remote")
+
+procc := classDefx(defmain, "Proc", [routerc])
+
+netc := classDefx(defmain, "Net", [routerc], {
+ routerPath: ipc
+})
+netv := defx(netc)
+netv.fstatic = @true
 
 soulc := classDefx(defmain, "Soul", _, {
  soulIsSelf: boolc
  soulFs: dirc
- soulInet: inetc
- soulInet6: inet6c
+ soulNet: netc
+ soulProc: procc
 })
 soulsubc := curryDefx(defmain, "SoulSub", soulc)
-
 soulv := defx(soulc, {
  soulIsSelf: boolNewx(@true)
  soulFs: fsv
- soulInet: inetv
- soulInet6: inet6v
+ soulNet: netv
 })
+
+
 
 //impl type
-protocolc := classDefx(defmain, "Protocol")
-serverc := classDefx(defmain, "Server", _, {
- serverProtocol: protocolc
+protocolc := classDefx(defmain, "Protocol", _, {
+ protocolName: strc
+ protocolDefaultPort: uintc
 })
-clientc := classDefx(defmain, "Client", _, {
- clientProtocol: protocolc
+httpc := curryDefx(defmain, "Http", protocolc, {
+ protocolName: strNewx("http")
+ protocolDefaultPort: intNewx(80, uintc)
+})
+httpsc := curryDefx(defmain, "Http", protocolc, {
+ protocolName: strNewx("https")
+ protocolDefaultPort: intNewx(443, uintc)
 })
 
-httpc := classDefx(defmain, "Http", [protocolc])
+serverc := classDefx(defmain, "Server")
+clientc := classDefx(defmain, "Client")
+reqc := classDefx(defmain, "Req", [streamc])
+respc := classDefx(defmain, "Resp", [streamc])
+handlerc := fpDefx([defx(reqc), defx(respc)])
 
-streamhttpc := classDefx(defmain, "StreamHttp", [streamc])
-serverhttpc := curryDefx(defmain, "ServerHttp", serverc, {
- serverPort: intNewx(80)
-})
-serverhttpsc := curryDefx(defmain, "ServerHttps", serverhttpc, {
- serverPort: intNewx(443)
-})
-clienthttpc := curryDefx(defmain, "ClientHttp", clientc)
-clienthttpsc := curryDefx(defmain, "ClientHttps", clienthttpc)
+serverhttpc := classDefx(defmain, "ServerHttp", [serverc, httpc])
+clienthttpc := classDefx(defmain, "ClientHttp", [clientc, httpc])
 
 
 

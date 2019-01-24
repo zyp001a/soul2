@@ -9,6 +9,7 @@ c.close()
 #d = @fs.open("b", "r")
 #x = d.readAll()
 log(Str(x))
+d.close()
 @fs.rm("b")
 */
 #dir = @fs.sub("test")

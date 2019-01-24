@@ -7,7 +7,7 @@ Arr#a = callArgs(#0)
  ~~=tplCall(f, a)~~
 }@elif(inClass(c, Func)){//TODO func tmp
  #n = getName(f)
- @if(getPropFlag(f)){ 
+ @if(getPropFlag(f)){
   #r = propGet(getExec(), getClass(f), getPropName(f))
  }@else{
   #r = get(getExec(), n)

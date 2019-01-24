@@ -240,12 +240,12 @@ obj2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
    die("obj2cpt: no class "+Str(ast[1])) 
  }
  Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);
- @if(inClassx(c, nativec)){
-  #x = callNewx(getx(c, "new"), [c, schema])
- }@elif(schema.fmid){
-  #x = callNewx(defmain.dic["new"], [c, schema])
+ #nf = getx(c, "new")
+ #classnf = classc.dic["new"]
+ @if(nf.id2 == classnf.id2 && !schema.fmid){
+  #x = defx(c, schema.dic) 
  }@else{
-  #x = defx(c, schema.dic)
+  #x = callNewx(nf, [c, schema])  
  }
  @return x 
 }
@@ -1008,10 +1008,8 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return x
  }@elif(t == "fs"){
   @return fsv
- }@elif(t == "inet"){
-  @return inetv
- }@elif(t == "inet6"){
-  @return inet6v
+ }@elif(t == "net"){
+  @return netv
  }@elif(t == "soul"){
   @return soulv
  }@else{

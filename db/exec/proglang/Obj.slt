@@ -6,7 +6,7 @@ Obj#o = #0;
 @if(r != _){
  #res = call(r, [#0])
 }@else{
- #res = ^new class(o), Dic(o)^
+ #res = ^_new class(o), Dic(o)^
 }
 
 @if(n){
