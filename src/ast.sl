@@ -1081,6 +1081,12 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return fsv
  }@elif(t == "net"){
   @return netv
+ }@elif(t == "stdin"){
+  @return stdinv
+ }@elif(t == "stdout"){
+  @return stdoutv
+ }@elif(t == "stderr"){
+  @return stderrv
  }@elif(t == "soul"){
   @return soulv
  }@else{

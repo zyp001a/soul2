@@ -7,6 +7,4 @@ goImport ->(varname Str){
  }
  $imports[varname] = "import \""+varname+"\""
 }
-
-
 ~

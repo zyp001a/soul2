@@ -848,6 +848,12 @@ methodDefx(streamc, "write", ->(x Arrx, env Cptx)Cptx{
 // @fs[o.str].write(s.bytes)
  @return nullv
 }, [bytesc])
+methodDefx(stdoutc, "write", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+ Cptx#s = x[1]
+ print(s.bytes)
+ @return nullv
+}, [bytesc])
 
 methodDefx(bufferc, "readAll", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]

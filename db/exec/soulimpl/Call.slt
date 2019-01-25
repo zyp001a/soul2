@@ -1,0 +1,6 @@
+~
+Cpt#f = callFunc(#0)
+Arr#a = callArgs(#0)
+funcImport("callx")
+nativeImport(f)
+~callx(, [~=^_execarr a^~])

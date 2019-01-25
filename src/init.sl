@@ -334,6 +334,20 @@ netc := classDefx(defmain, "Net", [routerc], {
 netv := defx(netc)
 netv.fstatic = @true
 
+
+stdinc := curryDefx(defmain, "Stdin", streamc, {
+ streamReadable: boolNewx(@true)
+})
+stdoutc := curryDefx(defmain, "Stdout", streamc, {
+ streamWritable: boolNewx(@true)
+})
+stderrc := curryDefx(defmain, "Stderr", streamc, {
+ streamWritable: boolNewx(@true)
+})
+stdinv := defx(stdinc)
+stdoutv := defx(stdoutc)
+stderrv := defx(stderrc)
+
 soulc := classDefx(defmain, "Soul", _, {
  soulIsSelf: boolc
  soulFs: dirc

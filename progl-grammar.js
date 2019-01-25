@@ -60,14 +60,15 @@ var grammar = {
 			["@proc", "return 'PROC'"],			
 			["@fs", "return 'FS'"],
 //NET			
-			["@inet", "return 'INET'"],
-			["@inet6", "return 'INET6'"],			
+			["@net", "return 'NET'"],
 			["@http", "return 'HTTP'"],
 			["@https", "return 'HTTPS'"],						
 			["@dir", "return 'DIR'"],
-			["@pwd", "return 'PWD'"],			
+			["@pwd", "return 'PWD'"],
+			
 			["@stdin", "return 'STDIN'"],
 			["@stdout", "return 'STDOUT'"],
+			["@stderr", "return 'STDERR'"],			
 
 			//CONCURRENCY
 			["@go", "return 'GO'"],
@@ -486,6 +487,9 @@ var grammar = {
 			["FS", "$$ = ['fs']"],
 			["NET", "$$ = ['net']"],
 			["PROC", "$$ = ['proc']"],
+			["STDIN", "$$ = ['stdin']"],
+			["STDOUT", "$$ = ['stdout']"],
+			["STDERR", "$$ = ['stderr']"],			
 			["SOUL", "$$ = ['soul']"],
 		],
 		KeywordFunc: [
