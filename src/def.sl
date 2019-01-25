@@ -139,23 +139,6 @@ funcDefx(defmain, "keys", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return copyx(arrNewx(o.arr, arrstrc))
 }, [dicc], arrstrc)
-funcDefx(defmain, "sendImpl", ->(x Arrx, env Cptx)Cptx{
- Cptx#s = x[0]
- Cptx#o = x[1] 
- #arr = sendx(s, o.arr)
- @return arrNewx(arr)
-},[classc, arrc], arrc)
-funcDefx(defmain, "send", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- #arr = sendx(defmain, o.arr)
- @each _ v arr{
-  Cptx#r = execx(v, env)
-  @if(inClassx(classx(r), signalc)){
-   @return r
-  }
- }
- @return nullv
-},[arrc])
 
 //////SYS///////
 funcDefx(defmain, "propGet", ->(x Arrx, env Cptx)Cptx{
@@ -314,7 +297,7 @@ funcDefx(defmain, "throw", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0];
  diex(o.str, env)
  @return nullv
-}, [errorc, strc])
+}, [errc, strc])
 
 //TODO change
 funcDefx(defmain, "print", ->(x Arrx, env Cptx)Cptx{
@@ -837,17 +820,19 @@ methodDefx(clientc, "send", ->(x Arrx, env Cptx)Cptx{
 
 
 ////////////METHOD JSON/////
-methodDefx(jsonc, "len", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- //TODO
- @return intNewx(o.arr.len(), uintc)
-},_, uintc)
-opDefx(jsonc, "get", ->(x Arrx, env Cptx)Cptx{
+//almost same to dic and arr
+methodDefx(jsonc, "toStr", ->(x Arrx, env Cptx)Cptx{
 // Cptx#o = x[0]
 // Cptx#e = x[1]
  //TODO
  @return nullv
-}, strc, cptc, opgetc)
+}, _, strc)
+methodDefx(jsonarrc, "toStr", ->(x Arrx, env Cptx)Cptx{
+// Cptx#o = x[0]
+// Cptx#e = x[1]
+ //TODO
+ @return nullv
+}, _, strc)
 
 
 ////METHOD STREAM
@@ -1069,6 +1054,19 @@ execDefx("CtrlBreak", ->(x Arrx, env Cptx)Cptx{
 })
 execDefx("CtrlContinue", ->(x Arrx, env Cptx)Cptx{
  @return objNewx(continuec)
+})
+execDefx("CtrlErr", ->(x Arrx, env Cptx)Cptx{
+ #args = x[0].dic["ctrlArgs"].arr 
+ #code = args[0]
+ #msg = args[1]
+ #func = args[2].dic["funcErrFunc"]
+ #r = callx(func, [code, msg], env)
+ @if(r.int){
+  @return nullv
+ }
+ @return defx(returnc, {
+  return: defaultx(args[2].dic["funcReturn"])
+ })
 })
 execDefx("CtrlIf", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]

@@ -588,6 +588,7 @@ dbGetx ->(scope Cptx, key Str)Cptx{
  }
  Astx#ast = JsonArr(jstr)
  @if(ast.len() == 0){
+  log(fstr)
   die("dbGetx: wrong grammar")
  }
  Cptx#r = ast2cptx(ast, scope, classNewx())
@@ -1356,7 +1357,7 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
    @if(r.obj.id == returnc.id){
     @return r.dic["return"]
    }  
-   @if(r.obj.id == errorc.id){
+   @if(r.obj.id == errc.id){
     //TODO pass to blockpost or up
    }  
    @if(r.obj.id == breakc.id){
@@ -1553,9 +1554,16 @@ convertx ->(val Cptx, to Cptx)Cptx{
  }
  #r = getx(from, "to"+name)
  @if(r == _){
-  log(strx(val))
+  log(strx(val))  
+  log(val.fmid)  
+  log("from.ctype "+from.ctype)
+  log("to.ctype "+to.ctype)
+  log("to in from?")
+  log(inClassx(to, from))
+  log("from in to?")
+  log(inClassx(from, to))
   log(strx(from))   
-  log(strx(to))
+  log(strx(to))  
   log("to"+name)
   die("convert func not defined")
  }
@@ -1566,105 +1574,6 @@ byte2strx ->(b Byte)Str{
  c[0] = b
  @return Str(c) 
 }
-/*
-sendFinalx ->(arrx Arrx, scope Cptx, from Cptx, to Cptx)Bool{
-//should read from left
- #fromt = mustTypepredx(from)
- #tot = mustTypepredx(to)
- @if(inClassx(tot, handlerc)){ //read from val
-  @return @false
- }
- @if(to.type != T##ID){
-  die("if not handler, can only assign to ID");
-  @return @false
- }
-
- @if(inClassx(fromt, handlerc)){
-  #r = propGetx(scope, fromt, "read"+tot.name)
-  @if(r){
-   #fromx = callNewx(r, [from])  
-   #assignf = mustGetx(to, "assign")
-   #ncall = callNewx(assignf, [to, fromx], callrawc)
-   arrx.push(ncall)
-   @return @true
-  }
-  #stmread = mustPropGetx(scope, fromt, "read")
-  #stmfrom = callNewx(stmread, [from])
-  #stmfromt = classGetx(fromt, "handlerStreamOutType")
-  #fread = mustPropGetx(scope, stmfromt, "read")
-  #fromx = callNewx(fread, [stmfrom])
-  #fromxt = classGetx(fromt, "handlerMsgOutType")
- }@elif(inClassx(fromt, streamc)){
-  #fread = mustPropGetx(scope, fromt, "read")
-  #fromx = callNewx(fread, [from])
-  #fromxt = bytesc
- }@else{
-  #fromx = from
-  #fromxt = fromt 
- }
- @if(tot.id == nullc.id){
-  tot = fromxt
-  to.pred = fromxt  
-  to.class.dic[to.str] = defx(fromxt)
-// }@elif(){
-  
- }@else{
-  fromx = convertx(fromx, tot)  
- }
-  
- #assignf = mustGetx(to, "assign")
- #ncall = callNewx(assignf, [to, fromx], callrawc)
- arrx.push(ncall)
-
- @return @true
-}
-*/
-sendx ->(scope Cptx, arr Arrx)Arrx{
-/*
- #arrx = &Arrx;
- #l = arr.len()
- @for #i=0; i<l - 1; i++{
-  #from = arr[i]
-  #to = arr[i+1]
-  #fromt = mustTypepredx(from)
-  #tot = mustTypepredx(to)
-  //&B = A_read(&A)
-  #done = sendFinalx(arrx, scope, from, to)
-  @if(done){
-   @continue
-  }
-
-  //B_write(&B, &A)
-  @if(!inClassx(fromt, handlerc)){ //write to val
-   #tomsgt = classx(classGetx(tot, "handlerMsgInType"))
-   #fwrite = mustPropGetx(scope, tot, "write")
-   from = convertx(from, tomsgt)
-   arrx.push(callNewx(fwrite, [to, from]))
-   @continue;
-  }
-
-  //A_pipeB(&A, &B)
-  #f = propGetx(scope, fromt, "pipe" + tot.name)
-  @if(f){
-   arrx.push(callNewx(f, [from, to]))
-   @continue
-  }
-
-  //B_write(&B, A_read(&A))
-  #fread = mustPropGetx(scope, fromt, "read")
-  #fwrite = mustPropGetx(scope, tot, "write")
-  #tomsgt = classx(classGetx(tot, "handlerMsgInType"))
-  #cread = convertx(callNewx(fread, [from]), tomsgt)
-  arrx.push(callNewx(fwrite, [to, cread]))
-  @continue
-  log(arr)
-  log(i)
-  die("cannot send, not function matched")
- }
- @return arrx
- */
- @return &Arrx
-}
 diex ->(str Str, env Cptx){
  @each _ v env.dic["envStack"].arr{
   log(v.str + ":" + v.int)
@@ -1673,6 +1582,4 @@ diex ->(str Str, env Cptx){
  log(l.str + ":" + l.int)
  log(l.ast)  
  die(str)
-}
-httpx ->(){
 }

@@ -1,46 +1,5 @@
-# stream model
-&A >> &B >> &C >> &D
-
-B -> !Handler?
- B -> Id?
- B_to{A_MsgOutType}?
- A_read?
-  ==>&B = A_read(&A) //assign
-
-B_request{C}{A}
-  ==>&D = B_request(&B, &C, &A)
-B_request{C}
-  ==>&D = B_request(&B, &C, &A)
-B_request
-  ==>&D = B_request(&B, &C, &A)
-
-B_exchange{A}?
- {B_MsgOutType}_to{C}?
-  ==>&C = B_exchange{A}(&B, &A) 
-B_exchange?
- {A}_to{B_MsgInType}?
- {B_MsgOutType}_to{C}?
-  ==>&C = B_exchange(&B, &A)
-
-A -> !Handler?
- A -> Id?
- A_to{B_MsgInType}?
- B_write?
-  ==>B_write(&B, &A)
-	
-A_pipe{B}?
-  ==>A_pipe{B}(&A, &B)
-A_pipe?
- B_to{A_MsgOutType} || A_to{B_MsgInType}?
-  ==>A_pipe(&A, &B)
-	
-A_read?
- B_write?
- B_to{A_MsgOutType} || A_to{B_MsgInType}? 
-  ==>B_write(&B, A_read(&A))
 # soul def
-buffer too large error?
-tplCall -> use buffer ; rm passbyref(redo concat)
+error handlering need to be improved
 remoteDefx
 JAVA interface ?
 raw?

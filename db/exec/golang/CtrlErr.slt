@@ -1,0 +1,6 @@
+~#f = ^_funcErrFunc^
+CtrlErr#c = #0
+@if(f != "nil"){
+ ~~=f~(~=exec(c.ctrlArgs[0])~, ~=exec(c.ctrlArgs[1])~)~
+}
+~

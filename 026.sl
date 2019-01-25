@@ -1,6 +1,6 @@
 s = &ServerHttp
-s.use("/", ->(in Res, out Resp){
- in.pipe(out)
+s.use("/", -->{
+ #0.pipe(#1)
 })
 s.listen(1234)
 

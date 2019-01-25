@@ -1,0 +1,47 @@
+~
+typeImport("Dicx")
+typeImport("Arrx")
+typeImport("Funcx")
+~Cptx => {
+ type: T
+ ctype: T
+
+ fmid: Bool//is mid?
+ fdefault: Bool//is default?
+ //for class and func
+ fprop: Bool //is method?
+
+ fstatic: Bool //cptc cptv nullc nullv emptyc ...
+ //for any
+ fast: Bool //defined in ast
+ //for tobj
+ farg: Bool //is arg
+
+ //for class
+ fbitems: Bool //is basic items like Arr Dic Json?
+ fbnum: Bool //is basic number?
+ fscope: Bool //is scope?
+
+ //for func
+ fraw: Bool //is raw func?(callraw, not eval args)
+
+ fdefmain: Bool //is force exec with defmain
+ 
+ ast: JsonArr
+
+ name: Str
+ id: Uint
+ id2: Uint
+ class: Cptx
+
+ obj: Cptx
+ pred: Cptx //cache type pred
+
+ dic: Dicx
+ arr: Arrx
+ str: Str
+ bytes: Bytes
+ int: Int
+// func: Funcx
+ val: Cpt
+}

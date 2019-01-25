@@ -230,9 +230,10 @@ enum2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
  }
  @return c
 }
-send2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
- #arr = ast2arrx(Astx(ast[1]), def, local, func)
- @return callNewx(defmain.dic["send"], [arr], callrawc)
+json2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
+ #dic = Astx(ast[1])
+ #r = ast2jsonx(dic, def, local, func)
+ @return r
 }
 obj2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #c = classGetx(def, Str(ast[1]))
@@ -330,18 +331,17 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
  @return lefto
 }
 err2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
- #err = strNewx(Str(ast[1]), errorc)
+ #err = strNewx(Str(ast[1]), errc)
  @if(ast.len() > 2){
   #msg = ast2cptx(Astx(ast[2]), def, local, func)
  }@else{
   #msg = strNewx("")
  }
  @if(func == _){
-  //TODO default error handlering
   @return callNewx(defmain.dic["throw"], [err, msg])
  }
- @return objNewx(ctrlerrorc, {
-  ctrlArgs: arrNewx([err, msg])
+ @return objNewx(ctrlerrc, {  
+  ctrlArgs: arrNewx([err, msg, func])
  })
 }
 return2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
@@ -506,7 +506,12 @@ alias2cptx ->(ast Astx, def Cptx, name Str)Cptx{
  }
  @return aliasDefx(def, name, x)
 }
-itemdef2cptx ->(ast Astx, def Cptx, name Str)Cptx{
+itemdef2cptx ->(ast Astx, def Cptx, name Str, pre Int)Cptx{
+ @if(pre){
+  #re = classDefx(def, name)
+  @return re
+ }
+
  #x = classGetx(def, Str(ast[1]))
  #it = classGetx(def, Str(ast[2]))
  @if(x == _){
@@ -515,7 +520,13 @@ itemdef2cptx ->(ast Astx, def Cptx, name Str)Cptx{
  @if(it == _){
   die("itemdef error, itemsType "+Str(ast[2]));
  }
- @return aliasDefx(def, name, itemsDefx(x, it))
+ #c = itemsDefx(x, it)
+ #re = def.dic[name]
+ @if(!re){
+  @return aliasDefx(def, name, c)  
+ }
+ parentMakex(re, [aliasc, c])
+ @return re
 }
 funcproto2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  #x = subFunc2cptx(ast, def, local, func, 1)  
@@ -545,15 +556,23 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
   }@elif(c == "alias"){
    @return alias2cptx(v, def, id)
   }@elif(c == "itemdef"){
-   @return itemdef2cptx(v, def, id)  
+   @return itemdef2cptx(v, def, id, pre)  
   }@else{
    @return _
   }
  }
+
+ @if(pre == 12){
+  @if(c == "itemdef"){
+   @return itemdef2cptx(v, def, id)
+  }@else{
+   @return _
+  }  
+ }
  @if(pre == 2){
   @if(c == "class" || c == "classx"){
    @return class2cptx(v, def, local, func, id, pre)
-  }@elif(c == "funcproto"){
+  }@elif(c == "funcproto"){  
    @return funcproto2cptx(v, def, local, func, id)       
   }@elif(c == "func"){
    #dfd = def.dic[id]
@@ -740,6 +759,14 @@ preAst2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx){
   #eee = Astx(ee[0])
   #idpre = Str(eee[0])
   @if(idpre == "def"){
+   def2cptx(eee, def, local, func, 12)
+  }
+ }
+ @each i e ast{
+  #ee = Astx(e)
+  #eee = Astx(ee[0])
+  #idpre = Str(eee[0])
+  @if(idpre == "def"){
    def2cptx(eee, def, local, func, 2)
   }
  }
@@ -767,8 +794,6 @@ ast2blockx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
    Cptx#c = each2cptx(Astx(ee[0]), def, local, func, x)
   }@elif(idpre == "for"){
    Cptx#c = for2cptx(Astx(ee[0]), def, local, func, x)
-  }@elif(idpre == "send"){
-   Cptx#c = send2cptx(Astx(ee[0]), def, local, func)   
   }@else{
    Cptx#c = subAst2cptx(Astx(ee[0]), def, local, func)  
   }
@@ -857,6 +882,45 @@ ast2dicx ->(asts Astx, def Cptx, local Cptx, func Cptx, it Cptx, il Int)Cptx{
  }
  @return r;
 }
+ast2jsonx ->(asts Astx, def Cptx, local Cptx, func Cptx)Cptx{
+ #dicx = &Dicx
+ #arrx = &Arrx 
+ #callable = @false;
+ @each _ eo asts{
+  #e = Astx(eo)
+  #k = Str(e[1]) 
+  #vv = Astx(e[0])
+  #key = Str(vv[0])
+  @if(key == "dic"){
+   vv[0] = "json"
+  }@elif(key == "arr"){
+   vv[0] = "jsonarr"  
+  }
+  Cptx#ee = ast2cptx(vv, def, local, func)  
+  #ee = ast2cptx(Astx(vv), def, local, func)
+  #t = typepredx(ee)
+  @if(inClassx(t, dicc) && !inClassx(t, jsonc)){
+   #ee = convertx(ee, jsonc)
+  }@elif(inClassx(t, arrc) && !inClassx(t, jsonarrc)){
+   #ee = convertx(ee, jsonarrc)  
+  }
+  @if(ee.fmid){
+   callable = @true;
+  }
+  arrx.push(strNewx(k))
+  dicx[k] = ee;
+ }
+ @if(!callable){
+  @each k2 v dicx{
+   dicx[k2] = preExecx(v)
+  }
+ }
+ #r = dicNewx(dicx, arrx, jsonc)
+ @if(callable){
+  r.fmid = @true
+ }
+ @return r; 
+}
 ast2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  Cptx#x = subAst2cptx(ast, def, local, func, name);
  @if(x){
@@ -897,7 +961,7 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   #id = Str(ast[1])
   #val = local.dic[id]
   @if(val == _){
-   @if(ast.len() > 2){  
+   @if(ast.len() > 2){
     #type = classGetx(def, Str(ast[2]))
     @if(type == _){
      die("wrong type "+Str(ast[2]))
@@ -910,6 +974,8 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return idNewx(local, id, idlocalc)
  }@elif(t == "idcond"){
   @return idNewx(_, Str(ast[1]), idcondc)
+ }@elif(t == "idlib"){
+  @return defmain.dic[Str(ast[1])]
  }@elif(t == "id"){
   #id = Str(ast[1])
   #x = id2cptx(id, def, local, func)
@@ -1001,7 +1067,12 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   }
   #x = ast2arrx(Astx(ast[1]), def, local, func, it, il)
   x.fast = @true
-  @return x    
+  @return x
+ }@elif(t == "json"){
+  #x = json2cptx(ast, def, local, func)
+  x.fast = @true
+  @return x  
+ }@elif(t == "jsonarr"){ 
  }@elif(t == "obj"){
   #x = obj2cptx(ast, def, local, func)
   x.fast = @true
@@ -1013,6 +1084,7 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  }@elif(t == "soul"){
   @return soulv
  }@else{
+  log(ast)
   die("ast2cptx: " + t + " is not defined")
  }
  @return

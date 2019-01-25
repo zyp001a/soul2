@@ -1,6 +1,6 @@
 T := @enum CPT OBJ CLASS TOBJ \
  INT FLOAT NUMBIG STR BYTES\
- ARR DIC JSON \
+ ARR DIC\
  ID CALL
 //ID is superior than call becasue CallId exists
 Funcx ->(Arrx, Cptx)Cptx
@@ -197,7 +197,7 @@ dicclassc := itemsDefx(dicc, classc)
 arrclassc := itemsDefx(arrc, classc)
 
 
-errorc := classDefx(defmain, "Error", [strc])
+errc := classDefx(defmain, "Err", [strc])
 rawc := classDefx(defmain, "Raw", [strc])
 //def path
 pathc := classDefx(defmain, "Path", [strc])
@@ -261,7 +261,7 @@ returnc := classDefx(defmain, "Return", [signalc], {
 funcblockc := classDefx(defmain, "FuncBlock", [funcprotoc], {
  funcVars: arrstrc
  funcBlock: blockc
- funcErrFunc: fpDefx([defx(errorc), defx(strc)], boolc)
+ funcErrFunc: fpDefx([defx(errc), defx(strc)], boolc)
 })
 funcclosurec := curryDefx(defmain, "FuncClosure", funcblockc)
 
@@ -320,7 +320,6 @@ fsv.fstatic = @true
 fsv.dic["treeRoot"] = fsv
 
 
-
 schemac := curryDefx(defmain, "Schema", pathc)
 dbmsc := classDefx(defmain, "Dbms", [routerrootedc], {
  itemsType: schemac
@@ -368,7 +367,10 @@ serverc := classDefx(defmain, "Server")
 clientc := classDefx(defmain, "Client")
 reqc := classDefx(defmain, "Req", [streamc])
 respc := classDefx(defmain, "Resp", [streamc])
-handlerc := fpDefx([defx(reqc), defx(respc)])
+handlerc := classDefx(defmain, "Handler", [funcc], {
+ funcAst: jsonarrc
+ funcBlock: blockc
+})
 
 serverhttpc := classDefx(defmain, "ServerHttp", [serverc, httpc])
 clienthttpc := classDefx(defmain, "ClientHttp", [clientc, httpc])
@@ -401,6 +403,7 @@ idstatec := classDefx(defmain, "IdState", [idstrc, midc], {
 idlocalc := curryDefx(defmain, "IdLocal", idstatec)
 idparentc := curryDefx(defmain, "IdParent", idstatec)
 idglobalc := curryDefx(defmain, "IdGlobal", idstatec)
+idargc := curryDefx(defmain, "IdArg", idlocalc)
 
 idclassc := classDefx(defmain, "IdClass", [idstrc], {
  idVal: cptc
@@ -488,7 +491,7 @@ ctrlcontinuec := curryDefx(defmain, "CtrlContinue", ctrlc)
 ctrlgotoc := curryDefx(defmain, "CtrlGoto", ctrlargc)
 
 ctrlreturnc := curryDefx(defmain, "CtrlReturn", ctrlargc)
-ctrlerrorc := curryDefx(defmain, "CtrlError", ctrlargsc)
+ctrlerrc := curryDefx(defmain, "CtrlErr", ctrlargsc)
 
 
 envc := classDefx(defmain, "Env", _, {

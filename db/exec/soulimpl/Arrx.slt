@@ -1,0 +1,3 @@
+~
+classImport("Cptx")
+~Arrx := @type Arr Cptx

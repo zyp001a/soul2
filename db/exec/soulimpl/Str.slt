@@ -1,0 +1,3 @@
+~
+funcImport("strNewx")
+~strNewx("~=#0~")

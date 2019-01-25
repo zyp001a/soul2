@@ -1,0 +1,10 @@
+~
+typeImport("T")
+classImport("Cptx")
+~strNewx ->(x Str, c Cptx)Cptx{
+ @return &Cptx{
+  type: T##STR
+  obj: c
+  str: x
+ }
+}

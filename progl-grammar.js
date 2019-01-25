@@ -13,22 +13,22 @@ var grammar = {
 			["\\/\\*[^\\*]*\\*\\/", "return;"],//COMMENT
 			["\\\/\\\/[^\\n\\r]*", "return;"],//COMMENT
 			//			["#[^\\n\\r]+[\\n\\r]*", "return;"],
-			["\\/(\\\\.|[^\\\\/\\s])+\\/", 
+			["\\/(\\\\\\n|\\\\.|[^\\\\/\\s])+\\/", 
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\(\\/)/g, '$1'); return 'REGEX';"],
-			["\\@`(\\\\.|[^\\\\`])*`", 
+			["\\@`(\\\\\\n|\\\\.|[^\\\\`])*`",
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\([~\\&])/g, '$1'); return 'TPL';"],
-			["@\'(\\\\.|[^\\\\\'])+\'",
+			["@\'(\\\\\\n|\\\\.|[^\\\\\'])+\'",
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\u([0-9a-fA-F]{4})/, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; return n;}); return 'BYTE';"],
-			["@\"(\\\\.|[^\\\\\"])*\"",
+			["@\"(\\\\\\n|\\\\.|[^\\\\\"])*\"",
 			 "yytext = yytext.substr(2, yyleng-3).replace(/\\\\u([0-9a-fA-F]{4})/g, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/g, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; return n;}); return 'BYTES';"],
-			["`(\\\\.|[^\\\\`])*`",
+			["`(\\\\\\n|\\\\.|[^\\\\`])*`",
 			 "yytext = yytext.substr(1, yyleng-2).replace(/\\\\`/g, '`'); return 'STR';"], 			
-			["\'(\\\\.|[^\\\\\'])*\'|\"(\\\\.|[^\\\\\"])*\"",
-			 "yytext = yytext.substr(1, yyleng-2).replace(/\\\\u([0-9a-fA-F]{4})/, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/g, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; return n;}); return 'STR';"], 
+			["\'(\\\\\\n|\\\\.|[^\\\\\'])*\'|\"(\\\\\\n|\\\\.|[^\\\\\"])*\"",
+			 "yytext = yytext.substr(1, yyleng-2).replace(/\\\\u([0-9a-fA-F]{4})/, function(m, n){ return String.fromCharCode(parseInt(n, 16)) }).replace(/\\\\(.)/g, function(m, n){ if(n == 'n') return '\\n';if(n == 'r') return '\\r';if(n == 't') return '\\t'; if(n == '\\n'){return '\\\\n'}; return n;}); return 'STR';"], 
 //			["\<[a-zA-Z0-9_\\\/\\s]*\>",
 //       "yytext = yytext.replace(/^\<\\s*/, '').replace(/\\s*\>$/, ''); return 'PARENTS';"],
-      ["\\\\[\\r\\n;]+", "return"],//allow \ at end of line
-			
+      ["\\\\{br}", "return"],//allow \ at end of line
+
 			["@soul", "return 'SOUL'"],
 			
 			["@true", "return 'TRUE'"],
@@ -75,6 +75,8 @@ var grammar = {
 
 			//ERR
 			["@err[0-9a-zA-Z_]*\\b", "yytext = yytext.substr(4); return 'ERR'"],
+			["@catch", "return 'CATCH'"],
+			["@malloc", "return 'MALLOC'"],
 			
 			["@plugin", "return 'PLUGIN'"],						
 			["@debug", "return 'DEBUG'"],
@@ -194,6 +196,8 @@ var grammar = {
 			"ArrX",
 			"DicX",
 			"Obj",
+			"Json",
+			"JsonArr",			
 //
 			"Mid",
 			
@@ -250,6 +254,12 @@ var grammar = {
 			["Dic", "$$ = ['dic', $1]"],
 			["Dic ItemsPostfix", "$$ = ['dic', $1].concat($2)"],
 		],
+		Json: [
+			["@ Dic", "$$ = ['json', $2]"],			
+		],
+		JsonArr: [
+			["@ Arr", "$$ = ['jsonarr', $2]"],						
+		],
 		ItemsPostfix: [
 			["ID INT", "$$ = [$1,$2]"],
 			["INT ID", "$$ = [$2,$1]"],
@@ -271,7 +281,7 @@ var grammar = {
 //			["EXEC ID", "$$ = ['switchexec', $2]"],			
 //		],
 		Env: [
-			["ENV ID ID", "$$ = ['env', $2, ['idlib', $3]]"],
+//			["ENV ID ID", "$$ = ['env', $2, ['idlib', $3]]"],
 			["ENV ID BlockMain", "$$ = ['env', $2, $3]"],
 			["ENV BlockMain", "$$ = ['env', 'main', $2]"],
 			["ENV Block", "$$ = ['env', 'main', ['blockmain', $2, 'main']]"],			
@@ -399,6 +409,7 @@ var grammar = {
 		],
 		Call: [
 			["Id CallArgs", "$$ = ['call', $1, $2];"],
+			["KeywordFunc CallArgs", "$$ = ['call', $1, $2];"],			
 			["ItemsGet CallArgs", "$$ = ['call', $1, $2];"],
 			["Call CallArgs", "$$ = ['call', $1, $2];"],
 			["ObjGet CallArgs", "$$ = ['callmethod', $1[1], $1[2], $2];"],
@@ -475,10 +486,15 @@ var grammar = {
 			["FS", "$$ = ['fs']"],
 			["NET", "$$ = ['net']"],
 			["PROC", "$$ = ['proc']"],
-			["SOUL", "$$ = ['soul']"],			
+			["SOUL", "$$ = ['soul']"],
+		],
+		KeywordFunc: [
+			["MALLOC", "$$ = ['idlib', 'malloc']"],
+			["CATCH", "$$ = ['idlib', 'catch']"],						
 		],
 		Handler: [
 			["--> Block", "$$ = ['handler', $2]"],
+			["--> ID Block", "$$ = ['handler', $3, $2]"],			
 		],
 		Send: "$$ = ['send', $1]",
 		SEND: [
