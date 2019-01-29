@@ -1,4 +1,5 @@
-id2cptx ->(id Str, def Cptx, local Cptx, func Cptx)Cptx{
+id2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
+ #id = Str(ast[1])
  #r = getx(local, id)
  @if(r != _){
   #r = local.dic[id]
@@ -25,7 +26,43 @@ id2cptx ->(id Str, def Cptx, local Cptx, func Cptx)Cptx{
    @return idNewx(r, id, idclassc)
   }
  }
+
+ log(strx(local))
+ log(strx(def))   
+ die("id not defined "+ id)
  @return _
+}
+idlocal2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
+ #id = Str(ast[1])
+ #val = local.dic[id]
+ #cc = idlocalc
+ @if(id.isInt()){
+  @if(!func){  
+   die("idarg not in func " + id)
+  }
+  @if(inClassx(classx(func), funcstdc)){
+   #idi = Int(id)
+   #vars = getx(func, "funcVars")
+   @if(idi >= vars.arr.len()){
+    die("#"+id + " not defined");
+   }
+   id = vars.arr[idi].str
+  }@else{
+   cc = idargc
+  }
+ }
+ @if(val == _){
+  @if(ast.len() > 2){
+   #type = classGetx(def, Str(ast[2]))
+   @if(type == _){
+    die("wrong type "+Str(ast[2]))
+   }
+  }@else{
+   #type = nullc
+  }
+  local.dic[id] = defx(type)   
+ }
+ @return idNewx(local, id, cc)
 }
 env2cptx ->(ast Astx, def Cptx, local Cptx)Cptx{
  #v = Astx(ast[2])
@@ -90,7 +127,7 @@ subFunc2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, isproto Int)Cptx{
  @if(isproto > 0){
   @return fp
  }
- #cx = classNewx([fp, funcblockc])
+ #cx = classNewx([fp, funcstdc])
  Cptx#x = objNewx(cx);
  x.dic["funcVars"] = arrNewx(funcVars, arrstrc)
  x.val = nlocal
@@ -115,8 +152,12 @@ func2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
  @if(pre != 0){
   @return x
  }
- #v = Astx(ast[1]) 
- x.dic["funcBlock"] = ast2blockx(Astx(v[3]), def, Cptx(x.val), x);
+ #v = Astx(ast[1])
+ #bl = ast2blockx(Astx(v[3]), def, Cptx(x.val), x);
+ //fill end return
+ autoReturnx(bl, x)
+
+ x.dic["funcBlock"] = bl
  @if(v[4] != _){
   #ab = preExecx(ast2cptx(Astx(v[4]), def, local, x))
   x.dic["funcErrFunc"] = ab
@@ -126,6 +167,31 @@ func2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
   x.dic["funcErrFunc"] = defmain.dic["throw"]
  }
  @return x;
+}
+handler2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
+ #b = Astx(ast[1])
+ #cl = Str(ast[2])
+ #t = Str(ast[3])
+ @if(t){
+  #tt = mustGetx(def, t)
+  #c = handlerDefx(tt)
+ }@else{
+  #c = handlerc
+ }
+ #r = objNewx(c)
+ @if(name){
+  @if(cl){//method?
+   #clt = mustGetx(def, cl)
+   propx(r, clt, name)
+  }@else{
+   routex(r, def, name)
+  }
+ }
+ 
+ Cptx#bl = ast2blockx(b, def, local, r)
+ autoReturnx(bl, r) 
+ r.dic["funcBlock"] = bl 
+ @return r
 }
 class2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
 //'class' parents schema
@@ -161,7 +227,7 @@ class2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
  @return x
 }
 
-blockmain2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
+blockmain2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  #b = objNewx(blockmainc)
  b.fdefault = @false
  @if(name != ""){
@@ -183,9 +249,9 @@ blockmain2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
  @if(d.obj == _){
   objNewx(d)//preassign global
  }
- preAst2blockx(v, d, l);
+ preAst2blockx(v, d, l, func);
 
- ast2blockx(v, d, l, _, b);
+ ast2blockx(v, d, l, func, b);
  @if(ast.len() == 4){
   b.dic["blockPath"] = strNewx(Str(ast[3]))
  }
@@ -201,7 +267,7 @@ tpl2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
  Astx#astb = JsonArr(Str(ast[1]))
  @if(astb.len() != 0){
   #localx = classNewx()
-  Cptx#b = blockmain2cptx(astb, tplmain, localx)
+  Cptx#b = blockmain2cptx(astb, tplmain, localx, x)
   x.dic["funcTplBlock"] = b
  }
  @if(ast.len() == 3){
@@ -537,9 +603,13 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
  #v = Astx(ast[2])
 //pre 1 2 3 0 three times
 //when 1 -> new class, enum/tpl/blockmain/type
-//when 2 -> class specify/func def
+//when 2 -> itemsdef
+//when 3 -> class specify/func def
 //when 0 -> other/func specify
  #c = Str(v[0])
+ @if(c == "class" || c == "func" || c == "handler"){
+
+ }
  @if(pre == 1){
   #dfd = def.dic[id]
   @if(dfd != _){
@@ -550,7 +620,7 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
   }@elif(c == "tpl"){
    @return tpl2cptx(v, def, local, id)  
   }@elif(c == "blockmain"){
-   @return blockmain2cptx(v, def, local, id)
+   @return blockmain2cptx(v, def, local, func, id)
   }@elif(c == "class" || c == "classx"){
    @return class2cptx(v, def, local, func, id, pre)  
   }@elif(c == "alias"){
@@ -569,23 +639,24 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
    @return _
   }  
  }
+ 
  @if(pre == 2){
   @if(c == "class" || c == "classx"){
    @return class2cptx(v, def, local, func, id, pre)
-  }@elif(c == "funcproto"){  
-   @return funcproto2cptx(v, def, local, func, id)       
   }@elif(c == "func"){
    #dfd = def.dic[id]
    @if(dfd != _){
     die("func def twice "+id)
-   }   
-   @return func2cptx(v, def, local, func, id, pre)  
+   }
+   @return func2cptx(v, def, local, func, id, pre)
+  }@elif(c == "funcproto"){  
+   @return funcproto2cptx(v, def, local, func, id)   
   }@else{
    @return _
   }
  }
  //pre 0
- @if(c != "func"){
+ @if(c != "func" && c != "handler"){ //only func and handler can be defined individually
   #dfd = def.dic[id]
   @if(dfd != _){
    @return dfd
@@ -940,7 +1011,7 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  }@elif(t == "tpl"){
   @return tpl2cptx(ast, def, local, name)
  }@elif(t == "blockmain"){
-  @return blockmain2cptx(ast, def, local)
+  @return blockmain2cptx(ast, def, local, func, name)
  }@elif(t == "class" || t == "classx"){
   @return class2cptx(ast, def, local, func, name)  
  }@elif(t == "alias"){
@@ -958,33 +1029,13 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  }@elif(t == "false"){
   @return falsev
  }@elif(t == "idlocal"){
-  #id = Str(ast[1])
-  #val = local.dic[id]
-  @if(val == _){
-   @if(ast.len() > 2){
-    #type = classGetx(def, Str(ast[2]))
-    @if(type == _){
-     die("wrong type "+Str(ast[2]))
-    }
-   }@else{
-    #type = nullc
-   }
-   local.dic[id] = defx(type)   
-  }
-  @return idNewx(local, id, idlocalc)
+  @return idlocal2cptx(ast, def, local, func)
  }@elif(t == "idcond"){
   @return idNewx(_, Str(ast[1]), idcondc)
  }@elif(t == "idlib"){
   @return defmain.dic[Str(ast[1])]
  }@elif(t == "id"){
-  #id = Str(ast[1])
-  #x = id2cptx(id, def, local, func)
-  @if(x == _){
-   log(strx(local))
-   log(strx(def))   
-   die("id not defined "+ id)
-  }
-  @return x;
+  @return id2cptx(ast, def, local, func)
  }@elif(t == "call"){
   @return call2cptx(ast, def, local, func)
  }@elif(t == "callmethod"){
@@ -1009,6 +1060,8 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return r  
  }@elif(t == "func"){
   @return func2cptx(ast, def, local, func, name)    
+ }@elif(t == "handler"){
+  @return handler2cptx(ast, def, local, func, name)    
  }@elif(t == "op"){
   @return op2cptx(ast, def, local, func)
  }@elif(t == "itemsget"){

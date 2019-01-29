@@ -11,7 +11,12 @@ Arr_Str#vars = #0.funcVars
  #namex = getName(#0)
  @if(namex){ namex = " "+namex}
 }
-~func~=namex~~=^_Func_declare #0^~{
+@if(inClass(class(#0), Handler)){
+ #de = "(__args ...interface{})interface{}"
+}@else{
+ #de = ^_Func_declare #0^
+}
+~func~=namex~~=de~{
 ~:ind(varx)~
 ~:ind(blockx)~
 }

@@ -108,6 +108,15 @@ parentMakex ->(o Cptx, parentarr Arrx){
   }
  }
 }
+propx ->(o Cptx, scope Cptx, name Str)Cptx{
+ o.fprop = @true
+ #dic = scope.dic;
+ dic[name] = o 
+ o.name = scope.name + "_" + name;
+ o.str = name
+ o.class = scope
+ @return o 
+}
 routex ->(o Cptx, scope Cptx, name Str)Cptx{
  //TODO route name should not contain $ ?
  #dic = scope.dic;
@@ -174,7 +183,7 @@ valuesx ->(o Cptx)Cptx{
 }
 prepareArgsx ->(args Arrx, f Cptx, env Cptx)Arrx{
  #argsx = &Arrx
- @if(!inClassx(classx(f), functplc)){ //fill args
+ @if(inClassx(classx(f), funcvarsc)){ //fill args for funcnative and funcstd
   Arrx#vartypes = getx(f, "funcVarTypes").arr
   @each i argdef vartypes{
    @if(i < args.len()){
@@ -184,27 +193,7 @@ prepareArgsx ->(args Arrx, f Cptx, env Cptx)Arrx{
    }
    argsx.push(t)
   }
- }@else{
-  @each _ arg args{
-   #x = passx(execx(arg, env))
-   argsx.push(x)
-  }
- }
- @return argsx
-}
-prepareArgsRefx ->(args Arrx, f Cptx, env Cptx)Arrx{
- #argsx = &Arrx
- @if(!inClassx(classx(f), functplc)){ //fill args
-  Arrx#vartypes = getx(f, "funcVarTypes").arr
-  @each i argdef vartypes{
-   @if(i < args.len()){
-    #t = execx(args[i], env)
-   }@else{
-    t = argdef
-   }
-   argsx.push(t)
-  }
- }@else{
+ }@else{ //fill args for functpl and handler
   @each _ arg args{
    #x = passx(execx(arg, env))
    argsx.push(x)
@@ -374,7 +363,7 @@ funcNewx ->(val Funcx, argtypes Arrx, return Cptx)Cptx{
   y.val = val
  }@else{
   #x = classNewx([fp])
-  #y = objNewx(x)  
+  #y = objNewx(x)
  }
  y.id2 = uidx()
  @return y
@@ -516,6 +505,10 @@ funcDefx ->(scope Cptx, name Str, val Funcx, argtypes Arrx, return Cptx)Cptx{
  routex(fn, scope, name);
  @return fn
 }
+handlerDefx ->(class Cptx)Cptx{
+ #x = classNewx([handlerc, class])
+ @return x
+}
 methodDefx ->(class Cptx, name Str, val Funcx, argtypes Arrx, return Cptx)Cptx{//FuncNative new
  @if(argtypes != _){
   argtypes.unshift(class)
@@ -523,11 +516,7 @@ methodDefx ->(class Cptx, name Str, val Funcx, argtypes Arrx, return Cptx)Cptx{/
   argtypes = [class]
  }
  #fn = funcNewx(val, argtypes, return)
- fn.fprop = @true
- class.dic[name] = fn;
- fn.name = class.name + "_" + name
- fn.class = class
- fn.str = name
+ propx(fn, class, name)
  @return fn
 }
 opDefx ->(class Cptx, name Str, val Funcx, arg Cptx, return Cptx, op Cptx)Cptx{
@@ -1278,6 +1267,7 @@ strx ->(o Cptx, i Int)Str{
 }
 tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  #b = func.dic["funcTplBlock"]
+// log(func.dic["funcTplPath"])
  @if(b == _){
   @return strNewx("")
  }
@@ -1345,10 +1335,17 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
   stack.push(ostate)
   nstate.str = "Block:" + func.name  
   env.dic["envLocal"]  = nstate
-  Arrx#vars = func.dic["funcVars"].arr
-  @each i arg args{
-   nstate.dic[vars[i].str] = arg   
+  @if(inClassx(func.obj, handlerc)){
+   @each i arg args{  
+    nstate.dic[Str(i)] = arg
+   }
+  }@else{
+   Arrx#vars = func.dic["funcVars"].arr
+   @each i arg args{
+    nstate.dic[vars[i].str] = arg   
+   }
   }
+  
   Cptx#r = blockExecx(block, env)
   env.dic["envLocal"] = stack[stack.len() - 1]
   stack.pop()
@@ -1372,6 +1369,22 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
  log(strx(func.obj))
  die("callx: unknown func")
  @return nullv;
+}
+autoReturnx ->(bl Cptx, x Cptx){
+ #fr = getx(x, "funcReturn")
+ @if(!fr){
+  #r = nullv
+ }@elif(fr.id != emptyc.id){
+  #r = defaultx(fr)
+ }@else{
+  @return
+ }
+ #arr = bl.dic["blockVal"].arr  
+ @if(classx(arr[arr.len() - 1]).id != ctrlreturnc.id){
+  arr.push(defx(ctrlreturnc, {
+   ctrlArg: r
+  }))
+ }
 }
 classExecGetx ->(c Cptx, execsp Cptx, cache Dic)Cptx{
  @if(!c.id){

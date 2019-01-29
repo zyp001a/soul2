@@ -226,8 +226,11 @@ funcprotoc := classDefx(defmain, "FuncProto", [funcc], {
  funcVarTypes: arrc
  funcReturn: classc
 })
+funcvarsc  := classDefx(defmain, "FuncProto", [funcprotoc], {
+ funcVars: arrstrc
+})
 
-funcnativec := classDefx(defmain, "FuncNative", [funcprotoc, nativec])
+funcnativec := classDefx(defmain, "FuncNative", [funcvarsc, nativec])
 
 //func -> vars + block/native/tpl
 //block -> val + state
@@ -258,12 +261,14 @@ returnc := classDefx(defmain, "Return", [signalc], {
 })
 
 
-funcblockc := classDefx(defmain, "FuncBlock", [funcprotoc], {
- funcVars: arrstrc
+funcblockc := classDefx(defmain, "FuncBlock", [funcc], {
  funcBlock: blockc
+})
+funcstdc := classDefx(defmain, "FuncStd", [funcblockc, funcvarsc], {
  funcErrFunc: fpDefx([defx(errc), defx(strc)], boolc)
 })
-funcclosurec := curryDefx(defmain, "FuncClosure", funcblockc)
+handlerc := classDefx(defmain, "Handler", [funcblockc])
+funcclosurec := curryDefx(defmain, "FuncClosure", funcstdc)
 
 functplc := classDefx(defmain, "FuncTpl", [funcc], {
  funcTplBlock: blockc
@@ -381,14 +386,10 @@ serverc := classDefx(defmain, "Server")
 clientc := classDefx(defmain, "Client")
 reqc := classDefx(defmain, "Req", [streamc])
 respc := classDefx(defmain, "Resp", [streamc])
-handlerc := classDefx(defmain, "Handler", [funcc], {
- funcAst: jsonarrc
- funcBlock: blockc
-})
 
 serverhttpc := classDefx(defmain, "ServerHttp", [serverc, httpc])
 clienthttpc := classDefx(defmain, "ClientHttp", [clientc, httpc])
-
+handlerhttpc := handlerDefx(fpDefx([defx(reqc), defx(respc)]))
 
 
 ///// def mid

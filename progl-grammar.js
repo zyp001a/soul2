@@ -497,8 +497,10 @@ var grammar = {
 			["CATCH", "$$ = ['idlib', 'catch']"],						
 		],
 		Handler: [
-			["--> Block", "$$ = ['handler', $2]"],
-			["--> ID Block", "$$ = ['handler', $3, $2]"],			
+			["--> Block", "$$ = ['handler', $2, '', '',]"],
+			["--> ID Block", "$$ = ['handler', $3, $2, '',]"],
+			["--> Block ID", "$$ = ['handler', $2, '', $3,]"],
+			["--> ID Block ID", "$$ = ['handler', $3, $2, $4,]"],						
 		],
 		Send: "$$ = ['send', $1]",
 		SEND: [

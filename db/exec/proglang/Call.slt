@@ -16,11 +16,13 @@ Arr#a = callArgs(#0)
   ~~=call(r, a)~~
  }@else{
   Arr#vt = f.funcVarTypes
-  @for #i=a.len(); i<vt.len(); i++ {
-   @if(getDefaultFlag(vt[i])){
-    a.push(_)
-   }@else{
-    a.push(vt[i])   
+  @if(vt){
+   @for #i=a.len(); i<vt.len(); i++ {
+    @if(getDefaultFlag(vt[i])){
+     a.push(_)
+    }@else{
+     a.push(vt[i])   
+    }
    }
   }
   @if(getPropFlag(f)){

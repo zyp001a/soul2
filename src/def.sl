@@ -257,7 +257,7 @@ funcDefx(defmain, "isClass", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  @return boolNewx(l.type == T##CLASS)
 }, [cptc], boolc)
-funcDefx(defmain, "isInt", ->(x Arrx, env Cptx)Cptx{
+funcDefx(defmain, "isInt", ->(x Arrx, env Cptx)Cptx{//TODO change to type func
  Cptx#l = x[0];
  @return boolNewx(l.type == T##INT)
 }, [cptc], boolc)
@@ -812,7 +812,7 @@ methodDefx(serverhttpc, "close", ->(x Arrx, env Cptx)Cptx{
 }, [uintc], strc)
 methodDefx(serverhttpc, "use", ->(x Arrx, env Cptx)Cptx{
  @return nullv
-}, [strc, handlerc], strc)
+}, [strc, handlerhttpc], strc)
 
 methodDefx(clientc, "send", ->(x Arrx, env Cptx)Cptx{
  @return nullv
@@ -987,13 +987,6 @@ execDefx("Arr_Call", ->(x Arrx, env Cptx)Cptx{
   }
  }
  @return nullv 
-})
-execDefx("CallPassRef", ->(x Arrx, env Cptx)Cptx{
- Cptx#c = x[0]
- Cptx#f = c.class//TODO exec
- Arrx#args = c.arr
- #argsx = prepareArgsRefx(args, f, env) 
- @return callx(c.class, argsx, env)
 })
 execDefx("CallRaw", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]

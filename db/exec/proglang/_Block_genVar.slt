@@ -11,7 +11,7 @@ Arr_Str#x = #1;
 }
 
 @each k v Block(#0).blockStateDef.schema() {
- @if(!filter[k] && Bytes(k)[0] != @'@'){
+ @if(!filter[k] && Bytes(k)[0] != @'@' && !k.isInt()){
   ~~:var(varname(k), v)~
 ~
  }
