@@ -264,10 +264,11 @@ returnc := classDefx(defmain, "Return", [signalc], {
 funcblockc := classDefx(defmain, "FuncBlock", [funcc], {
  funcBlock: blockc
 })
-funcstdc := classDefx(defmain, "FuncStd", [funcblockc, funcvarsc], {
+funcerrc := classDefx(defmain, "FuncErr", [funcc], {
  funcErrFunc: fpDefx([defx(errc), defx(strc)], boolc)
 })
-handlerc := classDefx(defmain, "Handler", [funcblockc])
+funcstdc := classDefx(defmain, "FuncStd", [funcblockc, funcvarsc, funcerrc])
+handlerc := classDefx(defmain, "Handler", [funcblockc, funcerrc])
 funcclosurec := curryDefx(defmain, "FuncClosure", funcstdc)
 
 functplc := classDefx(defmain, "FuncTpl", [funcc], {

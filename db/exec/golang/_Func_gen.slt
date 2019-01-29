@@ -13,10 +13,13 @@ Arr_Str#vars = #0.funcVars
 }
 @if(inClass(class(#0), Handler)){
  #de = "(__args ...interface{})interface{}"
+ #end = "return nil"
 }@else{
  #de = ^_Func_declare #0^
+ #end = ""
 }
 ~func~=namex~~=de~{
 ~:ind(varx)~
 ~:ind(blockx)~
+~:ind(end)~
 }

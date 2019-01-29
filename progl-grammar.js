@@ -192,7 +192,8 @@ var grammar = {
 			"Byte",
 			"Bytes",
 //			
-			"Func",			
+			"Func",
+			"Handler",			
 
 			"ArrX",
 			"DicX",
@@ -203,7 +204,6 @@ var grammar = {
 			"Mid",
 			
 			"Assign",
-			"Handler",			
 			"Def",	
 			"Env",
 			"BlockMain",
@@ -304,7 +304,6 @@ var grammar = {
 			"Expr",
 			"Ctrl",
 			"Load",
-			"Send",
 		],
 		Ctrl: [
 			["If", "$$ = ['if', $1]"],
@@ -388,12 +387,13 @@ var grammar = {
 			["-> FuncArgs", "$2[1].forEach(function(e){e[1]=e[0];e[0]=''}); $$ = ['funcproto', $2]"],			
 		],
 		FuncArgs: [
-			["ID Arg ID", "$$ = [$1, $2, $3,]"],
-			["Arg ID", "$$ = [, $1, $2,]"],
-			["ID ID", "$$ = [$1, [], $2,]"],
-			["ID Arg", "$$ = [$1, $2, ,]"],
-			["Arg", "$$ = [, $1, ,]"],
-			["ID", "$$ = [$1, [], ,]"],						
+			["* ID Arg ID", "$$ = [$2, $3, $4,]"],
+			["Arg ID", "$$ = ['', $1, $2,]"],
+			["* ID ID", "$$ = [$2, [], $3,]"],
+			["* ID Arg", "$$ = [$2, $3, ,]"],
+			["Arg", "$$ = ['', $1, ,]"],
+			["* ID", "$$ = [$2, [], ,]"],
+			["ID", "$$ = ['', [], $1,]"],									
 		],
 		"Arg": [
 			["( )", "$$ = []"],
@@ -416,12 +416,14 @@ var grammar = {
 			["ObjGet CallArgs", "$$ = ['callmethod', $1[1], $1[2], $2];"],
 		],
 		Class:[
-			["=> ID ( Ids ) Dic", "$$ = ['class', $3, $5, $2]"],
-			["=> ID Dic", "$$ = ['class', [], $3, $2]"],
-			["=> Dic", "$$ = ['class', [], $2, ,]"],						
-			["==> ID ( Ids ) Dic", "$$ = ['classx', $3, $5, $2]"],
-			["==> ID Dic", "$$ = ['classx', [], $3, $2]"],
-			["==> Dic", "$$ = ['classx', [], $2, ,]"],						
+			["=> * ID Ids Dic", "$$ = ['class', [$3, $4, $5]]"],
+			["=> * ID Dic", "$$ = ['class', [$3, [], $4]]"],
+			["=> Ids Dic", "$$ = ['class', ['', $2, $3]]"],			
+			["=> Dic", "$$ = ['class', ['', [], $2]]"],
+			["==> * ID Ids Dic", "$$ = ['class', [$3, $4, $5, '']]"],
+			["==> * ID Dic", "$$ = ['class', [$3, [], $4, '']]"],
+			["==> Ids Dic", "$$ = ['class', ['', $2, $3, '']]"],			
+			["==> Dic", "$$ = ['class', ['', [], $2, '']]"],
 		],
 		Ids: [
 			["ID", "$$=[$1]"],
@@ -496,17 +498,17 @@ var grammar = {
 			["MALLOC", "$$ = ['idlib', 'malloc']"],
 			["CATCH", "$$ = ['idlib', 'catch']"],						
 		],
-		Handler: [
-			["--> Block", "$$ = ['handler', $2, '', '',]"],
-			["--> ID Block", "$$ = ['handler', $3, $2, '',]"],
-			["--> Block ID", "$$ = ['handler', $2, '', $3,]"],
-			["--> ID Block ID", "$$ = ['handler', $3, $2, $4,]"],						
+		Handler: "$$ = ['handler', $1]",		
+		HANDLER: [
+			["--> HandlerArg Block Id", "$$ = $2.concat([$3, $4])"],
+			["--> HandlerArg Block", "$$ = $2.concat([$3, ,])"],
+			["--> Block", "$$ = ['', '', $2, ,]"],
 		],
-		Send: "$$ = ['send', $1]",
-		SEND: [
-			["Expr << Mid", "$$ = [$1, $3]"],
-			["SEND << Mid", "$$.push($3)"],
-		]
+		HandlerArg: [
+			["* ID ID", "$$ = [$2, $3]"],
+			["* ID", "$$ = [$2, '']"],
+			["ID", "$$ = ['', $1]"],
+		],
   }
 };
 for(var k in grammar.bnf){

@@ -110,10 +110,11 @@ parentMakex ->(o Cptx, parentarr Arrx){
 }
 propx ->(o Cptx, scope Cptx, name Str)Cptx{
  o.fprop = @true
+ o.name = scope.name + "_" + name;
+ o.str = name  
+
  #dic = scope.dic;
  dic[name] = o 
- o.name = scope.name + "_" + name;
- o.str = name
  o.class = scope
  @return o 
 }
@@ -124,6 +125,23 @@ routex ->(o Cptx, scope Cptx, name Str)Cptx{
  o.name = name;
  o.class = scope
  @return o
+}
+preGetx ->(def Cptx, name Str, cname Str)Cptx{
+ @if(cname){
+  #r = def.dic[cname + "_" + name]
+ }@else{
+  #r = def.dic[name]   
+ }
+ @return r  
+}
+preSetx ->(o Cptx, def Cptx, name Str, cname Str)Cptx{
+ @if(cname){
+  #c = getx(def, cname)
+  propx(o, c, name)
+ }@else{
+  routex(o, def, name)
+ }
+ @return o;
 }
 passx ->(v Cptx)Cptx{
  @if(inClassx(classx(v), valc)){
@@ -1371,14 +1389,13 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
  @return nullv;
 }
 autoReturnx ->(bl Cptx, x Cptx){
- #fr = getx(x, "funcReturn")
- @if(!fr){
-  #r = nullv
- }@elif(fr.id != emptyc.id){
+ #fr = mustGetx(x, "funcReturn")
+ @if(fr.id != emptyc.id){
   #r = defaultx(fr)
  }@else{
   @return
  }
+
  #arr = bl.dic["blockVal"].arr  
  @if(classx(arr[arr.len() - 1]).id != ctrlreturnc.id){
   arr.push(defx(ctrlreturnc, {

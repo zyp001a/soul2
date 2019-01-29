@@ -6,13 +6,13 @@ Null/Num/Str/Arr/Dic
 Id
 _var
 _varname
-_typemap
+*_typemap
 
 _Func_gen
 _Func_declare
 FuncClosure
 _Class_gen
-new
+_new
 
 CtrlEach/If/For
 CtrlReturn/Break/Continue/Goto

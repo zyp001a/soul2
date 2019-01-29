@@ -83,11 +83,12 @@ env2cptx ->(ast Astx, def Cptx, local Cptx)Cptx{
 }
 subFunc2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, isproto Int)Cptx{
  #v = Astx(ast[1])
+ #cname = Str(v[0])
  #funcVars = &Arrx
  #funcVarTypes = &Arrx
  #nlocal = classNewx([local])
- @if(v[0] != _){ //method
-  #class = classGetx(def, Str(v[0]))
+ @if(cname){ //method
+  #class = classGetx(def, cname)  
   funcVars.push(strNewx("@this"))
   Cptx#x = defx(class)
   @if(!x.fstatic){
@@ -139,24 +140,27 @@ func2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
  @if(pre != 0 && name == ""){
   die("def must have name");
  }
-
+ #v = Astx(ast[1]) 
+ #cname = Str(v[0])
  @if(name != ""){
-  Cptx#x = def.dic[name]
+  #x = preGetx(def, name, cname)
   @if(x == _){
    #x = subFunc2cptx(ast, def, local, func)
-   routex(x, def, name)
+   preSetx(x, def, name, cname)
   }
  }@else{
+  @if(cname){
+   die("anoymous function cannot be method")
+  }
   #x = subFunc2cptx(ast, def, local, func)
  }
  @if(pre != 0){
   @return x
  }
- #v = Astx(ast[1])
+ 
  #bl = ast2blockx(Astx(v[3]), def, Cptx(x.val), x);
  //fill end return
  autoReturnx(bl, x)
-
  x.dic["funcBlock"] = bl
  @if(v[4] != _){
   #ab = preExecx(ast2cptx(Astx(v[4]), def, local, x))
@@ -168,35 +172,64 @@ func2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
  }
  @return x;
 }
-handler2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
- #b = Astx(ast[1])
- #cl = Str(ast[2])
- #t = Str(ast[3])
+subHandler2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
+ #v = Astx(ast[1]) 
+ #t = Str(v[1])
  @if(t){
   #tt = mustGetx(def, t)
+  @if(!inClassx(tt, funcprotoc)){
+   die("handler bind something other than func proto")
+  }
   #c = handlerDefx(tt)
  }@else{
   #c = handlerc
  }
- #r = objNewx(c)
- @if(name){
-  @if(cl){//method?
-   #clt = mustGetx(def, cl)
-   propx(r, clt, name)
-  }@else{
-   routex(r, def, name)
+ #x = objNewx(c)
+ @return x
+}
+handler2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{ 
+ @if(pre != 0 && name == ""){
+  die("def must have name");
+ }
+ #v = Astx(ast[1]) 
+ #cname = Str(v[0])
+ #b = Astx(v[2])
+ @if(name != ""){
+  #x = preGetx(def, name, cname)
+  @if(x == _){
+   #x = subHandler2cptx(ast, def, local, func)
+   preSetx(x, def, name, cname)
   }
+ }@else{
+  @if(cname){
+   die("anoymous function cannot be method")
+  }
+  #x = subHandler2cptx(ast, def, local, func)
+ }
+ @if(pre != 0){
+  @return x
+ } 
+ 
+ Cptx#bl = ast2blockx(b, def, local, x)
+ x.dic["funcBlock"] = bl
+ @if(v[3] != _){
+  #ab = preExecx(ast2cptx(Astx(v[3]), def, local, x))
+  x.dic["funcErrFunc"] = ab
+ }@elif(func){
+  x.dic["funcErrFunc"] = func.dic["funcErrFunc"]
+ }@else{
+  x.dic["funcErrFunc"] = defmain.dic["throw"]
  }
  
- Cptx#bl = ast2blockx(b, def, local, r)
- autoReturnx(bl, r) 
- r.dic["funcBlock"] = bl 
- @return r
+ @return x
 }
 class2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
-//'class' parents schema
+//['class' [cname, parents, schema, tobj_flag]]
+ #vv = Astx(ast[1])
+ #cname = Str(vv[0])
+ #parents = Astx(vv[1])
+ #schemaast = Astx(vv[2])
  @if(pre == 1 || pre == 0){
-  #parents = Astx(ast[1])
   Arrx#arr = &Arrx
   @each _ e parents{
    #s = Str(e)
@@ -207,13 +240,12 @@ class2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
    arr.push(r)
   }
   #x = classNewx(arr)
-  routex(x, def, name) 
+  preSetx(x, def, name, cname)
  }
  @if(pre == 2 || pre == 0){ 
-  #x = def.dic[name]
-  Cptx#schema = ast2dicx(Astx(ast[2]), def, local, func);
-  #c = Str(ast[0])
-  @if(c == "classx"){
+  #x = preGetx(def, name, cname)
+  Cptx#schema = ast2dicx(schemaast, def, local, func);
+  @if(vv.len() > 3){
    @each k v schema.dic{
     x.dic[k] = v
    }
@@ -599,16 +631,22 @@ funcproto2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  @return aliasDefx(def, name, x)   
 }
 def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
- #id = Str(ast[1])
+ #name = Str(ast[1])
  #v = Astx(ast[2])
 //pre 1 2 3 0 three times
 //when 1 -> new class, enum/tpl/blockmain/type
 //when 2 -> itemsdef
 //when 3 -> class specify/func def
 //when 0 -> other/func specify
+ //['def', 'a', ['func', [cname, ]] ]
  #c = Str(v[0])
+ #id = name
  @if(c == "class" || c == "func" || c == "handler"){
-
+  #vv = Astx(v[1])
+  #cname = Str(vv[0])
+  @if(cname){
+   #id = cname+"_"+name
+  }
  }
  @if(pre == 1){
   #dfd = def.dic[id]
@@ -621,8 +659,8 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
    @return tpl2cptx(v, def, local, id)  
   }@elif(c == "blockmain"){
    @return blockmain2cptx(v, def, local, func, id)
-  }@elif(c == "class" || c == "classx"){
-   @return class2cptx(v, def, local, func, id, pre)  
+  }@elif(c == "class"){
+   @return class2cptx(v, def, local, func, name, pre)  
   }@elif(c == "alias"){
    @return alias2cptx(v, def, id)
   }@elif(c == "itemdef"){
@@ -641,14 +679,20 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
  }
  
  @if(pre == 2){
-  @if(c == "class" || c == "classx"){
-   @return class2cptx(v, def, local, func, id, pre)
+  @if(c == "class"){
+   @return class2cptx(v, def, local, func, name, pre)
   }@elif(c == "func"){
    #dfd = def.dic[id]
    @if(dfd != _){
     die("func def twice "+id)
    }
-   @return func2cptx(v, def, local, func, id, pre)
+   @return func2cptx(v, def, local, func, name, pre)
+  }@elif(c == "handler"){
+   #dfd = def.dic[id]
+   @if(dfd != _){
+    die("handler def twice "+id)
+   }   
+   @return handler2cptx(v, def, local, func, name, pre)
   }@elif(c == "funcproto"){  
    @return funcproto2cptx(v, def, local, func, id)   
   }@else{
@@ -656,11 +700,18 @@ def2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, pre Int)Cptx{
   }
  }
  //pre 0
- @if(c != "func" && c != "handler"){ //only func and handler can be defined individually
-  #dfd = def.dic[id]
-  @if(dfd != _){
-   @return dfd
-  }
+ //only func and handler can be defined individually 
+ @if(c == "func"){
+  @return func2cptx(v, def, local, func, name)  
+ }
+ @if(c == "handler"){ 
+  @return handler2cptx(v, def, local, func, name)   
+ }
+
+ ///others
+ #dfd = def.dic[id]
+ @if(dfd != _){
+  @return dfd
  }
 
  Cptx#r = ast2cptx(v, def, local, func, id)
