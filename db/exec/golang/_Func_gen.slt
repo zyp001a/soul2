@@ -1,7 +1,6 @@
 ~
 Block#bl = #0.funcBlock
 Arr_Str#vars = #0.funcVars
-
 #blockx = ^_Block_genContent bl^ 
 #varx = ^_Block_genVar bl,vars^
 

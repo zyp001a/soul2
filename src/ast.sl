@@ -28,7 +28,7 @@ id2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
 
  log(strx(local))
- log(strx(def))   
+// log(strx(def))   
  die("id not defined "+ id)
  @return _
 }

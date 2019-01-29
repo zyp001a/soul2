@@ -390,7 +390,7 @@ respc := classDefx(defmain, "Resp", [streamc])
 
 serverhttpc := classDefx(defmain, "ServerHttp", [serverc, httpc])
 clienthttpc := classDefx(defmain, "ClientHttp", [clientc, httpc])
-handlerhttpc := handlerDefx(fpDefx([defx(reqc), defx(respc)]))
+handlerhttpc := aliasDefx(defmain, "HandlerHttp", fpDefx([defx(reqc), defx(respc)]))
 
 
 ///// def mid

@@ -1,1 +1,9 @@
-__args[~=idStr(#0)~]
+~
+#n = getNote(class(@@ctx["func"]))
+#nn = idStr(#0)
+#r = get(getExec(), n + "_" +nn)
+@if(r){
+ ~~=r()~~
+}@else{
+ ~__args[~=nn~]~
+}~

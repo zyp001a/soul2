@@ -524,7 +524,8 @@ funcDefx ->(scope Cptx, name Str, val Funcx, argtypes Arrx, return Cptx)Cptx{
  @return fn
 }
 handlerDefx ->(class Cptx)Cptx{
- #x = classNewx([handlerc, class])
+ #x = classNewx([class, handlerc])
+ x.str = class.name
  @return x
 }
 methodDefx ->(class Cptx, name Str, val Funcx, argtypes Arrx, return Cptx)Cptx{//FuncNative new

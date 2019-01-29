@@ -12,6 +12,7 @@
 //items.str: for rec
 //str.int: fixed size
 //method.str: store pure name
+//handler-class.str: store handler class name
 //ns.str: store pure name
 //scope.str: store pure name
 //state.str: store path
