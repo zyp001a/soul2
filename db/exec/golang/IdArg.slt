@@ -2,7 +2,7 @@
 #n = getNote(class(@@ctx["func"]))
 #nn = idStr(#0)
 #r = get(getExec(), n + "_" +nn)
-@if(r){
+@if(r != _){
  ~~=r()~~
 }@else{
  ~__args[~=nn~]~

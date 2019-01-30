@@ -1286,7 +1286,7 @@ strx ->(o Cptx, i Int)Str{
 }
 tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  #b = func.dic["funcTplBlock"]
-// log(func.dic["funcTplPath"])
+// log(func.dic["funcTplPath"].str)
  @if(b == _){
   @return strNewx("")
  }

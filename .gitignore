@@ -17,4 +17,5 @@ test/y*
 test/z*
 main.sl.exec
 test/*exec
+impl/*exec
 *.cache

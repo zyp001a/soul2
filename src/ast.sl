@@ -1,5 +1,8 @@
 id2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #id = Str(ast[1])
+ @if(id == "$"){
+  @return soulv
+ }
  #r = getx(local, id)
  @if(r != _){
   #r = local.dic[id]
