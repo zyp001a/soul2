@@ -1,0 +1,4 @@
+~
+funcImport("defx")
+globalImport("stdoutc")
+~stdoutv := defx(stdoutc)

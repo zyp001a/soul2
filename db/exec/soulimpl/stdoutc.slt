@@ -1,0 +1,5 @@
+~
+funcImport()
+~stdoutc := curryDefx(defmain, "Stdout", streamc, {
+ streamWritable: boolNewx(@true)
+})

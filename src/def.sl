@@ -1,4 +1,5 @@
 //func
+
 //////ENV/////
 funcDefx(defmain, "getEnv", ->(x Arrx, env Cptx)Cptx{
  @return env
@@ -203,6 +204,11 @@ funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
 }, [funcc, arrc], cptc)
 
 ////CONVERT///////
+methodDefx(cptc, "type", ->(x Arrx, env Cptx)Cptx{//Cpt to any
+ Cptx#o = x[0]
+ @return classRawx(o)
+}, _, classc)
+
 funcDefx(defmain, "as", ->(x Arrx, env Cptx)Cptx{//Cpt to any
  Cptx#o = x[0]
  @return o

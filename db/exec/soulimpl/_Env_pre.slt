@@ -1,0 +1,11 @@
+~
+impl ->(key Str){
+ #r = get(@main, str)
+ #t = r.type()
+ @if(t == Class){
+  //classNewx
+ }@elif(t == Func){
+  //funcNewx
+ }
+}
+~

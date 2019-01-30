@@ -67,7 +67,6 @@ tplmain := classNewx([defmain])
 
 _osArgs := Cptx()
 
-
 //init main
 cptc := classNewx();
 routex(cptc, defmain, "Cpt");

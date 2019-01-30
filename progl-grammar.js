@@ -31,6 +31,8 @@ var grammar = {
 
 			["@soul", "return 'SOUL'"],
 			
+			["@main", "return 'MAIN'"],			
+			
 			["@true", "return 'TRUE'"],
 			["@false", "return 'FALSE'"],
 
@@ -493,6 +495,7 @@ var grammar = {
 			["STDOUT", "$$ = ['stdout']"],
 			["STDERR", "$$ = ['stderr']"],			
 			["SOUL", "$$ = ['soul']"],
+			["MAIN", "$$ = ['main']"],			
 		],
 		KeywordFunc: [
 			["MALLOC", "$$ = ['idlib', 'malloc']"],

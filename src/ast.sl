@@ -1196,6 +1196,10 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return stderrv
  }@elif(t == "soul"){
   @return soulv
+ }@elif(t == "root"){
+  @return rootv
+ }@elif(t == "main"){
+  @return defmain
  }@else{
   log(ast)
   die("ast2cptx: " + t + " is not defined")
