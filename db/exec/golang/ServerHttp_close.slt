@@ -1,0 +1,5 @@
+~
+goImport("context")
+goImport("time")
+#n = exec(#0)
+~_~=n~Ctx, _ := context.WithTimeout(context.Background(), 5*time.Second); _~=n~Server.Shutdown(_~=n~Ctx)

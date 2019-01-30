@@ -1,0 +1,16 @@
+~
+goImport("net/http")
+goImport("strconv")
+goImport("log")
+~func _Server_listen(port int, m *mux.Router)*http.Server{
+ s := &http.Server{
+  Addr: ":"+strconv.Itoa(port),
+  Handler: m,
+ }
+ go func(){
+  if err := s.ListenAndServe(); err != nil {
+   log.Fatal(err)
+  }
+ }()
+ return s
+}

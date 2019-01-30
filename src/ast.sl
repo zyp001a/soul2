@@ -157,13 +157,14 @@ func2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
  @if(pre != 0){
   @return x
  }
- 
- #bl = ast2blockx(Astx(v[3]), def, Cptx(x.val), x);
+
+ #nlocal = Cptx(x.val)
+ #bl = ast2blockx(Astx(v[3]), def, nlocal, x);
  //fill end return
  autoReturnx(bl, x)
  x.dic["funcBlock"] = bl
  @if(v[4] != _){
-  #ab = preExecx(ast2cptx(Astx(v[4]), def, local, x))
+  #ab = preExecx(ast2cptx(Astx(v[4]), def, nlocal, x))
   x.dic["funcErrFunc"] = ab
  }@elif(func){
   x.dic["funcErrFunc"] = func.dic["funcErrFunc"]
@@ -209,18 +210,17 @@ handler2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cpt
  @if(pre != 0){
   @return x
  } 
- 
- Cptx#bl = ast2blockx(b, def, local, x)
+ #nlocal = classNewx([local])
+ Cptx#bl = ast2blockx(b, def, nlocal, x)
  x.dic["funcBlock"] = bl
  @if(v[3] != _){
-  #ab = preExecx(ast2cptx(Astx(v[3]), def, local, x))
+  #ab = preExecx(ast2cptx(Astx(v[3]), def, nlocal, x))
   x.dic["funcErrFunc"] = ab
  }@elif(func){
   x.dic["funcErrFunc"] = func.dic["funcErrFunc"]
  }@else{
   x.dic["funcErrFunc"] = defmain.dic["throw"]
- }
- 
+ } 
  @return x
 }
 class2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
