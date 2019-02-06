@@ -365,7 +365,10 @@ soulv := defx(soulc, {
  soulFs: fsv
  soulNet: netv
 })
-
+souldicc := itemsDefx(dicc, soulc)
+worldc := classDefx(defmain, "World", [souldicc])
+worldv := defx(worldc)
+//dicSetx(worldv, "self", soulv)
 
 
 //impl type

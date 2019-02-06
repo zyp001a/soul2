@@ -238,6 +238,7 @@ class2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str, pre Int)Cptx{
    #s = Str(e)
    #r = classGetx(def, s)
    @if(r == _){
+    log(parents)
     die("class2obj: no class "+s)
    }
    arr.push(r)
@@ -1196,8 +1197,8 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return stderrv
  }@elif(t == "soul"){
   @return soulv
- }@elif(t == "root"){
-  @return rootv
+// }@elif(t == "root"){
+//  @return rootv
  }@elif(t == "main"){
   @return defmain
  }@else{

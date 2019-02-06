@@ -13,7 +13,7 @@ tryparse ->(str Bytes, sl Soul)Cpt{
  @err1 "cannot parse"
 }
 
-do ->Soul(c Class, sl Soul, t Time, r Str){
+do ->Soul(sl Soul, t Time, r Str){
  #cpt = @catch(tryparse(str, sl), #err)
  #env = Env{
   execScope: @this.ctx

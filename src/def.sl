@@ -206,7 +206,7 @@ funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
 ////CONVERT///////
 methodDefx(cptc, "type", ->(x Arrx, env Cptx)Cptx{//Cpt to any
  Cptx#o = x[0]
- @return classRawx(o)
+ @return classRawx(o.type)
 }, _, classc)
 
 funcDefx(defmain, "as", ->(x Arrx, env Cptx)Cptx{//Cpt to any

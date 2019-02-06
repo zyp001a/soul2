@@ -1614,3 +1614,12 @@ diex ->(str Str, env Cptx){
  log(l.ast)  
  die(str)
 }
+/*
+dicSetx ->(o Cptx, key Str, val Cptx)Cptx{
+ @if(o.dic[key] == _){
+  o.arr.push(strNewx(key))
+ }
+ o.dic[key] = val 
+ @return val
+}
+*/
