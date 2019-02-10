@@ -905,7 +905,6 @@ methodDefx(builderstrc, "toStr", ->(x Arrx, env Cptx)Cptx{
 #assignf = opDefx(idlocalc, "assign", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
-
  #v = execx(r, env)
  Cptx#local = env.dic["envLocal"]
  #str = l.str
@@ -914,6 +913,17 @@ methodDefx(builderstrc, "toStr", ->(x Arrx, env Cptx)Cptx{
  @return v
 }, cptc, cptc, opassignc)
 assignf.fraw = @true
+#idargassignf = opDefx(idargc, "assign", ->(x Arrx, env Cptx)Cptx{
+ Cptx#l = x[0];
+ Cptx#r = x[1];
+ #v = execx(r, env)
+ Cptx#local = env.dic["envLocal"]
+ #i = l.int
+ v = copyCptFromAstx(v)
+ local.dic["@args"].arr[i] = v
+ @return v
+}, cptc, cptc, opassignc)
+idargassignf.fraw = @true
 #idstateassignf = opDefx(idstatec, "assign", ->(x Arrx, env Cptx)Cptx{
  Cptx#l = x[0];
  Cptx#r = x[1];
@@ -1191,6 +1201,16 @@ execDefx("IdLocal", ->(x Arrx, env Cptx)Cptx{
  Str#k = c.str
  #r = getx(l, k)
  @return nullOrx(r);
+})
+execDefx("IdArg", ->(x Arrx, env Cptx)Cptx{
+ Cptx#c = x[0]
+ Cptx#l = env.dic["envLocal"]
+ #i = c.int
+ #r = l.dic["@args"]
+ @if(i < r.arr.len()){
+  @return nullOrx(r.arr[i])
+ }
+ @return nullv
 })
 execDefx("IdState", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]

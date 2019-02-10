@@ -3,6 +3,18 @@ id2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  @if(id == "$"){
   @return soulv
  }
+ @if(func){
+  #varts = getx(func, "funcVars")
+  @if(varts){
+   @each i stro varts.arr{
+    @if(id == stro.str){
+     #r = idNewx(local, stro.str, idargc)
+     r.int = i
+     @return r;
+    }
+   }
+  }
+ }
  #r = getx(local, id)
  @if(r != _){
   #r = local.dic[id]
@@ -40,20 +52,37 @@ idlocal2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #val = local.dic[id]
  #cc = idlocalc
  @if(id.isInt()){
-  @if(!func){  
-   die("idarg not in func " + id)
+  @if(func == _){
+   diex("idarg #\d not func!!! "+id)
   }
-  @if(inClassx(classx(func), funcstdc)){
-   #idi = Int(id)
-   #vars = getx(func, "funcVars")
+  #idi = Int(id)  
+  #vars = getx(func, "funcVars")
+  @if(vars){
    @if(idi >= vars.arr.len()){
     die("#"+id + " not defined");
    }
    id = vars.arr[idi].str
   }@else{
-   cc = idargc
+   id = ""
+  }
+  #r = idNewx(local, id, idargc)
+  r.int = idi
+  @return r
+ }
+ 
+ @if(func){
+  #varts = getx(func, "funcVars")
+  @if(varts){
+   @each i stro varts.arr{
+    @if(id == stro.str){
+     #r = idNewx(local, stro.str, idargc)
+     r.int = i
+     @return r;
+    }
+   }
   }
  }
+ 
  @if(val == _){
   @if(ast.len() > 2){
    #type = classGetx(def, Str(ast[2]))
@@ -65,7 +94,8 @@ idlocal2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   }
   local.dic[id] = defx(type)   
  }
- @return idNewx(local, id, cc)
+ #r = idNewx(local, id, cc)
+ @return r;
 }
 env2cptx ->(ast Astx, def Cptx, local Cptx)Cptx{
  #v = Astx(ast[2])
@@ -78,7 +108,7 @@ env2cptx ->(ast Astx, def Cptx, local Cptx)Cptx{
  l.str = "Env " + execsp.str
  #x = defx(envc, {
   envLocal: l
-  envStack: arrNewx() 
+  envStack: arrNewx()
   envExec: execsp
   envBlock: b
  })
@@ -114,14 +144,14 @@ subFunc2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, isproto Int)Cptx{
    }
    #varval = defx(t)
   }@else{
-   #varval = cptv
+   #varval = unknownv
   }
   @if(!varval.fstatic){
    varval.farg = @true
   }
   funcVarTypes.push(varval)
-  nlocal.dic[varid] = varval
  }
+ nlocal.dic["@args"] = arrNewx(funcVarTypes)
  @if(v.len() > 2 && v[2] != _){
   #ret = classGetx(def, Str(v[2]))
  }@else{
@@ -808,6 +838,10 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  #righto = convertx(righto, lpredt)
  
  #f = getx(lefto, "assign")
+ @if(f == _){
+  log(lefto)
+  die("no assign")
+ }
  @return callNewx(f, [lefto, righto], callrawc)
 }
 call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
@@ -1197,6 +1231,8 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   @return stderrv
  }@elif(t == "soul"){
   @return soulv
+ }@elif(t == "world"){
+  @return worldv
 // }@elif(t == "root"){
 //  @return rootv
  }@elif(t == "main"){

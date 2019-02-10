@@ -22,6 +22,7 @@
 //calls.class: func
 //idstate.class: def
 //idclass.class: val
+//idarg.class: def
 @load "init"
 
 @load "utils"

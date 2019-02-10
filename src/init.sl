@@ -222,11 +222,11 @@ queuec.fbitems = @true
 
 funcc := classDefx(defmain, "Func")
 funcprotoc := classDefx(defmain, "FuncProto", [funcc], {
- funcVarTypes: arrc
+ funcVarTypes: arrc//TODO arrclassc
  funcReturn: classc
 })
-funcvarsc  := classDefx(defmain, "FuncProto", [funcprotoc], {
- funcVars: arrstrc
+funcvarsc  := classDefx(defmain, "FuncVars", [funcprotoc], {
+ funcVars: arrstrc//TODO dictobjc
 })
 
 funcnativec := classDefx(defmain, "FuncNative", [funcvarsc, nativec])
@@ -366,10 +366,9 @@ soulv := defx(soulc, {
  soulNet: netv
 })
 souldicc := itemsDefx(dicc, soulc)
-worldc := classDefx(defmain, "World", [souldicc])
-worldv := defx(worldc)
-//dicSetx(worldv, "self", soulv)
-
+worldv := defx(souldicc)
+soulv.dic["soulWorld"] = worldv
+dicSetx(worldv, "self", soulv)
 
 //impl type
 protocolc := classDefx(defmain, "Protocol", _, {
@@ -412,21 +411,18 @@ idc := classDefx(defmain, "Id")
 callidc := classDefx(defmain, "CallId", [callc, idc])
 idc.ctype = T##ID
 
-idstrc :=  classDefx(defmain, "IdStr", [idc], {
- idStr: strc,
-})
-idstatec := classDefx(defmain, "IdState", [idstrc, midc], {
+idstatec := classDefx(defmain, "IdState", [idc, midc], {
  idState: classc 
 })
 idlocalc := curryDefx(defmain, "IdLocal", idstatec)
 idparentc := curryDefx(defmain, "IdParent", idstatec)
 idglobalc := curryDefx(defmain, "IdGlobal", idstatec)
-idargc := curryDefx(defmain, "IdArg", idlocalc)
+idargc := curryDefx(defmain, "IdArg", idc)
 
-idclassc := classDefx(defmain, "IdClass", [idstrc], {
+idclassc := classDefx(defmain, "IdClass", [idc], {
  idVal: cptc
 })
-idcondc := classDefx(defmain, "IdCond", [idstrc])
+idcondc := classDefx(defmain, "IdCond", [idc])
 
 
 

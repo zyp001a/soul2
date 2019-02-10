@@ -1159,13 +1159,10 @@ subTypepredx ->(o Cptx)Cptx{
   //if is idstate
   @if(inClassx(o.obj, idstatec)){
    Str#id = o.str
-   @if(id.isInt()){
-    @return cptc
-   }
    Cptx#s = o.class
    #r = s.dic[id]
    @if(r == _){
-    log(strx(s)) 
+    log(strx(s))
     log(id)
     die("not defined in idstate, may use #1 #2 like")
     @return r
@@ -1177,7 +1174,21 @@ subTypepredx ->(o Cptx)Cptx{
    Cptx#s = o.class
    @return classx(s)
   }
-  
+  @if(inClassx(o.obj, idargc)){
+   Cptx#s = o.class
+   #x = s.dic["@args"]
+   @if(!x){
+    @return cptc
+   }
+   #r = x.arr[o.int]
+   @if(r == _){
+    log(strx(s))
+    log(id)
+    die("not defined in idarg")
+    @return r
+   }
+   @return typepredx(r)
+  }
   @if(inClassx(o.obj, idcondc)){
    @if(o.str == "ctx"){
     @return dicc
@@ -1295,9 +1306,7 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
  #nstate = objNewx(localx)
  nstate.fdefault = @false
  nstate.fdefmain = @true
- @each i v args{
-  nstate.dic[Str(i)] = v;
- }
+ nstate.dic["@args"] = arrNewx(args)
  
  Arrx#stack = env.dic["envStack"].arr;
  #ostate = env.dic["envLocal"]
@@ -1318,13 +1327,17 @@ tplCallx ->(func Cptx, args Arrx, env Cptx)Cptx{
   nstate.str = "Tpl: "+func.name
  } 
  env.dic["envLocal"]  = nstate
- blockExecx(b, env)
+ #r = blockExecx(b, env)
  env.dic["envLocal"] = stack[stack.len() - 1]
  stack.pop()
 // #buf = BuilderStr(nstate.dic["$buf"].val)
 // #r = strNewx(buf)
 // @return r
- @return nstate.dic["$str"]
+ @if(r.id == nullv.id){
+  @return nstate.dic["$str"]  
+ }@else{
+  @return r
+ }
 }
 
 callx ->(func Cptx, args Arrx, env Cptx)Cptx{
@@ -1354,16 +1367,7 @@ callx ->(func Cptx, args Arrx, env Cptx)Cptx{
   stack.push(ostate)
   nstate.str = "Block:" + func.name  
   env.dic["envLocal"]  = nstate
-  @if(inClassx(func.obj, handlerc)){
-   @each i arg args{  
-    nstate.dic[Str(i)] = arg
-   }
-  }@else{
-   Arrx#vars = func.dic["funcVars"].arr
-   @each i arg args{
-    nstate.dic[vars[i].str] = arg   
-   }
-  }
+  nstate.dic["@args"] = arrNewx(args)
   
   Cptx#r = blockExecx(block, env)
   env.dic["envLocal"] = stack[stack.len() - 1]
@@ -1519,15 +1523,12 @@ convertx ->(val Cptx, to Cptx)Cptx{
   @return val
  }
  #from = typepredx(val)
- @if(from.id == unknownc.id){
-  @return val
- }
  #from = aliasGetx(from) 
  to = aliasGetx(to)
  @if(from.id == to.id){
   @return val
  }
- @if(from.id == cptc.id){
+ @if(from.id == cptc.id || from.id == unknownc.id){
   @return callNewx(defmain.dic["as"], [val, to])
  }
  @if(from.fbnum && to.fbnum){
@@ -1614,7 +1615,7 @@ diex ->(str Str, env Cptx){
  log(l.ast)  
  die(str)
 }
-/*
+
 dicSetx ->(o Cptx, key Str, val Cptx)Cptx{
  @if(o.dic[key] == _){
   o.arr.push(strNewx(key))
@@ -1622,4 +1623,3 @@ dicSetx ->(o Cptx, key Str, val Cptx)Cptx{
  o.dic[key] = val 
  @return val
 }
-*/

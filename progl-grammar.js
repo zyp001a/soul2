@@ -30,6 +30,7 @@ var grammar = {
       ["\\\\{br}", "return"],//allow \ at end of line
 
 			["@soul", "return 'SOUL'"],
+			["@world", "return 'WORLD'"],			
 			
 			["@main", "return 'MAIN'"],			
 			
@@ -137,7 +138,8 @@ var grammar = {
 			["\\|\\|", "return '||'"],
 			["\\&\\&", "return '&&'"],
 			["\\#\\#", "return '##'"],
-			["\\@\\@", "return '@@'"],						
+			["\\@\\@", "return '@@'"],
+			["\\.\\.\\.", "return '...'"],			
       ["\\#", "return '#'"],			
       ["\\>", "return '>'"],
       ["\\<", "return '<'"],
@@ -377,7 +379,7 @@ var grammar = {
 			["ID", "$$ = ['str', $1]"],
 			["( Expr )", "$$ = $2"],
 		],
-		FUNC: [//CLASS? ARGDEF RETURN BLOCK AFTERBLOCK
+		FUNC: [//CLASS? ARGDEF RETURN BLOCK ERRFUNC
 //			["-> FuncArgs Block Block", "$$ = $2.concat([$3,$4,])"],
 			["-> FuncArgs Block Id", "$$ = $2.concat([$3,$4,])"],
 			["-> FuncArgs Block", "$$ = $2.concat([$3,,])"],	
@@ -404,9 +406,11 @@ var grammar = {
     "Argdefs": [
       ["Argdef", "$$ = [$1]; "],
 			["Argdefs , Argdef", "$$ = $1; $1.push($3)"],
+			["Argdefs , ...", "$$ = $1; $1.push(['', 'Variadic', ,])"],
+			["...", "$$ = [['', 'Variadic', ,]]"],
     ],
 		"Argdef": [
-			["ID", "$$ = [$1,,,]"],
+			["ID", "$$ = [$1,'Unknown',,]"],
 			["ID ID", "$$ = [$1, $2,,]"],
 			["ID = Expr", "$$ = [$1, , $3]"],
 		],
@@ -495,6 +499,7 @@ var grammar = {
 			["STDOUT", "$$ = ['stdout']"],
 			["STDERR", "$$ = ['stderr']"],			
 			["SOUL", "$$ = ['soul']"],
+			["WORLD", "$$ = ['world']"],			
 			["MAIN", "$$ = ['main']"],			
 		],
 		KeywordFunc: [
