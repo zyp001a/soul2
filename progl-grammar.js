@@ -508,15 +508,9 @@ var grammar = {
 		],
 		Handler: "$$ = ['handler', $1]",		
 		HANDLER: [
-			["--> HandlerArg Block Id", "$$ = $2.concat([$3, $4])"],
-			["--> HandlerArg Block", "$$ = $2.concat([$3, ,])"],
-			["--> Block", "$$ = ['', '', $2, ,]"],
-		],
-		HandlerArg: [
-			["* ID ID", "$$ = [$2, $3]"],
-			["* ID", "$$ = [$2, '']"],
-			["ID", "$$ = ['', $1]"],
-		],
+			["--> Block Id", "$$ = [$2, $3]"],
+			["--> Block", "$$ = [$2, ,]"],
+		]
   }
 };
 for(var k in grammar.bnf){

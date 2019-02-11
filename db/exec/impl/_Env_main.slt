@@ -1,0 +1,7 @@
+~
+Block#b = #0.envBlock
+@each _ e b.blockVal {
+ ~~:exec(e)~
+~
+}
+~

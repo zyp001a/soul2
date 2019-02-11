@@ -5,6 +5,7 @@
 ///cache usage
 //funcblock.val: cache state(nlocal)
 //items.val: cache init expr
+//handler.val: cache ast
 //class.obj: cache single instance
 //byte.str: cache char
 

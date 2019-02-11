@@ -1,6 +1,6 @@
 ~
 impl ->(key Str){
- #r = get(@main, str)
+ #r = get(@main, key)
  #t = r.type()
  @if(t == Class){
   //classNewx

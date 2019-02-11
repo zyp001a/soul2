@@ -267,7 +267,7 @@ funcerrc := classDefx(defmain, "FuncErr", [funcc], {
  funcErrFunc: fpDefx([defx(errc), defx(strc)], boolc)
 })
 funcstdc := classDefx(defmain, "FuncStd", [funcblockc, funcvarsc, funcerrc])
-handlerc := classDefx(defmain, "Handler", [funcblockc, funcerrc])
+handlerc := classDefx(defmain, "Handler", [funcerrc])
 funcclosurec := curryDefx(defmain, "FuncClosure", funcstdc)
 
 functplc := classDefx(defmain, "FuncTpl", [funcc], {
