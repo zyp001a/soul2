@@ -1,0 +1,8 @@
+~
+#n = getName(#0)
+#c = class(#0)
+@if(inClass(c, Func)){
+ ^_load _global, "defmainx"^
+ ~defmainx.dic["~=n~"]~
+}
+~

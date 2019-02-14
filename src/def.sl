@@ -108,11 +108,11 @@ funcDefx(defmain, "getMidFlag", ->(x Arrx, env Cptx)Cptx{
 }, [cptc], boolc)
 funcDefx(defmain, "getClass", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
- @if(o.class == _){
-  log(strx(o))
-  diex("no scope", env)
- }
- @return o.class
+// @if(o.class == _){
+//  log(strx(o))
+//  diex("no scope", env)
+// }
+ @return nullOrx(o.class)
 }, [cptc], classc)
 funcDefx(defmain, "getPropName", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
@@ -756,7 +756,12 @@ methodDefx(dirc, "sub", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  #d = o.dic["routerPath"].str
  Cptx#s = x[1]
- @if(Bytes(s.str)[s.str.len() - 1] != @'/'){
+ #l = s.str.len()
+ @if(l == 0){
+  log(s)
+  diex("dir sub", env)
+ }
+ @if(Bytes(s.str)[l - 1] != @'/'){
   s.str += "/"
  }
  #np = strNewx(d + s.str);
@@ -951,6 +956,20 @@ opDefx(boolc, "or", ->(x Arrx, env Cptx)Cptx{
 
 
 //////METHOD SOUL/////
+methodDefx(soulc, "main", ->(x Arrx, env Cptx)Cptx{
+})
+methodDefx(classc, "genCall", ->(x Arrx, env Cptx)Cptx{
+ #execsp = x[0]
+ #o = x[1]
+ #func = o.class
+ #args = o.arr
+ #r = propGetx(execsp, func.class, func.str)
+ @if(r){
+  @return callx(r, args, env)
+ }
+ @return strNewx("")
+}, [callc], strc)
+
 methodDefx(soulc, "getCmdArgs", ->(x Arrx, env Cptx)Cptx{
  @if(_osArgs == _){
   #x = &Arrx

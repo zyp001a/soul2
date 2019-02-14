@@ -1,0 +1,18 @@
+~
+Cpt#func = callFunc(#0)
+Arr#args = callArgs(#0)
+^_load _global,"envmainx"^
+
+^_load _func,"callNativex"^
+#s = "callNativex("
+
+s += ^_obj func^
+s += ", ["
+@each i a args{
+ @if(i > 0){
+  s+=","
+ }
+ s += ^_obj a^
+}
+s += "], envmainx)"
+~~=s~

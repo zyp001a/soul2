@@ -1,0 +1,12 @@
+~
+Dic_Str#d = #0
+Str#k = #1
+@if(!d[k]){
+ d[k] = "1"//lock
+ #l = get(getExec(), k)
+ @if(!l){
+  die(k + " not defined")
+ }
+ d[k] = k + " " + l()
+}
+~

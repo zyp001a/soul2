@@ -1401,8 +1401,8 @@ autoReturnx ->(bl Cptx, x Cptx){
   @return
  }
 
- #arr = bl.dic["blockVal"].arr  
- @if(classx(arr[arr.len() - 1]).id != ctrlreturnc.id){
+ #arr = bl.dic["blockVal"].arr
+ @if(arr.len() == 0 || classx(arr[arr.len() - 1]).id != ctrlreturnc.id){
   arr.push(defx(ctrlreturnc, {
    ctrlArg: r
   }))

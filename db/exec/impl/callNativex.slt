@@ -1,0 +1,7 @@
+~
+^_load _class,"Cptx"^
+^_load _class,"Arrx"^
+^_load _class,"Funcx"^
+~->(func Cptx, args Arrx, env Cptx)Cptx{
+ @return call(Funcx(func.val), [args, env]);
+}

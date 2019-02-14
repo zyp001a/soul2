@@ -1,0 +1,21 @@
+~
+^_load _class,"T"^
+^_load _class,"Arrx"^
+^_load _class,"Dicx"^
+~=> {
+ type: T
+
+ id: Int
+ 
+ scope: Cptx
+ class: Cptx
+ obj: Cptx
+
+ arr: Arrx
+ dic: Dicx
+
+ str: Str
+ int: Int
+ 
+ val: Cpt
+}

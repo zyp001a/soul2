@@ -832,19 +832,22 @@ call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
 }
 callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  Cptx#oo = ast2cptx(Astx(ast[1]), def, local, func)
- Cptx#to = typepredx(oo)
+
+ #to = typepredx(oo)
  @if(to.id == unknownc.id){
   log(strx(oo))
   die("cannot typepred obj")
  }
- #astarr = Astx(ast[3])
+ 
  #f = getx(to, Str(ast[2]))
+ 
  @if(f == _){
   log(strx(oo))
   log(strx(to))
   log(Str(ast[2]))  
   die("no method")
- }
+ }  
+ #astarr = Astx(ast[3]) 
  #vt = getx(f, "funcVarTypes") 
  #arrx = malloc(astarr.len() + 1, Cptx)
  arrx[0] = oo
