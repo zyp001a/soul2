@@ -278,7 +278,7 @@ blockmain2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
   #l = local
  }
  #v = Astx(ast[1])
- @if(d.obj == _){
+ @if(d.val == _){
   objNewx(d)//preassign global
  }
  preAst2blockx(v, d, l, func);
@@ -323,7 +323,7 @@ enum2cptx ->(ast Astx, def Cptx, local Cptx, name Str)Cptx{
   a.push(strNewx(Str(v)))
   #ii = intNewx(Int(i))
   ii.obj = c;  
-  c.obj = ii
+  c.val = ii
   d[Str(v)] = ii
  }
  @return c
@@ -760,7 +760,7 @@ assign2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  @if(leftt == "id" && v.len() == 2){// a = 1 to  #a =1
   #name = Str(left[1])
   @if(getx(local, name) == _){
-   @if(getx(def.obj, name) == _){
+   @if(getx(Cptx(def.val), name) == _){
     left[0] = "idlocal"//if assign to id, id is idlocal
    }@else{
     Cptx#lefto = idNewx(def, name, idglobalc)

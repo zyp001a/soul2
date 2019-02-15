@@ -934,7 +934,7 @@ idargassignf.fraw = @true
  Cptx#r = x[1];
  #v = execx(r, env)
  Str#k = l.str
- Cptx#o = l.class.obj
+ Cptx#o = Cptx(l.class.val)
  v = copyCptFromAstx(v) 
  o.dic[k] = v
  @return v
@@ -958,6 +958,9 @@ opDefx(boolc, "or", ->(x Arrx, env Cptx)Cptx{
 //////METHOD SOUL/////
 methodDefx(soulc, "main", ->(x Arrx, env Cptx)Cptx{
 })
+//methodDefx(scopec, "get", ->(x Arrx, env Cptx)Cptx{
+ 
+//})
 methodDefx(classc, "genCall", ->(x Arrx, env Cptx)Cptx{
  #execsp = x[0]
  #o = x[1]
@@ -1234,7 +1237,7 @@ execDefx("IdArg", ->(x Arrx, env Cptx)Cptx{
 execDefx("IdState", ->(x Arrx, env Cptx)Cptx{
  Cptx#c = x[0]
  Str#k = c.str
- Cptx#o = c.class.obj
+ Cptx#o = Cptx(c.class.val)
  #r = o.dic[k]
  @if(r == _){
   @return nullv

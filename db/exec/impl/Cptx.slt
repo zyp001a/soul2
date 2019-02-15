@@ -7,9 +7,10 @@
 
  id: Int
  
+ class: Cptx 
  scope: Cptx
- class: Cptx
- obj: Cptx
+ 
+ owner: Cptx //for method and prop
 
  arr: Arrx
  dic: Dicx

@@ -317,7 +317,7 @@ objNewx ->(class Cptx, dic Dicx)Cptx{
  @if(dic == _ || dic.len() == 0){
   x.fdefault = @true
  } 
- class.obj = x
+ class.val = x
  @return x;
 }
 tobjNewx ->(class Cptx)Cptx{
@@ -329,8 +329,8 @@ tobjNewx ->(class Cptx)Cptx{
  @return x
 }
 scopeObjNewx ->(class Cptx)Cptx{
- @if(class.obj != _){
-  @return class.obj
+ @if(class.val != _){
+  @return class.val
  }
  @return objNewx(class)
 }
@@ -820,8 +820,11 @@ defx ->(class Cptx, dic Dicx)Cptx{
  @if(class.ctype == T##CPT){
   @return cptv
  }@elif(class.ctype == T##OBJ){
-  @if(class.obj != _ && class.obj.fstatic){
-   @return class.obj
+  @if(class.val != _){
+   #r = Cptx(class.val)
+   @if(r.fstatic){
+    @return r
+   }
   }
   @if(dic != _){
    @each k v dic{
@@ -1537,7 +1540,7 @@ convertx ->(val Cptx, to Cptx)Cptx{
   }
   val.obj = to
   val.pred = to
-  to.obj = val
+  to.val = val
   @return val  
  }
  @if(to.ctype == from.ctype && from.ctype == T##STR){
@@ -1560,7 +1563,7 @@ convertx ->(val Cptx, to Cptx)Cptx{
    @if(inClassx(to, from)){//specify eg. Arr to ArrStatic
     val.obj = to
     val.pred = to    
-    to.obj = val
+    to.val = val
     @return val  
    }@elif(val.type == T##ARR || val.type == T##DIC){
     @if(to.fbitems){

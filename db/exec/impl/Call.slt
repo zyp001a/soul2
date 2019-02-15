@@ -1,7 +1,7 @@
 ~
 Cpt#func = callFunc(#0)
 Arr#args = callArgs(#0)
-^_load _global,"envmainx"^
+^_load _global,"envmainv"^
 
 ^_load _func,"callNativex"^
 #s = "callNativex("
@@ -14,5 +14,5 @@ s += ", ["
  }
  s += ^_obj a^
 }
-s += "], envmainx)"
+s += "], envmainv)"
 ~~=s~

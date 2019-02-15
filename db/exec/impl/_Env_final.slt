@@ -1,5 +1,6 @@
 ~:^_gen _class^~
+~:^_gen _scope^~
 ~:^_gen _global^~
+~:^_gen _method^~
 ~:^_gen _func^~
-~:^_gen _def^~
 ~=_main~

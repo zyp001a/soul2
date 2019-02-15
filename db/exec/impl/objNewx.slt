@@ -1,0 +1,15 @@
+~
+^_load _class,"Cptx"^
+^_load _class,"Dicx"^
+^_load _class,"T"^
+^_load _func,"uidx"^
+^_load _func,"dicOrx"^
+~->(class Cptx, dic Dicx)Cptx{
+ #x = &Cptx{
+  type: T##OBJ
+  id: uidx()
+  dic: dicOrx(dic)
+  class: class
+ }
+ @return x
+}
