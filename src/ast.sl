@@ -846,7 +846,7 @@ callmethod2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
   log(strx(to))
   log(Str(ast[2]))  
   die("no method")
- }  
+ }
  #astarr = Astx(ast[3]) 
  #vt = getx(f, "funcVarTypes") 
  #arrx = malloc(astarr.len() + 1, Cptx)

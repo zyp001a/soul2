@@ -109,6 +109,10 @@ tobjc := classNewx();
 routex(tobjc, defmain, "TObj");
 tobjc.ctype = T##TOBJ
 
+scopec := classDefx(defmain, "Scope", [classc])
+execmain.obj = scopec
+defmain.obj = scopec
+
 nativec := classDefx(defmain, "Native")
 midc := classDefx(defmain, "Mid")
 //midc must defined before itemsDefx

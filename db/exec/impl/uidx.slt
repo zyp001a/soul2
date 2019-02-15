@@ -1,0 +1,5 @@
+~^_load _global,"uidi"^
+~->()Uint{
+ uidi ++
+ @return uidi;
+}

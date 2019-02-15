@@ -1,0 +1,8 @@
+~^_load _class,"Dicx"^
+~->(x Dicx)Dicx{
+ @if(!x){
+  @return &Dicx
+ }@else{
+  @return x
+ }
+}

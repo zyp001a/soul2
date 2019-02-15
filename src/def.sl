@@ -958,9 +958,9 @@ opDefx(boolc, "or", ->(x Arrx, env Cptx)Cptx{
 //////METHOD SOUL/////
 methodDefx(soulc, "main", ->(x Arrx, env Cptx)Cptx{
 })
-//methodDefx(scopec, "get", ->(x Arrx, env Cptx)Cptx{
+methodDefx(scopec, "get", ->(x Arrx, env Cptx)Cptx{
  
-//})
+})
 methodDefx(classc, "genCall", ->(x Arrx, env Cptx)Cptx{
  #execsp = x[0]
  #o = x[1]

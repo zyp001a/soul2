@@ -296,6 +296,9 @@ nsNewx ->(name Str)Cptx{
 scopeNewx ->(ns Cptx, name Str)Cptx{
  Cptx#x = classNewx()
  x.fscope = @true
+ @if(scopec){
+  x.obj = scopec
+ }
  x.name = "Scope_" + ns.str + "_" + name
  x.str = ns.str + "/" + name
  @if(ns.dic[name] == _){
