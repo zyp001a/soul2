@@ -37,7 +37,8 @@ var grammar = {
 			["@true", "return 'TRUE'"],
 			["@false", "return 'FALSE'"],
 
-			["@enum", "return 'ENUM'"],			
+			["@enum", "return 'ENUM'"],
+			["@union", "return 'UNION'"],						
 			["@type", "return 'TYPE'"],
 			
 			["@if", "return 'IF'"],
@@ -457,6 +458,10 @@ var grammar = {
 		Type: [
 			["TYPE ID", "$$= ['alias', $2]"],
 			["TYPE ID ID", "$$= ['itemdef', $2, $3]"],
+		],
+		ClassId: [
+			["ID", "$$ = $1"],
+			["ID @ ID", "$$ = $1"],
 		],
 		Assign: "$$ = ['assign', $1]",
 		ASSIGN: [

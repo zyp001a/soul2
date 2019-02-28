@@ -5,7 +5,9 @@ change "call" to "gen"
 execx need ctx arg
 
 # soul def
-CoW
+union
+eclipse
+CoW cost of work?
 persistency
 a[-1]
 error handlering need to be improved!!? catch context/ go assign set context/ tplCall pass ctx ----ctx in grammar
