@@ -595,7 +595,7 @@ for2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, block Cptx)Cptx{
 }
 alias2cptx ->(ast Astx, def Cptx, name Str)Cptx{
  Str#n = Str(ast[1])
- @if(n == "Class" || n== "Obj" || n == "Cpt"){
+ @if(n == "Class" || n== "Obj"){
   die("no alias for this")
  }
  #x = classGetx(def, n)
@@ -1204,7 +1204,7 @@ subAst2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, name Str)Cptx{
  @return
 }
 progl2cptx ->(str Str, def Cptx, local Cptx)Cptx{
- Astx#ast = JsonArr(osCmd("./sl-reader", str))
+ Astx#ast = JsonArr(osCmd(osEnvGet("HOME")+"/soul2/sl-reader", str))
  @if(ast.len() == 0){
   die("progl2cpt: wrong grammar")
  }

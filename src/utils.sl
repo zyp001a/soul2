@@ -581,15 +581,15 @@ dbGetx ->(scope Cptx, key Str)Cptx{
  @if(f){
   Str#str = @fs[fstr]
   @if(f["timeMod"] > fcache["timeMod"]){
-   Str#jstr = osCmd("./sl-reader", key + " := "+str)
+   Str#jstr = osCmd(osEnvGet("HOME")+"/soul2/sl-reader", key + " := "+str)
    @fs[fstr + ".cache"] = jstr
   }@else{
    Str#jstr = @fs[fstr + ".cache"]
   }
  }@elif(f2){
   str = "@`"+@fs[fstr+"t"]+"` '"+fstr+"t'";
-  @if(f2["timeMod"] > f2cache["timeMod"]){  
-   Str#jstr = osCmd("./sl-reader", key + " := "+str)
+  @if(f2["timeMod"] > f2cache["timeMod"]){
+   Str#jstr = osCmd(osEnvGet("HOME")+"/soul2/sl-reader", key + " := "+str)
    @fs[fstr + "t.cache"] = jstr   
   }@else{
    Str#jstr = @fs[fstr + "t.cache"]  
