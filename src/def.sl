@@ -201,7 +201,7 @@ funcDefx(defmain, "call", ->(x Arrx, env Cptx)Cptx{
   diex("not func", env)
  }
  @return callx(f, a.arr, env)
-}, [funcc, arrc], cptc)
+}, [cptc, arrc], cptc)
 
 ////CONVERT///////
 methodDefx(cptc, "type", ->(x Arrx, env Cptx)Cptx{//Cpt to any

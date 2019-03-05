@@ -466,15 +466,19 @@ itemsDefx ->(class Cptx, type Cptx, len Int, mid Bool)Cptx{
  @if(!class.fbitems){
   die("item def first arg error")
  }
- @if(type != _ && type.id != cptc.id && type.id != unknownc.id){
+ @if(type != _){
   type = aliasGetx(type)
-  Str#n = class.name+"_"+type.name
-  @if(n == "StaticArr_Byte"){
-   n = "Bytes"
-  }
-  Cptx#r = classGetx(defmain, n)
-  @if(r == _){
-   #r = classDefx(defmain, n, [class], {itemsType: type})  
+  @if(type.id != cptc.id && type.id != unknownc.id){  
+   Str#n = class.name+"_"+type.name
+   @if(n == "StaticArr_Byte"){
+    n = "Bytes"
+   }
+   Cptx#r = classGetx(defmain, n)
+   @if(r == _){
+    #r = classDefx(defmain, n, [class], {itemsType: type})  
+   }
+  }@else{
+   r = class
   }
  }@else{
   r = class
