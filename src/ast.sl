@@ -815,6 +815,10 @@ call2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx)Cptx{
  }
  #vt = getx(f, "funcVarTypes")
  #arrx = &Arrx
+ @if(vt != _ && astarr.len() > vt.arr.len()){
+  log(f)
+  die("pass more args than def");
+ } 
  @each i e astarr{
   Cptx#ee = ast2cptx(Astx(e), def, local, func)
   @if(vt){
