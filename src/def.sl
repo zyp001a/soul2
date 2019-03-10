@@ -537,6 +537,10 @@ methodDefx(strc, "toInt", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return intNewx(Int(o.str))
 },_, intc)
+methodDefx(strc, "toUint", ->(x Arrx, env Cptx)Cptx{
+ Cptx#o = x[0]
+ @return intNewx(Int(o.str), uintc)
+},_, intc)
 methodDefx(strc, "toFloat", ->(x Arrx, env Cptx)Cptx{
  Cptx#o = x[0]
  @return floatNewx(Float(o.str))
