@@ -209,6 +209,12 @@ methodDefx(cptc, "type", ->(x Arrx, env Cptx)Cptx{//Cpt to any
  @return classRawx(o.type)
 }, _, classc)
 
+methodDefx(cptc, "istype", ->(x Arrx, env Cptx)Cptx{//Cpt to any
+ Cptx#o = x[0]
+ Cptx#c = x[1]
+ @return boolNewx(classRawx(o.type).id == c.id)
+}, [classc], classc)
+
 funcDefx(defmain, "as", ->(x Arrx, env Cptx)Cptx{//Cpt to any
  Cptx#o = x[0]
  @return o
