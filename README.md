@@ -1,4 +1,4 @@
-Soul2 is a self-generated language generator.
+Soul2 is a self-generated language, which is designed to be used to translate into any programming language.
 
 Use './checkreset' to build, the final product is 'seed.go', it must be placed at the same with 'get-stdin.js'(copy from sindresorhus/get-stdin), 'progl-parser.js', 'tpl-parser.js', 'sl-reader', 'db'(a dir).
 
