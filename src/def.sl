@@ -898,23 +898,6 @@ methodDefx(bufferc, "new", ->(x Arrx, env Cptx)Cptx{
  @return r
 }, _, bufferc)
 
-methodDefx(builderstrc, "new", ->(x Arrx, env Cptx)Cptx{
- #r = objNewx(builderstrc)
- r.val = &BuilderStr
- @return r
-}, _, builderstrc)
-methodDefx(builderstrc, "writeStr", ->(x Arrx, env Cptx)Cptx{
- Cptx#o = x[0]
- Cptx#s = x[1]
- BuilderStr(o.val).writeStr(s.str)
- @return nullv
-}, [strc])
-methodDefx(builderstrc, "toStr", ->(x Arrx, env Cptx)Cptx{
- #r = objNewx(builderstrc)
- r.val = &BuilderStr
- @return r
-}, _, strc)
-
 
 ////METHOD ID
 #assignf = opDefx(idlocalc, "assign", ->(x Arrx, env Cptx)Cptx{

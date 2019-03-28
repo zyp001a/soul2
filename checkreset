@@ -1,4 +1,5 @@
 #!/bin/bash
+npm install jison
 rm db/exec/*/*cache -f
 mkdir -p soul.cache
 node progl-grammar.js
