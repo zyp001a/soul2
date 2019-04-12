@@ -1,0 +1,8 @@
+~
+goImport("io/ioutil")
+goImport("os")
+goImport("path/filepath")
+~func _dir_set(f string, c []byte) error {
+ os.MkdirAll(filepath.Dir(f), os.ModePerm)
+ return ioutil.WriteFile(f, c, 0666)
+}
