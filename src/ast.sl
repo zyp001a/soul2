@@ -412,7 +412,7 @@ itemsget2cptx ->(ast Astx, def Cptx, local Cptx, func Cptx, v Cptx)Cptx{
    @return lefto
   }
   #it = getx(itemst, "itemsType")
-  @if(predt.id != unknownc.id && predt.id != cptc.id){ 
+  @if(predt.id != unknownc.id && predt.id != cptc.id &&  !inClassx(predt, itemsc)){ 
    @if(it.id == cptv.id){
     itemst.obj = itemsDefx(itemstt, predt)
     itemst.pred = itemst.obj
